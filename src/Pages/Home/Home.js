@@ -1,0 +1,83 @@
+import React, { useContext, useState, useEffect } from 'react';
+import HomeSlider from "./HomeSlider";
+import './home.css';
+import ProductSlider from '../../Components/Product/ProductSlider';
+import { MyContext } from '../../App';
+
+function Home() {
+    const { products, tables, language, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
+    const [grades, setGrades] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState({});
+    const [gradeText, setGradeText] = useState({});
+
+    useEffect(() => {
+        if (tables && tables.grades) {
+            setGrades(tables.grades);
+        }
+    }, [tables]);
+
+    useEffect(() => {
+        if (products && grades.length) {
+            const productsByGrade = {};
+
+            grades.forEach(grade => {
+                const filtered = products.filter(product => product.grade_id === grade.id);
+                if (filtered.length > 0) {
+                    productsByGrade[grade.id] = filtered;
+                }
+            });
+
+            setFilteredProducts(productsByGrade);
+
+            const gradeTextObj = {};
+            grades.forEach(grade => {
+                gradeTextObj[grade.id] = {
+                    title: grade.translations?.find(t => t.locale === language)?.grade_name || grade.grade_name,
+                    description: grade.translations?.find(t => t.locale === language)?.description || grade.description
+                };
+            });
+            setGradeText(gradeTextObj);
+        }
+    }, [products, grades, language]);
+
+    return (
+        <div className="home px-md-5 container-fluid">
+            <div className="home-slider py-5">
+                <HomeSlider banners={homeBanners} />
+            </div>
+            <div className="row position-relative">
+                <div className="col-md-3 side-banners-container" style={{ overflow: "hidden" }}>
+                    {sideBanners.map((banner, index) => (
+                        <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-3" />
+                    ))}
+                </div>
+                <div className="col-md-9 lato-regular home-proud">
+                    {grades.map(grade => {
+                        const gradeProducts = filteredProducts[grade.id] ? filteredProducts[grade.id].slice(0, 12) : [];
+                        const gradeLocalization = gradeText[grade.id];
+                        if (gradeProducts && gradeProducts.length > 0) {
+                            return (
+                                <ProductSlider
+                                    key={grade.id}
+                                    text={{
+                                        title: { en: gradeLocalization?.title || grade.grade_name, ar: gradeLocalization?.title || grade.grade_name },
+                                        description: { en: gradeLocalization?.description || '', ar: gradeLocalization?.description || '' }
+                                    }}
+                                    products={gradeProducts}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
+                </div>
+            </div>
+            <div className="row bottom-banners-container">
+                {bottomBanners.map((banner, index) => (
+                    <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Bottom/${banner.image}`} alt={`bottombanner${index + 1}`} className="col-6 mb-2 rounded-3 img-fluid" style={{ maxHeight: "300px" }} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+export default Home;

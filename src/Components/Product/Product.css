@@ -1,0 +1,208 @@
+.product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease-in-out;
+    height: 100%;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-menu {
+    top: 10px;
+    right: -40px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: all 0.5s ease-in-out;
+}
+
+.product-card:hover .action-menu {
+    opacity: 1;
+    right: 10px;
+}
+.product-img-container {
+    height: 250px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    height: 100%;
+}
+
+.card-title {
+    font-size: 1rem;
+}
+
+.card-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: max-height 0.3s ease;
+}
+
+
+.card-body .badge {
+    font-size: 0.8rem;
+    padding: 0.4em 0.6em;
+    font-weight: 500;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .product-img-container {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-img-container {
+        height: 180px;
+    }
+}
+.dot-spinner {
+    --uib-size: 2.8rem;
+    --uib-speed: .9s;
+    --uib-color: #183153;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: var(--uib-size);
+    width: var(--uib-size);
+}
+
+.dot-spinner__dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    width: 100%;
+}
+
+.dot-spinner__dot::before {
+    content: '';
+    height: 20%;
+    width: 20%;
+    border-radius: 50%;
+    background-color: var(--uib-color);
+    transform: scale(0);
+    opacity: 0.5;
+    animation: pulse0112 calc(var(--uib-speed) * 1.111) ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(18, 31, 53, 0.3);
+}
+
+.dot-spinner__dot:nth-child(2) {
+    transform: rotate(45deg);
+}
+
+.dot-spinner__dot:nth-child(2)::before {
+    animation-delay: calc(var(--uib-speed) * -0.875);
+}
+
+.dot-spinner__dot:nth-child(3) {
+    transform: rotate(90deg);
+}
+
+.dot-spinner__dot:nth-child(3)::before {
+    animation-delay: calc(var(--uib-speed) * -0.75);
+}
+
+.dot-spinner__dot:nth-child(4) {
+    transform: rotate(135deg);
+}
+
+.dot-spinner__dot:nth-child(4)::before {
+    animation-delay: calc(var(--uib-speed) * -0.625);
+}
+
+.dot-spinner__dot:nth-child(5) {
+    transform: rotate(180deg);
+}
+
+.dot-spinner__dot:nth-child(5)::before {
+    animation-delay: calc(var(--uib-speed) * -0.5);
+}
+
+.dot-spinner__dot:nth-child(6) {
+    transform: rotate(225deg);
+}
+
+.dot-spinner__dot:nth-child(6)::before {
+    animation-delay: calc(var(--uib-speed) * -0.375);
+}
+
+.dot-spinner__dot:nth-child(7) {
+    transform: rotate(270deg);
+}
+
+.dot-spinner__dot:nth-child(7)::before {
+    animation-delay: calc(var(--uib-speed) * -0.25);
+}
+
+.dot-spinner__dot:nth-child(8) {
+    transform: rotate(315deg);
+}
+
+.dot-spinner__dot:nth-child(8)::before {
+    animation-delay: calc(var(--uib-speed) * -0.125);
+}
+
+@keyframes pulse0112 {
+
+    0%,
+    100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+.thumbnail-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: border 0.2s ease-in-out;
+}
+
+.thumbnail-img:hover {
+    border: 2px solid #007bff;
+}
+
+.thumbnail-img.selected {
+    border: 2px solid #262626;
+}
