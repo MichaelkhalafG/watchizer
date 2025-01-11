@@ -51,8 +51,8 @@ function PrevArrow({ onClick }) {
     );
 }
 
-function ProductSlider({ text, products }) {
-    const { language } = useContext(MyContext);
+function ProductSlider({ text, products, to, moreid }) {
+    const { language, setgradesfilters } = useContext(MyContext);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const filteredProducts = products.filter((product) => product.active === 1);
@@ -97,10 +97,21 @@ function ProductSlider({ text, products }) {
                     </p>
                 </div>
                 <div className="col-2">
-                    <Button className="color-most-used rounded-4 px-3 border border-1">
-                        {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
-                        {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
-                    </Button>
+                    <Link to={to}>
+                        <Button className="color-most-used rounded-4 px-3 border border-1"
+                            onClick={() =>
+                                setgradesfilters({
+                                    categories: [],
+                                    brands: [],
+                                    subTypes: [],
+                                    grades: [moreid],
+                                    price: [0, 6000],
+                                })
+                            }>
+                            {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
+                            {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -149,8 +160,8 @@ function ProductSlider({ text, products }) {
 
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <span className={`badge ${product.stock > 0 ? 'bg-success' : 'bg-danger'}`}>
-                                                {language === 'ar' ? (product.stock > 0 ? 'متوفر' : 'غير متوفر') : (product.stock > 0 ? 'In Stock' : 'Out of Stock')}
+                                            <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-success' : 'bg-danger'}`}>
+                                                {language === 'ar' ? (parseInt(product.stock) > 0 ? 'متوفر' : 'غير متوفر') : (parseInt(product.stock) > 0 ? 'In Stock' : 'Out of Stock')}
                                             </span>
                                         </div>
                                         <div className="d-flex align-items-center">
@@ -159,12 +170,12 @@ function ProductSlider({ text, products }) {
                                         </div>
                                     </div>
 
-                                    <button
+                                    <Link to={`/product/${product.id}`}
                                         className="btn btn-outline-dark rounded-4 mt-2"
-                                        disabled={product.stock <= 0}
+                                        disabled={parseInt(product.stock) <= 0}
                                     >
                                         {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -199,42 +210,63 @@ ProductSlider.propTypes = {
         PropTypes.shape({
             id: PropTypes.number.isRequired,
             product_title: PropTypes.string.isRequired,
-            model_name: PropTypes.string, // This can be undefined, make sure it's optional
+            model_name: PropTypes.string,
             long_description: PropTypes.string.isRequired,
             short_description: PropTypes.string.isRequired,
             selling_price: PropTypes.string.isRequired,
             sale_price_after_discount: PropTypes.string.isRequired,
             percentage_discount: PropTypes.string.isRequired,
-            stock: PropTypes.number.isRequired, // Ensure stock is a number, it can be an integer
-            rate: PropTypes.number, // The rating can be a number or null if no rating
-            image: PropTypes.string, // Optional image, it can be undefined
-            images: PropTypes.arrayOf(PropTypes.string), // Array of image URLs
+            stock: PropTypes.string.isRequired,
+            rate: PropTypes.number,
+            image: PropTypes.string,
+            images: PropTypes.arrayOf(PropTypes.string),
             category_type: PropTypes.string.isRequired,
             brand: PropTypes.string.isRequired,
-            grade: PropTypes.string, // This can be null or undefined if it's optional
+            grade: PropTypes.string,
             sub_type: PropTypes.string.isRequired,
-            dial_color: PropTypes.string, // This can be null or undefined
-            band_color: PropTypes.string, // This can be null or undefined
-            band_closure: PropTypes.string, // This can be null or undefined
-            dial_display_type: PropTypes.string, // This can be null or undefined
-            case_shape: PropTypes.string, // This can be null or undefined
-            band_material: PropTypes.string, // This can be null or undefined
-            watch_movement: PropTypes.string, // This can be null or undefined
-            water_resistance_size_type: PropTypes.string, // This can be null or undefined
-            case_size_type: PropTypes.string, // This can be null or undefined
-            band_size_type: PropTypes.string, // This can be null or undefined
-            band_width_size_type: PropTypes.string, // This can be null or undefined
-            case_thickness_size_type: PropTypes.string, // This can be null or undefined
-            watch_height_size_type: PropTypes.string, // This can be null or undefined
-            watch_width_size_type: PropTypes.string, // This can be null or undefined
-            watch_length_size_type: PropTypes.string, // This can be null or undefined
-            dial_glass_material: PropTypes.string, // This can be null or undefined
-            dial_case_material: PropTypes.string, // This can be null or undefined
-            country: PropTypes.string, // This can be null or undefined
-            stone: PropTypes.string, // This can be null or undefined
-            features: PropTypes.arrayOf(PropTypes.string), // Array of features (strings)
-            gender: PropTypes.arrayOf(PropTypes.string), // Array of gender (strings)
-
+            dial_color: PropTypes.arrayOf(
+                PropTypes.shape({
+                    color_id: PropTypes.number,
+                    color_value: PropTypes.string,
+                    color_name_ar: PropTypes.string,
+                    color_name_en: PropTypes.string,
+                })
+            ),
+            band_color: PropTypes.arrayOf(
+                PropTypes.shape({
+                    color_id: PropTypes.number,
+                    color_value: PropTypes.string,
+                    color_name_ar: PropTypes.string,
+                    color_name_en: PropTypes.string,
+                })
+            ),
+            band_closure: PropTypes.string,
+            dial_display_type: PropTypes.string,
+            case_shape: PropTypes.string,
+            band_material: PropTypes.string,
+            watch_movement: PropTypes.string,
+            water_resistance_size_type: PropTypes.string,
+            water_resistance: PropTypes.number,
+            case_size_type: PropTypes.string,
+            case: PropTypes.string,
+            band_size_type: PropTypes.string,
+            band_length: PropTypes.string,
+            band_width_size_type: PropTypes.string,
+            band_width: PropTypes.string,
+            case_thickness_size_type: PropTypes.string,
+            case_thickness: PropTypes.string,
+            watch_height_size_type: PropTypes.string,
+            watch_width_size_type: PropTypes.string,
+            watch_length_size_type: PropTypes.string,
+            dial_glass_material: PropTypes.string,
+            watch_height: PropTypes.string,
+            watch_width: PropTypes.string,
+            watch_length: PropTypes.string,
+            dial_case_material: PropTypes.string,
+            country: PropTypes.string,
+            stone: PropTypes.string,
+            features: PropTypes.arrayOf(PropTypes.string),
+            gender: PropTypes.arrayOf(PropTypes.string),
         })
     ).isRequired,
 };

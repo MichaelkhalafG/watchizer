@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating } from '@mui/material';
 import { MdClose } from 'react-icons/md';
+import { Link } from 'react-router-dom';
 import InnerImageZoom from 'react-inner-image-zoom';
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 
@@ -14,10 +15,44 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
         }
     }, [product]);
 
+    const renderColorDetail = (labelEn, labelAr, colors, fs, col) => (
+        <div className={`${col} mb-2`}>
+            <div className="fw-bold text-secondary" style={{ fontSize: fs }}>
+                <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
+                    {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
+                </span>
+                <div className="d-flex gap-2">
+                    {colors && colors.map((color, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                backgroundColor: color.color_value || "#f0f0f0",
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '50%',
+                                cursor: 'pointer',
+                            }}
+                            title={language === 'ar' ? color.color_name_ar : color.color_name_en}
+                        ></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 
-    const renderDetail = (labelEn, labelAr, value) => (
-        <div className="col-6 mb-2">
-            <p className="fw-bold text-secondary" style={{ fontSize: 'small' }}>
+    const renderDetail = (labelEn, labelAr, value, fs, col) => (
+        <div className={`${col} mb-2`}>
+            <p className="fw-bold text-secondary" style={{ fontSize: fs }}>
+                <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
+                    {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
+                </span>
+                {value || "-"}
+            </p>
+        </div>
+    );
+    const renderDetailquantity = (labelEn, labelAr, value) => (
+        <div className="col-6 d-flex align-items-center">
+            <p className="fw-bold m-0 p-1  border border-dark border-1 rounded-3 color-most-used" style={{ fontSize: 'medium' }}>
                 <span className={`${language === 'ar' ? 'ms-2' : 'me-2'}`}>
                     {language === 'ar' ? `${labelAr} :` : `${labelEn} :`}
                 </span>
@@ -120,49 +155,20 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
                             {product.long_description}
                         </p>
                         <div className="row align-items-center">
-                            {product.grade && renderDetail('Grade', 'التصنيف', product.grade)}
-                            {product.sub_type && renderDetail('Sub Type', 'النوع الفرعي', product.sub_type)}
-                            {product.dial_color && renderDetail('Dial Color', 'لون وجة الساعة', product.dial_color)}
-                            {product.band_color && renderDetail('Band Color', 'لون السوار', product.band_color)}
-                            {product.band_material && renderDetail('Band Material', 'مادة السوار', product.band_material)}
-                            {product.case_size_type && renderDetail('Case Size', 'حجم الإطار', `${product.case_size} ${product.case_size_type}`)}
-                            {product.water_resistance_size_type && renderDetail('Water Resistance', 'مقاومة الماء', `${product.water_resistance} ${product.water_resistance_size_type}`)}
-                            {product.dial_display_type && renderDetail('Dial Display', 'عرض المينا', product.dial_display_type)}
-                            {product.case_shape && renderDetail('Case Shape', 'شكل الإطار', product.case_shape)}
-                            {product.watch_movement && renderDetail('Movement', 'نوع الحركة', product.watch_movement)}
-                            {product.features && product.features.length > 0 && renderDetail('Features', 'المميزات', product.features.join(', '))}
-                            {product.gender && product.gender.length > 0 && renderDetail('Gender', 'الجنس', product.gender.join(', '))}
-                            <div className="quantity-control col-6 d-flex align-items-center">
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => setQuantity(index, - 1)}
-                                    disabled={quantity <= 1}
-                                    sx={{ minWidth: '30px', padding: '5px' }}
-                                >
-                                    -
-                                </Button>
-                                <input
-                                    type="text"
-                                    value={quantity}
-                                    readOnly
-                                    style={{
-                                        width: '40px',
-                                        textAlign: 'center',
-                                        margin: '0 10px',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '4px',
-                                    }}
-                                />
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => setQuantity(index, 1)}
-                                    sx={{ minWidth: '30px', padding: '5px' }}
-                                >
-                                    +
-                                </Button>
+                            {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-6")}
+                            {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-6")}
+                            {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-6")}
+                            {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-6")}
+                            {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-6")}
+                            {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-6")}
+                            {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-6")}
+                            {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-6")}
+                            <div className="fw-bold text-secondary mb-2 col-12" style={{ fontSize: 'medium' }}>
+                                {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
                             </div>
+                            {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6")}
+                            {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6")}
+                            {quantity && renderDetailquantity('Quantity', 'الكمية', quantity)}
                             <div className="col-6 d-flex align-items-center">
                                 {product.stock > 0 ? (
                                     <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>
@@ -173,6 +179,23 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
                                         {language === 'ar' ? 'غير متوفر' : 'Out of Stock'}
                                     </span>
                                 )}
+                            </div>
+                            <div className="mt-3 action-buttons">
+                                <Link
+                                    to={`/product/${product.id}`}
+                                >
+                                    <button
+                                        className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
+                                    >
+                                        {language === 'ar' ? 'تفاصيل اكثر' : 'More '}
+                                    </button>
+                                </Link>
+                                <button
+                                    className="btn btn-outline-danger"
+                                    onClick={() => alert(language === "ar" ? "تمت الإضافة إلى قائمة الرغبات!" : "Added to wish list!")}
+                                >
+                                    {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -207,7 +230,7 @@ CartModel.propTypes = {
         selling_price: PropTypes.string.isRequired,
         sale_price_after_discount: PropTypes.string.isRequired,
         percentage_discount: PropTypes.string.isRequired,
-        stock: PropTypes.number.isRequired,
+        stock: PropTypes.string.isRequired,
         rate: PropTypes.number,
         image: PropTypes.string,
         images: PropTypes.arrayOf(PropTypes.string),
@@ -215,22 +238,44 @@ CartModel.propTypes = {
         brand: PropTypes.string.isRequired,
         grade: PropTypes.string,
         sub_type: PropTypes.string.isRequired,
-        dial_color: PropTypes.string,
-        band_color: PropTypes.string,
+        dial_color: PropTypes.arrayOf(
+            PropTypes.shape({
+                color_id: PropTypes.number,
+                color_value: PropTypes.string,
+                color_name_ar: PropTypes.string,
+                color_name_en: PropTypes.string,
+            })
+        ),
+        band_color: PropTypes.arrayOf(
+            PropTypes.shape({
+                color_id: PropTypes.number,
+                color_value: PropTypes.string,
+                color_name_ar: PropTypes.string,
+                color_name_en: PropTypes.string,
+            })
+        ),
         band_closure: PropTypes.string,
         dial_display_type: PropTypes.string,
         case_shape: PropTypes.string,
         band_material: PropTypes.string,
         watch_movement: PropTypes.string,
         water_resistance_size_type: PropTypes.string,
+        water_resistance: PropTypes.number,
         case_size_type: PropTypes.string,
+        case: PropTypes.string,
         band_size_type: PropTypes.string,
+        band_length: PropTypes.string,
         band_width_size_type: PropTypes.string,
+        band_width: PropTypes.string,
         case_thickness_size_type: PropTypes.string,
+        case_thickness: PropTypes.string,
         watch_height_size_type: PropTypes.string,
         watch_width_size_type: PropTypes.string,
         watch_length_size_type: PropTypes.string,
         dial_glass_material: PropTypes.string,
+        watch_height: PropTypes.string,
+        watch_width: PropTypes.string,
+        watch_length: PropTypes.string,
         dial_case_material: PropTypes.string,
         country: PropTypes.string,
         stone: PropTypes.string,

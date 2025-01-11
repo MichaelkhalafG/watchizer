@@ -8,9 +8,14 @@ import NotFound from './Pages/Not Found/NotFound';
 import Footer from './Components/Footer/Footer';
 import ProductDisplay from './Components/Product/ProductDisplay';
 import Listing from './Pages/Listing/Listing';
+import ListingGrades from './Pages/Listing/ListingGrades';
 import Cart from './Pages/Cart/Cart';
 import Checkout from './Pages/Checkout/Checkout';
 import Listingoffers from './Pages/Listing/Listingoffers';
+import ScrollToTop from './Components/ScrollToTop/ScrollToTop';
+import ProfileSpeed from './Components/Header/Nav/ProfileSpeed';
+import EditProfile from './Pages/EditProfile/EditProfile'
+
 
 const MyContext = createContext();
 
@@ -27,7 +32,8 @@ function App() {
   const [productsCount, setProductsCount] = useState(0);
   const [cart, setCart] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [user_id, setuser_id] = useState(1);
+  const [user_id, setuser_id] = useState(4);
+  const [users, setusers] = useState([]);
   const [total_cart_price, settotal_cart_price] = useState();
   const [shippingData, setShippingData] = useState([]);
   const [shippingname, setShippingName] = useState('');
@@ -35,6 +41,13 @@ function App() {
     categories: [],
     brands: [],
     subTypes: [],
+    price: [0, 6000],
+  });
+  const [gradesfilters, setgradesfilters] = useState({
+    categories: [],
+    brands: [],
+    subTypes: [],
+    grades: [],
     price: [0, 6000],
   });
   const [offersfilters, setOffersFilters] = useState({
@@ -58,7 +71,21 @@ function App() {
     };
     fetchShippingCities();
   }, []);
-
+  useEffect(() => {
+    const fetchusers = async () => {
+      try {
+        const response = await axios.get("https://dash.watchizereg.com/api/all_user", {
+          headers: {
+            "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+          }
+        });
+        setusers(response.data);
+      } catch (error) {
+        console.error("Error fetching shipping cities:", error);
+      }
+    };
+    fetchusers();
+  }, [])
   const shippingPrices = useMemo(() => {
     return shippingData.map(city => ({
       GovernorateEn: city.translations.find(t => t.locale === "en")?.city_name || city.city_name,
@@ -140,6 +167,7 @@ function App() {
           return translations.find((t) => t.locale === locale)?.[fallback] || 'Unknown';
         };
 
+
         function getProductRating(product, ratings) {
           const productRatings = ratings.filter((r) => r.product_id === product.id);
           if (productRatings.length > 0) {
@@ -148,6 +176,20 @@ function App() {
           }
           return null;
         }
+
+        function getcolors(product, name) {
+          const colors = product[name]?.map((color) => {
+            const item = {
+              color_id: color.id,
+              color_value: color.color_value,
+              color_name_ar: color.translations.find(c => c.locale === 'ar')?.color_name,
+              color_name_en: color.translations.find(c => c.locale === 'en')?.color_name,
+            };
+            return item;
+          });
+          return colors || [];
+        }
+
 
         const transformProductData = (locale) =>
           rawProducts.map((product) => ({
@@ -172,16 +214,8 @@ function App() {
               locale,
               'sub_type_name'
             ),
-            dial_color: getTranslatedName(
-              tableData.colors.find((c) => c.id === product.dial_color_id)?.translations || [],
-              locale,
-              'color_name'
-            ),
-            band_color: getTranslatedName(
-              tableData.colors.find((c) => c.id === product.band_color_id)?.translations || [],
-              locale,
-              'color_name'
-            ),
+            dial_colors: getcolors(product, 'dial_color'),
+            band_colors: getcolors(product, 'band_color'),
             band_closure: getTranslatedName(
               tableData.closureTypes.find((ct) => ct.id === product.band_closure_id)?.translations || [],
               locale,
@@ -222,6 +256,7 @@ function App() {
               locale,
               'size_type_name'
             ),
+            band_length: product.band_length,
             water_resistance_size_type: getTranslatedName(
               tableData.sizeTypes.find((st) => st.id === product.water_resistance_size_type_id)?.translations || [],
               locale,
@@ -270,7 +305,7 @@ function App() {
             model_name: getTranslatedName(product.translations || [], locale, 'model_name'),
             country: getTranslatedName(product.translations || [], locale, 'country'),
             stone: getTranslatedName(product.translations || [], locale, 'stone'),
-            stock: parseInt(product.stock),
+            stock: product.stock,
             warranty_years: product.warranty_years,
             interchangeable_dial: product.interchangeable_dial,
             interchangeable_strap: product.interchangeable_strap,
@@ -371,39 +406,46 @@ function App() {
     return language === 'en' ? productsEn : productsAr;
   }, [language, productsEn, productsAr]);
 
+  const fetchCart = useCallback(async () => {
+    try {
+      const response = await axios.get("https://dash.watchizereg.com/api/show_cart", {
+        headers: { "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0" }
+      });
 
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const response = await axios.get("https://dash.watchizereg.com/api/show_cart", {
-          headers: { "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0" }
-        });
-        const cartData = response.data.find(cart => cart.user_id === user_id);
-        if (cartData) {
-          const formattedCartItems = cartData.cart_item.map(item => ({
+      const cartData = response.data.find(cart => cart.user_id === user_id);
+      if (cartData) {
+        const formattedCartItems = cartData.cart_item.map(item => {
+          const product = products.find(p => p.id === item.product_id);
+          const offer = offers.find(o => o.id === item.offer_id);
+
+          return {
             id: item.id,
             product_id: item.product_id,
-            product_image: products.find(p => p.id === item.product_id)?.image,
-            product_title: products.find(p => p.id === item.product_id)?.product_title,
-            product_rating: products.find(p => p.id === item.product_id)?.average_rate,
+            product_image: product?.image || null,
+            product_title: product?.product_title || "Unknown Product",
+            product_rating: product?.average_rate || 0,
             offer_id: item.offer_id,
-            offer_image: offers.find(o => o.id === item.offer_id)?.image,
-            offer_title: offers.find(o => o.id === item.offer_id)?.offer_name,
-            offer_rating: offers.find(o => o.id === item.offer_id)?.average_rate,
+            offer_image: offer?.image || null,
+            offer_title: offer?.offer_name || "Unknown Offer",
+            offer_rating: offer?.average_rate || 0,
             quantity: item.quantity,
             piece_price: parseFloat(item.piece_price),
             total_price: parseFloat(item.total_price),
-            color_band: item.color_band !== null ? (item.color_band).toString() : null,
-            color_dial: item.color_dial !== null ? (item.color_dial).toString() : null,
-          }));
-          setCart(formattedCartItems);
-        }
-      } catch (error) {
-        console.error("Error fetching cart data:", error);
+            color_band: item.color_band ? item.color_band.toString() : null,
+            color_dial: item.color_dial ? item.color_dial.toString() : null,
+          };
+        });
+
+        setCart(formattedCartItems);
       }
-    };
-    fetchCart();
+    } catch (error) {
+      console.error("Error fetching cart data:", error);
+    }
   }, [user_id, offers, products]);
+
+  useEffect(() => {
+    fetchCart();
+  }, [user_id, offers, products, fetchCart]);
 
 
 
@@ -428,18 +470,41 @@ function App() {
 
   useEffect(() => {
     setProductsCount(cart.reduce((total, item) => total + (item.quantity || 0), 0));
-    settotal_cart_price(cart.reduce((total, item) => total + item.piece_price * item.quantity, 0) + parseFloat(shipping))
+    const calculateTotalCartPrice = () => {
+      const subtotal = cart.reduce((total, item) => {
+        const piecePrice = parseFloat(item.piece_price || 0); // Default to 0 if undefined
+        const quantity = parseInt(item.quantity || 1, 10);    // Default to 1 if undefined
+        return total + piecePrice * quantity;
+      }, 0);
+      const shippingCost = parseFloat(shipping || 0);         // Default to 0 if undefined
+      const totalPrice = subtotal + shippingCost;
+
+      settotal_cart_price(totalPrice.toFixed(2)); // Set formatted price with 2 decimal places
+    };
+    calculateTotalCartPrice();
   }, [cart, shipping]);
 
 
   const values = useMemo(() => {
-    return { language, setLanguage, ratings, user_id, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
-  }, [language, products, tables, ratings, user_id, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+    return { language, setLanguage, users, gradesfilters, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
+  }, [language, products, tables, users, gradesfilters, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
 
+  const userData = {
+    id: 4,
+    name: "micheal",
+    email: "maikelkhalaf100@gmail.com",
+    type: "SuperAdmin",
+    phone_number: null,
+    image: null,
+    created_at: "2025-01-10T15:24:08.000000Z",
+    updated_at: "2025-01-10T15:24:08.000000Z"
+  };
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <MyContext.Provider value={values}>
         <Header />
+        <ProfileSpeed />
         <Routes>
           <Route path="/" exact element={<Home />} />
           <Route path="/products/:id" element={<Listing />} />
@@ -452,7 +517,9 @@ function App() {
           <Route path="/category/:name" element={<Listing />} />
           <Route path="/brand/:name" element={<Listing />} />
           <Route path="/subtypes/:name" element={<Listing />} />
+          <Route path="/grade/:name" element={<ListingGrades />} />
           <Route path="/offers" element={<Listingoffers />} />
+          <Route path="/edit-profile" element={<EditProfile userData={userData} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

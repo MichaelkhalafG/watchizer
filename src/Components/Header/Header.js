@@ -8,10 +8,11 @@ import './Header.css';
 import SearchBox from './SearchBox/SearchBox';
 import { Button } from '@mui/material';
 import Nav from './Nav/Nav';
+import userimg from '../../assets/images/user.webp'
 import { MyContext } from '../../App';
 
 function Header() {
-    const { language, productsCount, total_cart_price } = useContext(MyContext);
+    const { language, productsCount, users, user_id, total_cart_price } = useContext(MyContext);
 
     return (
         <>
@@ -35,12 +36,16 @@ function Header() {
                                 <LanguageDropdown />
                                 <SearchBox />
                                 <div className='d-flex mx-auto align-items-center'>
-                                    <Button className='rounded-circle border border-2 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }}>
-                                        <FiUser style={{ fontSize: "22px" }} className='color-most-used' />
-                                    </Button>
+                                    <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                        {users.find(u => u.id === user_id)?.name}
+                                    </span>
+                                    <img
+                                        src={userimg}
+                                        alt='user'
+                                        className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} />
                                     <div className='m-auto cart-tap d-flex align-items-center'>
                                         <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
-                                            {total_cart_price}{language === 'ar' ? ' ج.م ' : ' EG '}
+                                            {productsCount === 0 ? "0.00" : total_cart_price}{language === 'ar' ? ' ج.م ' : ' EG '}
                                         </span>
                                         <Link className='position-relative ' to={'/cart'}>
                                             <Button className='rounded-circle border border-0 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }}>

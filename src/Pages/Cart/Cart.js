@@ -6,6 +6,7 @@ import { FaEye } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
 import emptyCart from "../../assets/images/emptyCart.webp";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function Cart() {
     const {
@@ -19,12 +20,22 @@ function Cart() {
         setShippingName,
         shipping,
         setShipping,
+        products, offers
     } = useContext(MyContext);
 
-    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedProduct, setSelectedProduct] = useState();
+    const [selectedItem, setselectedItem] = useState();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleProductClick = (product) => {
+    const handleProductClick = (item) => {
+        let product;
+        item.product_id !== null ? product = products.find(
+            p => p.id === item.product_id
+        ) :
+            product = offers.find(
+                o => o.id === item.offer_id
+            )
+        setselectedItem(item);
         setSelectedProduct(product);
         setIsModalOpen(true);
     };
@@ -43,9 +54,23 @@ function Cart() {
         }
     };
 
-    const handleRemoveItem = (index) => {
-        setCart((prevCart) => prevCart.filter((_, i) => i !== index));
+    const handleRemoveItem = async (itemId) => {
+        try {
+            const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
+            const response = await axios.delete(`https://dash.watchizereg.com/api/delete_cart/${itemId}`, {
+                headers: { "Api-Code": apiCode }
+            });
+
+            if (response.status === 200) {
+                setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+            } else {
+                console.error("Failed to remove item from cart:", response.data);
+            }
+        } catch (error) {
+            console.error("Error removing item from cart:", error);
+        }
     };
+
 
     return (
         <div className="cart container-fluid px-5">
@@ -129,7 +154,7 @@ function Cart() {
                                                 +
                                             </Button>
                                         </div>
-                                        <div className="col-1">
+                                        <div className="col-1 px-3">
                                             <div
                                                 style={{
                                                     backgroundColor: item.color_band || "#f0f0f0",
@@ -142,11 +167,13 @@ function Cart() {
                                                     border: item.color_band ? 'none' : '1px solid #ddd'
                                                 }}
                                             >
-                                                {!item.color_band && <span style={{ fontSize: '12px', color: '#666' }}>No Color</span>}
+                                                {!item.color_band && <span style={{ fontSize: '12px', color: '#666' }}>
+                                                    {language === 'ar' ? 'لا لون' : 'No Color'}
+                                                </span>}
                                             </div>
                                         </div>
 
-                                        <div className="col-1">
+                                        <div className="col-1 px-3">
                                             <div
                                                 style={{
                                                     backgroundColor: item.color_dial || "#f0f0f0",
@@ -159,12 +186,14 @@ function Cart() {
                                                     border: item.color_dial ? 'none' : '1px solid #ddd'
                                                 }}
                                             >
-                                                {!item.color_dial && <span style={{ fontSize: '12px', color: '#666' }}>No Color</span>}
+                                                {!item.color_dial && <span style={{ fontSize: '12px', color: '#666' }}>
+                                                    {language === 'ar' ? 'لا لون' : 'No Color'}
+                                                </span>}
                                             </div>
                                         </div>
 
-                                        <h6 className="color-most-used col-1">{item.piece_price.toFixed(2)}</h6>
-                                        <h6 className="color-most-used col-1">{(item.piece_price * item.quantity).toFixed(2)}</h6>
+                                        <h6 className="color-most-used col-1">{parseFloat(item.piece_price).toFixed(2)}</h6>
+                                        <h6 className="color-most-used col-1">{(parseFloat(item.piece_price) * item.quantity).toFixed(2)}</h6>
                                         <div className="col-2 text-center">
                                             <Button
                                                 className="rounded-circle color-most-used mx-2"
@@ -187,7 +216,7 @@ function Cart() {
                                                     minWidth: '0',
                                                     padding: 0,
                                                 }}
-                                                onClick={() => handleRemoveItem(index)}
+                                                onClick={() => handleRemoveItem(item.id)}
                                             >
                                                 <CiCircleRemove size={24} />
                                             </Button>
@@ -220,7 +249,7 @@ function Cart() {
                                                 <Select
                                                     labelId="governorate-select-label"
                                                     id="governorate-select"
-                                                    value={shipping}  // Ensure `shipping` is always a valid string
+                                                    value={shipping}
                                                     onChange={handleChange}
                                                     fullWidth
                                                 >
@@ -272,7 +301,7 @@ function Cart() {
                                 onClose={handleModalClose}
                                 product={selectedProduct}
                                 language={language}
-                                quantity={selectedProduct.quantity}
+                                quantity={selectedItem.quantity}
                                 setQuantity={handleQuantityChange}
                                 index={cart.findIndex((item) => item.id === selectedProduct.id)}
                             />

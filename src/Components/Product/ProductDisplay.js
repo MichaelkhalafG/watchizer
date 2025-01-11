@@ -12,11 +12,14 @@ import axios from "axios";
 
 function ProductDisplay() {
     const { id } = useParams();
-    const { language, products } = useContext(MyContext);
+    const { language, users, products, user_id, fetchCart } = useContext(MyContext);
     const [realetedProducts, setRelatedProducts] = useState();
+    const [selectedDialColor, setSelectedDialColor] = useState(null);
+    const [selectedBandColor, setSelectedBandColor] = useState(null);
     const product = products.find((p) => p.id === parseInt(id));
     const [selectedImage, setSelectedImage] = useState("");
     const [ratings, setRatings] = useState([]);
+    const [stock, setstock] = useState();
     const [quantity, setQuantity] = useState(1);
     const [totalRating, setTotalRating] = useState(5);
     const [ratingsOpen, setRatingsOpen] = useState(false);
@@ -24,7 +27,7 @@ function ProductDisplay() {
     const handleRatingClick = () => setRatingsOpen((prev) => !prev);
 
     const handleQuantityChange = (change) => {
-        setQuantity((prev) => Math.max(1, prev + change));
+        setQuantity((prev) => Math.max(1, Math.min(prev + change, stock)));
     };
 
     const renderDetail = (labelEn, labelAr, value, fs, col) => (
@@ -37,6 +40,78 @@ function ProductDisplay() {
             </p>
         </div>
     );
+
+    const handleAddToCart = () => {
+        if (!selectedDialColor || !selectedBandColor) {
+            alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
+            return;
+        }
+
+        const piecePrice = parseInt(product.sale_price_after_discount, 10);
+        const totalPrice = piecePrice * quantity;
+
+        if (isNaN(totalPrice) || totalPrice <= 0) {
+            console.error("Invalid total price calculation.");
+            alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+            return;
+        }
+
+        const payload = {
+            user_id: user_id,
+            product_id: product.id,
+            quantity: quantity,
+            piece_price: piecePrice,
+            color_band: selectedBandColor,
+            color_dial: selectedDialColor,
+            total_price: totalPrice,
+        };
+
+        axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
+            headers: {
+                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+            }
+        })
+            .then(() => {
+                alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                fetchCart()
+            })
+            .catch((error) => {
+                console.error("Error adding to cart:", error);
+                alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+            });
+    };
+
+
+
+    const renderColorDetail = (labelEn, labelAr, colors, fs, col, setColor) => (
+        <div className={`${col} mb-2`}>
+            <div className="fw-bold text-secondary" style={{ fontSize: fs }}>
+                <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
+                    {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
+                </span>
+                <div className="d-flex gap-2">
+                    {colors && colors.map((color, index) => (
+                        <div
+                            key={index}
+                            onClick={() => setColor(color.color_value)}
+                            style={{
+                                backgroundColor: color.color_value || "#f0f0f0",
+                                width: '30px',
+                                height: '30px',
+                                borderRadius: '50%',
+                                border: selectedDialColor === color.color_value || selectedBandColor === color.color_value
+                                    ? '2px solid #000'
+                                    : '1px solid #ddd',
+                                cursor: 'pointer',
+                            }}
+                            title={language === 'ar' ? color.color_name_ar : color.color_name_en}
+                        ></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
 
     const fetchRatings = useCallback(async () => {
         try {
@@ -64,6 +139,7 @@ function ProductDisplay() {
                 (p) => p.grade_id === product.grade_id && p.id !== product.id
             );
             setRelatedProducts(related);
+            setstock(parseInt(product.stock));
         }
     }, [product, products, fetchRatings]);
 
@@ -83,14 +159,14 @@ function ProductDisplay() {
         if (value && sanitizedComment.trim()) {
             try {
                 await axios.post(
-                    "https://dash.watchizereg.com/api/add_rating",
+                    "https://dash.watchizereg.com/api/add_product_rating",
                     null,
                     {
                         params: {
                             product_id: product.id,
                             rating: value,
                             comment: sanitizedComment,
-                            user_id: 1,
+                            user_id: user_id,
                         },
                         headers: {
                             "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
@@ -156,11 +232,11 @@ function ProductDisplay() {
                                 }}
                                 zoomType="hover"
                                 zoomPreload={true}
-                                oomScale={3}
+                                zoomScale={2}
                             />
                         )}
                     </div>
-                    <div className="d-flex mt-3 gap-2 justify-content-center">
+                    <div className="d-flex mt-3 gap-2 justify-content-center flex-wrap">
                         {product?.image && (
                             <img
                                 src={product.image}
@@ -199,7 +275,6 @@ function ProductDisplay() {
                     </div>
                 </div>
 
-
                 <div className="col-md-8 product-info">
                     <h5 className="mb-3">{language === "ar" ? "التفاصيل" : "Details"}</h5>
                     <p className="text-secondary fw-bold mb-3" style={{ fontSize: "large" }}>
@@ -208,27 +283,30 @@ function ProductDisplay() {
                     <div className="row">
                         {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-4")}
                         {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-4")}
-                        {product?.dial_color && renderDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-4")}
-                        {product?.band_color && renderDetail("Band Color", "لون السوار", product.band_color, "small", "col-4")}
                         {product?.band_closure && renderDetail("Band Closure", "إغلاق السوار", product.band_closure, "small", "col-4")}
                         {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-4")}
                         {product?.case_shape && renderDetail("Case Shape", "شكل العلبة", product.case_shape, "small", "col-4")}
                         {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-4")}
                         {product?.watch_movement && renderDetail("Watch Movement", "حركة الساعة", product.watch_movement, "small", "col-4")}
-                        {product?.water_resistance_size_type && renderDetail("Water Resistance", "مقاومة الماء", product.water_resistance_size_type, "small", "col-4")}
-                        {product?.case_size_type && renderDetail("Case Size", "حجم العلبة", product.case_size_type, "small", "col-4")}
-                        {product?.band_size_type && renderDetail("Band Size", "حجم السوار", product.band_size_type, "small", "col-4")}
-                        {product?.band_width_size_type && renderDetail("Band Width", "عرض السوار", product.band_width_size_type, "small", "col-4")}
-                        {product?.case_thickness_size_type && renderDetail("Case Thickness", "سمك العلبة", product.case_thickness_size_type, "small", "col-4")}
-                        {product?.watch_height_size_type && renderDetail("Watch Height", "ارتفاع الساعة", product.watch_height_size_type, "small", "col-4")}
-                        {product?.watch_width_size_type && renderDetail("Watch Width", "عرض الساعة", product.watch_width_size_type, "small", "col-4")}
-                        {product?.watch_length_size_type && renderDetail("Watch Length", "طول الساعة", product.watch_length_size_type, "small", "col-4")}
+                        {product?.water_resistance && renderDetail("Water Resistance", "مقاومة الماء", `${product.water_resistance} ${product.water_resistance_size_type}`, "small", "col-4")}
+                        {product?.case_thickness && renderDetail("Case Size", "حجم العلبة", `${product.case_thickness} ${product.case_size_type}`, "small", "col-4")}
+                        {product?.band_length && renderDetail("Band Length", "طول السوار", `${product.band_length} ${product.band_size_type}`, "small", "col-4")}
+                        {product?.band_width && renderDetail("Band Width", "عرض السوار", `${product.band_width} ${product.band_width_size_type}`, "small", "col-4")}
+                        {product?.case_thickness && renderDetail("Case Thickness", "سمك العلبة", `${product.case_thickness} ${product.case_thickness_size_type}`, "small", "col-4")}
+                        {product?.watch_height && renderDetail("Watch Height", "ارتفاع الساعة", `${product.watch_height} ${product.watch_height_size_type}`, "small", "col-4")}
+                        {product?.watch_width && renderDetail("Watch Width", "عرض الساعة", `${product.watch_width} ${product.watch_width_size_type}`, "small", "col-4")}
+                        {product?.watch_length && renderDetail("Watch Length", "طول الساعة", `${product.watch_length} ${product.watch_length_size_type}`, "small", "col-4")}
                         {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-4")}
                         {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-4")}
                         {product?.country && renderDetail("Country of Origin", "بلد الصنع", product.country, "small", "col-4")}
                         {product?.stone && renderDetail("Stone", "الحجر", product.stone, "small", "col-4")}
                         {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-4")}
                         {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-4")}
+                        <div className="fw-bold text-secondary col-12" style={{ fontSize: 'medium' }}>
+                            {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
+                        </div>
+                        {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-4", setSelectedDialColor)}
+                        {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-4", setSelectedBandColor)}
                         <div className="quantity-control col-6 d-flex align-items-center">
                             <Button
                                 variant="outlined"
@@ -261,7 +339,7 @@ function ProductDisplay() {
                             </Button>
                         </div>
                         <div className="col-6 d-flex align-items-center">
-                            {product.stock > 0 ? (
+                            {stock && parseInt(stock) > 0 ? (
                                 <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>
                                     {language === 'ar' ? 'متوفر' : 'In Stock'}
                                 </span>
@@ -276,11 +354,12 @@ function ProductDisplay() {
                     <div className="mt-3 action-buttons">
                         <button
                             className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
-                            onClick={() => alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!")}
-                            disabled={product?.stock <= 0}
+                            onClick={handleAddToCart}
+                            disabled={stock <= 0}
                         >
                             {language === "ar" ? "أضف إلى السلة" : "Add to Cart"}
                         </button>
+
                         <button
                             className="btn btn-outline-danger"
                             onClick={() => alert(language === "ar" ? "تمت الإضافة إلى قائمة الرغبات!" : "Added to wish list!")}
@@ -305,6 +384,7 @@ function ProductDisplay() {
                             <div key={rating.id} className="rating-item col-6 mb-3">
                                 <Rating name="read-only" value={rating.rating} readOnly size="small" />
                                 <p>{rating.comment}</p>
+                                <small className="me-3">by : {users.find(u => u.id === rating.user_id)?.name}</small>
                                 <small>{new Date(rating.created_at).toLocaleDateString()}</small>
                             </div>
                         ))
@@ -312,7 +392,6 @@ function ProductDisplay() {
                         <p>{language === "ar" ? "لا توجد تقييمات بعد" : "No ratings yet"}</p>
                     )}
                 </div>
-
                 <div className="add-rating mt-4">
                     <Typography variant="h6">{language === "ar" ? "إضافة تقييم" : "Add a Rating"}</Typography>
                     <div className="mt-2">
@@ -364,7 +443,7 @@ ProductDisplay.propTypes = {
             selling_price: PropTypes.string.isRequired,
             sale_price_after_discount: PropTypes.string.isRequired,
             percentage_discount: PropTypes.string.isRequired,
-            stock: PropTypes.number.isRequired,
+            stock: PropTypes.string.isRequired,
             rate: PropTypes.number,
             image: PropTypes.string,
             images: PropTypes.arrayOf(PropTypes.string),
@@ -372,22 +451,44 @@ ProductDisplay.propTypes = {
             brand: PropTypes.string.isRequired,
             grade: PropTypes.string,
             sub_type: PropTypes.string.isRequired,
-            dial_color: PropTypes.string,
-            band_color: PropTypes.string,
+            dial_color: PropTypes.arrayOf(
+                PropTypes.shape({
+                    color_id: PropTypes.number,
+                    color_value: PropTypes.string,
+                    color_name_ar: PropTypes.string,
+                    color_name_en: PropTypes.string,
+                })
+            ),
+            band_color: PropTypes.arrayOf(
+                PropTypes.shape({
+                    color_id: PropTypes.number,
+                    color_value: PropTypes.string,
+                    color_name_ar: PropTypes.string,
+                    color_name_en: PropTypes.string,
+                })
+            ),
             band_closure: PropTypes.string,
             dial_display_type: PropTypes.string,
             case_shape: PropTypes.string,
             band_material: PropTypes.string,
             watch_movement: PropTypes.string,
             water_resistance_size_type: PropTypes.string,
+            water_resistance: PropTypes.string,
             case_size_type: PropTypes.string,
+            case: PropTypes.string,
             band_size_type: PropTypes.string,
+            band_length: PropTypes.string,
             band_width_size_type: PropTypes.string,
+            band_width: PropTypes.string,
             case_thickness_size_type: PropTypes.string,
+            case_thickness: PropTypes.string,
             watch_height_size_type: PropTypes.string,
             watch_width_size_type: PropTypes.string,
             watch_length_size_type: PropTypes.string,
             dial_glass_material: PropTypes.string,
+            watch_height: PropTypes.string,
+            watch_width: PropTypes.string,
+            watch_length: PropTypes.string,
             dial_case_material: PropTypes.string,
             country: PropTypes.string,
             stone: PropTypes.string,

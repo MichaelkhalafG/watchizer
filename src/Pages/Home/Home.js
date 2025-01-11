@@ -5,7 +5,7 @@ import ProductSlider from '../../Components/Product/ProductSlider';
 import { MyContext } from '../../App';
 
 function Home() {
-    const { products, tables, language, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
+    const { products, tables, language, setgradesfilters, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
     const [grades, setGrades] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState({});
     const [gradeText, setGradeText] = useState({});
@@ -15,6 +15,7 @@ function Home() {
             setGrades(tables.grades);
         }
     }, [tables]);
+
 
     useEffect(() => {
         if (products && grades.length) {
@@ -64,6 +65,8 @@ function Home() {
                                         description: { en: gradeLocalization?.description || '', ar: gradeLocalization?.description || '' }
                                     }}
                                     products={gradeProducts}
+                                    to={`/grade/${grade.grade_name}`}
+                                    moreid={grade.id}
                                 />
                             );
                         }
