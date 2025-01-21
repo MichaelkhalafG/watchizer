@@ -19,7 +19,6 @@ function OffersSideBar({ setFilters }) {
     const { language, tables, sideBanners } = useContext(MyContext);
     const isRTL = language === "ar";
     const direction = isRTL ? "rtl" : "ltr";
-
     const [categories, setCategories] = useState([]);
     const [value, setValue] = useState([0, 6000]);
     const [priceRange, setPriceRange] = useState([0, 6000]);

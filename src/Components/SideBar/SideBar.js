@@ -99,6 +99,14 @@ function SideBar({ setFilters }) {
         }
     }, [tables, language]);
 
+    useEffect(() => {
+        if (setFilters) {
+            setSelectedCategories(setFilters.categories || []);
+            setSelectedBrands(setFilters.brands || []);
+            setSelectedSubTypes(setFilters.subTypes || []);
+        }
+    }, [setFilters]);
+
     const renderList = (data, key, filterType) => (
         <AccordionDetails className="p-0 m-0 border-0">
             <ul className={`list-unstyled p-0 m-0 row ${isRTL ? "text-end" : "text-start"}`}>

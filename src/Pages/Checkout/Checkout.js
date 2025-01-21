@@ -3,9 +3,10 @@ import { useContext, useState } from 'react';
 import { MyContext } from '../../App';
 import DOMPurify from "dompurify";
 import CheckIcon from "@mui/icons-material/Check";
+import axios from 'axios';
 
 function Checkout() {
-    const { language, shippingPrices, shippingname, shipping, setShipping, cart, setShippingName } = useContext(MyContext);
+    const { language, user_id, shippingPrices, shippingname, shipping, setShipping, cart, setShippingName } = useContext(MyContext);
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -83,6 +84,33 @@ function Checkout() {
             setAlertMessages(errors);
         }
     };
+    const handlePostOrder = () => {
+        const payload = {
+            user_id: user_id,
+            address_id: 1,
+            total_price_for_order: 8420,
+            payment_method: "card",
+        };
+
+        axios.post("https://dash.watchizereg.com/api/add_order", payload, {
+            headers: {
+                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+            }
+        })
+            .then(response => {
+                if (response.data && response.data.redirect_url) {
+                    // Redirect to the payment page
+                    window.location.href = response.data.redirect_url;
+                } else {
+                    console.error('Unexpected response format:', response.data);
+                }
+            })
+            .catch(error => {
+                console.error('Error posting order:', error.response ? error.response.data : error.message);
+                alert('Failed to place the order. Please try again.');
+            });
+    };
+
 
     return (
         <div
@@ -218,6 +246,7 @@ function Checkout() {
                                 type="submit"
                                 variant="contained"
                                 className="rounded-3 bg-most-used text-light col-12 p-2"
+                                onClick={() => handlePostOrder()}
                             >
                                 {language === "ar" ? "إرسال" : "Submit"}
                             </Button>

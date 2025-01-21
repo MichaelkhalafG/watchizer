@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating } from '@mui/material';
 import { MdClose } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import InnerImageZoom from 'react-inner-image-zoom';
+import defimg from '../../assets/images/1.webp'
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
+import { MyContext } from '../../App';
 
-function CartModel({ open, onClose, product, language, quantity, setQuantity, index }) {
+function CartProductModel({ open, onClose, product, language, quantity, setQuantity, index }) {
     const [selectedImage, setSelectedImage] = useState('');
+    const { handleAddTowishlist } = useContext(MyContext);
 
     useEffect(() => {
         if (product) {
@@ -100,53 +103,61 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
                     </div>
                 </div>
                 <div className="row product-details">
-                    <div className="col-5 product-images">
-                        {selectedImage && (
-                            <InnerImageZoom
-                                src={selectedImage}
-                                zoomSrc={selectedImage}
-                                alt="Selected Product"
-                                style={{
-                                    width: '100%',
-                                    borderRadius: '8px',
-                                    objectFit: 'cover',
-                                    maxHeight: '300px',
-                                }}
-                            />
-                        )}
-                        <div className="d-flex mt-3 gap-2 justify-content-center">
-                            {product.image && (
+                    <div className="col-md-5 product-images">
+                        <div className="selected-image mb-3 d-flex justify-content-center">
+                            {selectedImage && (
+                                <InnerImageZoom
+                                    src={selectedImage}
+                                    zoomSrc={selectedImage || defimg}
+                                    alt="Selected Product"
+                                    style={{
+                                        width: "100%",
+                                        borderRadius: "8px",
+                                        objectFit: "cover",
+                                        maxHeight: "300px",
+                                    }}
+                                    zoomType="hover"
+                                    zoomPreload={true}
+                                    zoomScale={2 || 1}
+                                />
+                            )}
+                        </div>
+                        <div className="d-flex mt-3 gap-2 justify-content-center flex-wrap">
+                            {product?.image && (
                                 <img
                                     src={product.image}
                                     alt="Main Thumbnail"
                                     onClick={() => setSelectedImage(product.image)}
                                     style={{
-                                        width: '60px',
-                                        height: '60px',
-                                        objectFit: 'cover',
-                                        borderRadius: '4px',
-                                        border: product.image === selectedImage ? '2px solid #262626' : '1px solid #ddd',
-                                        cursor: 'pointer',
+                                        width: "60px",
+                                        height: "60px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px",
+                                        border: product.image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
+                                        cursor: "pointer",
+                                        boxShadow: product.image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
                                     }}
+                                    className="thumbnail"
                                 />
                             )}
-                            {product.images &&
-                                product.images.map((image, index) => (
-                                    <img
-                                        key={index}
-                                        src={image}
-                                        alt={`Thumbnail ${index + 1}`}
-                                        onClick={() => setSelectedImage(image)}
-                                        style={{
-                                            width: '60px',
-                                            height: '60px',
-                                            objectFit: 'cover',
-                                            borderRadius: '4px',
-                                            border: image === selectedImage ? '2px solid #262626' : '1px solid #ddd',
-                                            cursor: 'pointer',
-                                        }}
-                                    />
-                                ))}
+                            {product?.images?.map((image, index) => (
+                                <img
+                                    key={index}
+                                    src={image}
+                                    alt={`Thumbnail ${index + 1}`}
+                                    onClick={() => setSelectedImage(image)}
+                                    style={{
+                                        width: "60px",
+                                        height: "60px",
+                                        objectFit: "cover",
+                                        borderRadius: "4px",
+                                        border: image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
+                                        cursor: "pointer",
+                                        boxShadow: image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
+                                    }}
+                                    className="thumbnail"
+                                />
+                            ))}
                         </div>
                     </div>
                     <div className="col-7 product-info">
@@ -163,9 +174,6 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
                             {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-6")}
                             {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-6")}
                             {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-6")}
-                            <div className="fw-bold text-secondary mb-2 col-12" style={{ fontSize: 'medium' }}>
-                                {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
-                            </div>
                             {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6")}
                             {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6")}
                             {quantity && renderDetailquantity('Quantity', 'الكمية', quantity)}
@@ -192,7 +200,7 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
                                 </Link>
                                 <button
                                     className="btn btn-outline-danger"
-                                    onClick={() => alert(language === "ar" ? "تمت الإضافة إلى قائمة الرغبات!" : "Added to wish list!")}
+                                    onClick={() => handleAddTowishlist(product.id, "p")}
                                 >
                                     {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
                                 </button>
@@ -218,7 +226,7 @@ function CartModel({ open, onClose, product, language, quantity, setQuantity, in
     );
 }
 
-CartModel.propTypes = {
+CartProductModel.propTypes = {
     open: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     product: PropTypes.shape({
@@ -230,7 +238,7 @@ CartModel.propTypes = {
         selling_price: PropTypes.string.isRequired,
         sale_price_after_discount: PropTypes.string.isRequired,
         percentage_discount: PropTypes.string.isRequired,
-        stock: PropTypes.string.isRequired,
+        stock: PropTypes.number.isRequired,
         rate: PropTypes.number,
         image: PropTypes.string,
         images: PropTypes.arrayOf(PropTypes.string),
@@ -286,4 +294,4 @@ CartModel.propTypes = {
     language: PropTypes.string.isRequired,
 };
 
-export default CartModel;
+export default CartProductModel;

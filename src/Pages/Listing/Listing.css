@@ -6,7 +6,11 @@
     scrollbar-color: #262626 #f1f1f100;
 
 }
-
+@media (min-width: 768px) {
+    .fs-large {
+        font-size: large !important;
+    }
+}
 .tables-list-filter::-webkit-scrollbar {
     width: 8px;
 

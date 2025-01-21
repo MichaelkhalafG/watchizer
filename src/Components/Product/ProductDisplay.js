@@ -12,7 +12,7 @@ import axios from "axios";
 
 function ProductDisplay() {
     const { id } = useParams();
-    const { language, users, products, user_id, fetchCart } = useContext(MyContext);
+    const { language, users, products, user_id, windowWidth, handleAddTowishlist, fetchCart } = useContext(MyContext);
     const [realetedProducts, setRelatedProducts] = useState();
     const [selectedDialColor, setSelectedDialColor] = useState(null);
     const [selectedBandColor, setSelectedBandColor] = useState(null);
@@ -32,9 +32,9 @@ function ProductDisplay() {
 
     const renderDetail = (labelEn, labelAr, value, fs, col) => (
         <div className={`${col} mb-2`}>
-            <p className="fw-bold text-secondary" style={{ fontSize: fs }}>
+            <p className={`fw-bold text-secondary ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: fs }}>
                 <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
-                    {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
+                    {language === "ar" ? `${labelAr}:` : `${labelEn}:`}
                 </span>
                 {value || "-"}
             </p>
@@ -85,11 +85,11 @@ function ProductDisplay() {
 
     const renderColorDetail = (labelEn, labelAr, colors, fs, col, setColor) => (
         <div className={`${col} mb-2`}>
-            <div className="fw-bold text-secondary" style={{ fontSize: fs }}>
+            <div className={`fw-bold text-secondary ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: fs }}>
                 <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
                     {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
                 </span>
-                <div className="d-flex gap-2">
+                <div className={`d-flex gap-2 ${language === 'ar' ? "justify-content-end" : ""}`}>
                     {colors && colors.map((color, index) => (
                         <div
                             key={index}
@@ -196,15 +196,15 @@ function ProductDisplay() {
 
     return (
         <div className="container">
-            <div className="row border-bottom border-2 ps-1 p-4 pb-2 product-header mb-3">
-                <div className="col-12">
+            <div className={`row ${windowWidth >= 768 ? 'border-bottom' : ""}  border-2 ps-1 p-4 pb-2 product-header mb-3`}>
+                <div className={`col-12 ${language === 'ar' ? "text-end" : "text-start"}`}>
                     <h3 className="fw-bold">{product?.product_title || "-"}</h3>
                 </div>
                 <div className="col-4">
-                    {renderDetail("Brand", "البراند", product?.brand, "Medium", "col-12")}
+                    {renderDetail("Brand", "البراند", product?.brand, windowWidth >= 768 ? "Medium" : "small", "col-12")}
                 </div>
                 <div className="col-4">
-                    {renderDetail("Type", "النوع", product?.category_type, "Medium", "col-12")}
+                    {renderDetail("Type", "النوع", product?.category_type, windowWidth >= 768 ? "Medium" : "small", "col-12")}
                 </div>
                 <div className="col-4">
                     <Rating
@@ -276,38 +276,38 @@ function ProductDisplay() {
                 </div>
 
                 <div className="col-md-8 product-info">
-                    <h5 className="mb-3">{language === "ar" ? "التفاصيل" : "Details"}</h5>
-                    <p className="text-secondary fw-bold mb-3" style={{ fontSize: "large" }}>
+                    <h5 className={`mb-3 ${language === 'ar' ? "text-end" : "text-start"}`}>{language === "ar" ? "التفاصيل" : "Details"}</h5>
+                    <p className={`text-secondary fw-bold mb-3 ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: "large" }}>
                         {product?.long_description || (language === "ar" ? "لا يوجد وصف" : "No description available")}
                     </p>
                     <div className="row">
-                        {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-4")}
-                        {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-4")}
-                        {product?.band_closure && renderDetail("Band Closure", "إغلاق السوار", product.band_closure, "small", "col-4")}
-                        {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-4")}
-                        {product?.case_shape && renderDetail("Case Shape", "شكل العلبة", product.case_shape, "small", "col-4")}
-                        {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-4")}
-                        {product?.watch_movement && renderDetail("Watch Movement", "حركة الساعة", product.watch_movement, "small", "col-4")}
-                        {product?.water_resistance && renderDetail("Water Resistance", "مقاومة الماء", `${product.water_resistance} ${product.water_resistance_size_type}`, "small", "col-4")}
-                        {product?.case_thickness && renderDetail("Case Size", "حجم العلبة", `${product.case_thickness} ${product.case_size_type}`, "small", "col-4")}
-                        {product?.band_length && renderDetail("Band Length", "طول السوار", `${product.band_length} ${product.band_size_type}`, "small", "col-4")}
-                        {product?.band_width && renderDetail("Band Width", "عرض السوار", `${product.band_width} ${product.band_width_size_type}`, "small", "col-4")}
-                        {product?.case_thickness && renderDetail("Case Thickness", "سمك العلبة", `${product.case_thickness} ${product.case_thickness_size_type}`, "small", "col-4")}
-                        {product?.watch_height && renderDetail("Watch Height", "ارتفاع الساعة", `${product.watch_height} ${product.watch_height_size_type}`, "small", "col-4")}
-                        {product?.watch_width && renderDetail("Watch Width", "عرض الساعة", `${product.watch_width} ${product.watch_width_size_type}`, "small", "col-4")}
-                        {product?.watch_length && renderDetail("Watch Length", "طول الساعة", `${product.watch_length} ${product.watch_length_size_type}`, "small", "col-4")}
-                        {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-4")}
-                        {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-4")}
-                        {product?.country && renderDetail("Country of Origin", "بلد الصنع", product.country, "small", "col-4")}
-                        {product?.stone && renderDetail("Stone", "الحجر", product.stone, "small", "col-4")}
-                        {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-4")}
-                        {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-4")}
-                        <div className="fw-bold text-secondary col-12" style={{ fontSize: 'medium' }}>
+                        {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-md-4 col-6")}
+                        {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-md-4 col-6")}
+                        {product?.band_closure && renderDetail("Band Closure", "إغلاق السوار", product.band_closure, "small", "col-md-4 col-6")}
+                        {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-md-4 col-6")}
+                        {product?.case_shape && renderDetail("Case Shape", "شكل العلبة", product.case_shape, "small", "col-md-4 col-6")}
+                        {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-md-4 col-6")}
+                        {product?.watch_movement && renderDetail("Watch Movement", "حركة الساعة", product.watch_movement, "small", "col-md-4 col-6")}
+                        {product?.water_resistance && renderDetail("Water Resistance", "مقاومة الماء", `${product.water_resistance} ${product.water_resistance_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.case_thickness && renderDetail("Case Size", "حجم العلبة", `${product.case_thickness} ${product.case_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.band_length && renderDetail("Band Length", "طول السوار", `${product.band_length} ${product.band_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.band_width && renderDetail("Band Width", "عرض السوار", `${product.band_width} ${product.band_width_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.case_thickness && renderDetail("Case Thickness", "سمك العلبة", `${product.case_thickness} ${product.case_thickness_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.watch_height && renderDetail("Watch Height", "ارتفاع الساعة", `${product.watch_height} ${product.watch_height_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.watch_width && renderDetail("Watch Width", "عرض الساعة", `${product.watch_width} ${product.watch_width_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.watch_length && renderDetail("Watch Length", "طول الساعة", `${product.watch_length} ${product.watch_length_size_type}`, "small", "col-md-4 col-6")}
+                        {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-md-4 col-6")}
+                        {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-md-4 col-6")}
+                        {product?.country && renderDetail("Country of Origin", "بلد الصنع", product.country, "small", "col-md-4 col-6")}
+                        {product?.stone && renderDetail("Stone", "الحجر", product.stone, "small", "col-md-4 col-6")}
+                        {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-md-4 col-6")}
+                        {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-md-4 col-6")}
+                        <div className={`fw-bold text-secondary mb-1 col-12 ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: 'medium' }}>
                             {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
                         </div>
-                        {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-4", setSelectedDialColor)}
-                        {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-4", setSelectedBandColor)}
-                        <div className="quantity-control col-6 d-flex align-items-center">
+                        {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-md-4 col-6", setSelectedDialColor)}
+                        {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor)}
+                        <div className={`quantity-control col-6 d-flex align-items-center ${language === 'ar' ? "justify-content-end" : ""}`}>
                             <Button
                                 variant="outlined"
                                 size="small"
@@ -338,7 +338,7 @@ function ProductDisplay() {
                                 +
                             </Button>
                         </div>
-                        <div className="col-6 d-flex align-items-center">
+                        <div className={`col-6 d-flex align-items-center ${language === 'ar' ? "justify-content-end" : ""}`}>
                             {stock && parseInt(stock) > 0 ? (
                                 <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>
                                     {language === 'ar' ? 'متوفر' : 'In Stock'}
@@ -351,9 +351,9 @@ function ProductDisplay() {
                         </div>
                     </div>
 
-                    <div className="mt-3 action-buttons">
+                    <div className="mt-3 col-12 d-flex justify-content-between action-buttons">
                         <button
-                            className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
+                            className={`col-6 btn btn-dark`}
                             onClick={handleAddToCart}
                             disabled={stock <= 0}
                         >
@@ -361,8 +361,8 @@ function ProductDisplay() {
                         </button>
 
                         <button
-                            className="btn btn-outline-danger"
-                            onClick={() => alert(language === "ar" ? "تمت الإضافة إلى قائمة الرغبات!" : "Added to wish list!")}
+                            className="btn btn-outline-danger col-5"
+                            onClick={() => handleAddTowishlist(product.id, "p")}
                         >
                             {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
                         </button>
@@ -371,17 +371,17 @@ function ProductDisplay() {
             </div>
 
             <div className="ratings-section row align-items-center rounded-5 border border-2 p-5 mt-4">
-                <Typography variant="h5" className="col-10">{language === "ar" ? "التقييمات" : "Ratings"}</Typography>
+                <Typography variant="h5" className="col-md-10 col-6">{language === "ar" ? "التقييمات" : "Ratings"}</Typography>
                 <button
                     onClick={handleRatingClick}
-                    className={`mt-3 col-2 btn ${ratingsOpen ? 'btn-danger' : 'btn-dark'} `}
+                    className={`mt-3 col-md-2 col-6 btn ${ratingsOpen ? 'btn-danger' : 'btn-dark'} `}
                 >
                     {ratingsOpen ? language === "ar" ? "اخفاء التقييمات" : "Close Ratings" : language === "ar" ? "عرض التقييمات" : "View Ratings"}
                 </button>
                 <div className={`rating-list col-12 ${ratingsOpen ? "" : "d-none"} row mt-3`}>
                     {ratings.length > 0 ? (
                         ratings.map((rating) => (
-                            <div key={rating.id} className="rating-item col-6 mb-3">
+                            <div key={rating.id} className="rating-item col-md-6 col-12 mb-3">
                                 <Rating name="read-only" value={rating.rating} readOnly size="small" />
                                 <p>{rating.comment}</p>
                                 <small className="me-3">by : {users.find(u => u.id === rating.user_id)?.name}</small>
@@ -443,7 +443,7 @@ ProductDisplay.propTypes = {
             selling_price: PropTypes.string.isRequired,
             sale_price_after_discount: PropTypes.string.isRequired,
             percentage_discount: PropTypes.string.isRequired,
-            stock: PropTypes.string.isRequired,
+            stock: PropTypes.number.isRequired,
             rate: PropTypes.number,
             image: PropTypes.string,
             images: PropTypes.arrayOf(PropTypes.string),

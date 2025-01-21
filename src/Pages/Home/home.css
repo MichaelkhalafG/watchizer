@@ -6,6 +6,11 @@
     overflow: hidden;
     border-radius: 10px;
 }
+@media (max-width: 768px) {
+    .home-slider .slick-slider {
+        height: 20vh !important;
+    }
+}
 .home-slider .slick-slider .slick-arrow {
     position: absolute !important;
     top: 50% !important;

@@ -52,7 +52,7 @@ function PrevArrow({ onClick }) {
 }
 
 function ProductSlider({ text, products, to, moreid }) {
-    const { language, setgradesfilters } = useContext(MyContext);
+    const { language, setgradesfilters, windowWidth, handleAddTowishlist } = useContext(MyContext);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const filteredProducts = products.filter((product) => product.active === 1);
@@ -79,24 +79,22 @@ function ProductSlider({ text, products, to, moreid }) {
         rtl: language === 'ar',
         responsive: [
             { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 2 } },
-            { breakpoint: 600, settings: { slidesToShow: 2, slidesToScroll: 1 } },
-            { breakpoint: 480, settings: { slidesToShow: 1, slidesToScroll: 1 } },
+            { breakpoint: 768, settings: { slidesToShow: 2, slidesToScroll: 1 } },
+            { breakpoint: 480, settings: { slidesToShow: 2, slidesToScroll: 1 } },
         ],
     };
-
     return (
         <>
-
-            <div className="row ps-3 info">
-                <div className="col-10">
+            <div className="col-12 d-flex px-3 info">
+                <div className="col-md-10 col-8">
                     <h4 className="color-most-used fw-bold">
                         {language === 'ar' ? text.title.ar : text.title.en}
                     </h4>
-                    <p className="text-secondary">
+                    <p className="text-secondary fs-large" style={{ fontSize: "small" }}>
                         {language === 'ar' ? text.description.ar : text.description.en}
                     </p>
                 </div>
-                <div className="col-2">
+                <div className="col-md-2 col-4">
                     <Link to={to}>
                         <Button className="color-most-used rounded-4 px-3 border border-1"
                             onClick={() =>
@@ -121,13 +119,26 @@ function ProductSlider({ text, products, to, moreid }) {
                         <div key={product.id} className="p-2" style={{ height: '100%' }}>
                             <div className="card product-card border-0 rounded-3 shadow-sm d-flex flex-column position-relative">
                                 <div className="action-menu position-absolute">
+                                    {windowWidth >= 768 ?
+                                        <button
+                                            className="btn btn-dark rounded-circle"
+                                            onClick={() => handleProductClick(product)}
+                                        >
+                                            <SlSizeFullscreen />
+                                        </button>
+                                        :
+                                        <Link
+                                            to={`/product/${product.id}`}
+                                            className="btn btn-dark rounded-circle"
+                                        >
+                                            <SlSizeFullscreen />
+                                        </Link>
+                                    }
+
                                     <button
-                                        className="btn btn-dark rounded-circle"
-                                        onClick={() => handleProductClick(product)}
+                                        className="btn mt-2 btn-danger rounded-circle"
+                                        onClick={() => handleAddTowishlist(product.id, "p")}
                                     >
-                                        <SlSizeFullscreen />
-                                    </button>
-                                    <button className="btn mt-2 btn-danger rounded-circle">
                                         <FaRegHeart />
                                     </button>
                                 </div>
@@ -142,7 +153,7 @@ function ProductSlider({ text, products, to, moreid }) {
                                 </Link>
 
                                 <div className="card-body d-flex flex-column justify-content-between p-3">
-                                    <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fw-bold mb-2`}>{product.product_title}</h6>
+                                    <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>{product.product_title}</h6>
                                     <p className={`card-text ${language === 'ar' ? 'text-end' : ''}  text-secondary mb-3`} style={{ fontSize: '0.9rem' }}>
                                         {product.short_description.length > 100
                                             ? `${product.short_description.slice(0, 100)}...`
@@ -150,23 +161,23 @@ function ProductSlider({ text, products, to, moreid }) {
                                     </p>
 
                                     <div className="d-flex justify-content-center align-items-center mb-2">
-                                        <span className="color-most-used fw-bold me-2" style={{ fontSize: '1.1rem' }}>
+                                        <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'small' }}>
                                             {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                         </span>
-                                        <span className="text-muted text-decoration-line-through" style={{ fontSize: '0.9rem' }}>
+                                        <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'small' }}>
                                             {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                         </span>
                                     </div>
 
-                                    <div className="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-success' : 'bg-danger'}`}>
+                                    <div className="d-md-flex  justify-content-between align-items-center">
+                                        <div className='col-md-6 col-12 p-1'>
+                                            <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-success' : 'bg-danger'} col-12`}>
                                                 {language === 'ar' ? (parseInt(product.stock) > 0 ? 'متوفر' : 'غير متوفر') : (parseInt(product.stock) > 0 ? 'In Stock' : 'Out of Stock')}
                                             </span>
                                         </div>
-                                        <div className="d-flex align-items-center">
-                                            <Rating name="read-only" value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
-                                            <span className="ms-2">({Math.round(product.rating === null ? 5 : product.rating)})</span>
+                                        <div className="d-flex col-md-6 p-1 justify-content-center col-12 align-items-center">
+                                            <Rating name="read-only" className={`${windowWidth <= 768 ? "col-12" : ""}`} value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
+                                            <span className={` ms-2 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.rating === null ? 5 : product.rating)})</span>
                                         </div>
                                     </div>
 
@@ -216,7 +227,7 @@ ProductSlider.propTypes = {
             selling_price: PropTypes.string.isRequired,
             sale_price_after_discount: PropTypes.string.isRequired,
             percentage_discount: PropTypes.string.isRequired,
-            stock: PropTypes.string.isRequired,
+            stock: PropTypes.number.isRequired,
             rate: PropTypes.number,
             image: PropTypes.string,
             images: PropTypes.arrayOf(PropTypes.string),

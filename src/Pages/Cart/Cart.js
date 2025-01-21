@@ -1,10 +1,11 @@
 import { useState, useContext } from "react";
 import { MyContext } from "../../App";
 import { Button, Rating, MenuItem, Select, FormControl } from "@mui/material";
-import CartModel from "./CartModel";
+import CartProductModel from "./CartProductModel";
+import CartOfferModel from "./CartOfferModel";
 import { FaEye } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
-import emptyCart from "../../assets/images/emptyCart.webp";
+import emptyCart from "../../assets/images/emptyCart.svg";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
@@ -102,127 +103,130 @@ function Cart() {
                                         </h6>
                                     ))}
                                 </div>
-                                {cart.map((item, index) => (
-                                    <div key={index} className="row align-items-center border-bottom border-1 rounded-4 bg-most-used-10 py-2">
-                                        <div className="col-4 d-flex align-items-center">
-                                            {item.product_image && (
-                                                <img src={item.product_image} alt={item.product_id} loading="lazy" className="col-3" />
-                                            )}
-                                            {item.offer_image && (
-                                                <img src={item.offer_image} alt={item.offer_id} loading="lazy" className="col-3" />
-                                            )}
-                                            <div className="col-9">
-                                                <h6 className="color-most-used fw-bold">
-                                                    {item.product_title || item.offer_title}
-                                                </h6>
-                                                <Rating
-                                                    name="read-only"
-                                                    value={item.product_rating || item.offer_rating || 5}
+                                {cart.map((item, index) => {
+                                    const isProduct = item.product_id && item.product_image;
+                                    const isOffer = item.offer_id && item.offer_image;
+                                    const title = item.product_id
+                                        ? item.product_title
+                                        : item.offer_title;
+
+                                    const piecePrice = parseFloat(item.piece_price).toFixed(2);
+                                    const totalPrice = (parseFloat(item.piece_price) * (item.quantity || 1)).toFixed(2);
+                                    return (
+                                        <div key={index} className="row align-items-center border-bottom border-1 rounded-4 bg-most-used-10 py-2">
+                                            <div className="col-4 d-flex align-items-center">
+                                                {isProduct && <img src={item.product_image} alt={item.product_id} loading="lazy" className="col-3" />}
+                                                {isOffer && <img src={item.offer_image} alt={item.offer_id} loading="lazy" className="col-3" />}
+                                                <div className="col-9">
+                                                    <h6 className="color-most-used fw-bold">{title}</h6>
+                                                    <Rating
+                                                        name="read-only"
+                                                        value={parseInt(item.product_rating) || parseInt(item.offer_rating) || 5}
+                                                        size="small"
+                                                        readOnly
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="col-2">
+                                                <Button
+                                                    variant="outlined"
                                                     size="small"
+                                                    onClick={() => handleQuantityChange(index, -1)}
+                                                    disabled={(item.quantity || 1) <= 1}
+                                                    sx={{ minWidth: '30px', padding: '5px' }}
+                                                >
+                                                    -
+                                                </Button>
+                                                <input
+                                                    type="text"
+                                                    value={item.quantity || 1}
                                                     readOnly
+                                                    style={{
+                                                        width: '40px',
+                                                        textAlign: 'center',
+                                                        margin: '0 10px',
+                                                        border: '1px solid #ddd',
+                                                        borderRadius: '4px',
+                                                    }}
                                                 />
+                                                <Button
+                                                    variant="outlined"
+                                                    size="small"
+                                                    onClick={() => handleQuantityChange(index, 1)}
+                                                    sx={{ minWidth: '30px', padding: '5px' }}
+                                                >
+                                                    +
+                                                </Button>
                                             </div>
-                                        </div>
-                                        <div className="col-2">
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                onClick={() => handleQuantityChange(index, -1)}
-                                                disabled={(item.quantity || 1) <= 1}
-                                                sx={{ minWidth: '30px', padding: '5px' }}
-                                            >
-                                                -
-                                            </Button>
-                                            <input
-                                                type="text"
-                                                value={item.quantity || 1}
-                                                readOnly
-                                                style={{
-                                                    width: '40px',
-                                                    textAlign: 'center',
-                                                    margin: '0 10px',
-                                                    border: '1px solid #ddd',
-                                                    borderRadius: '4px',
-                                                }}
-                                            />
-                                            <Button
-                                                variant="outlined"
-                                                size="small"
-                                                onClick={() => handleQuantityChange(index, 1)}
-                                                sx={{ minWidth: '30px', padding: '5px' }}
-                                            >
-                                                +
-                                            </Button>
-                                        </div>
-                                        <div className="col-1 px-3">
-                                            <div
-                                                style={{
-                                                    backgroundColor: item.color_band || "#f0f0f0",
-                                                    width: '100%',
-                                                    height: '30px',
-                                                    borderRadius: '4px',
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    border: item.color_band ? 'none' : '1px solid #ddd'
-                                                }}
-                                            >
-                                                {!item.color_band && <span style={{ fontSize: '12px', color: '#666' }}>
-                                                    {language === 'ar' ? 'لا لون' : 'No Color'}
-                                                </span>}
+                                            <div className="col-1 px-3">
+                                                <div
+                                                    style={{
+                                                        backgroundColor: item.color_band || "#f0f0f0",
+                                                        width: '100%',
+                                                        height: '30px',
+                                                        borderRadius: '4px',
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        border: item.color_band ? 'none' : '1px solid #ddd'
+                                                    }}
+                                                >
+                                                    {!item.color_band && <span style={{ fontSize: '12px', color: '#666' }}>
+                                                        {language === 'ar' ? 'لا لون' : 'No Color'}
+                                                    </span>}
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div className="col-1 px-3">
+                                                <div
+                                                    style={{
+                                                        backgroundColor: item.color_dial || "#f0f0f0",
+                                                        width: '100%',
+                                                        height: '30px',
+                                                        borderRadius: '4px',
+                                                        display: 'flex',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        border: item.color_dial ? 'none' : '1px solid #ddd'
+                                                    }}
+                                                >
+                                                    {!item.color_dial && <span style={{ fontSize: '12px', color: '#666' }}>
+                                                        {language === 'ar' ? 'لا لون' : 'No Color'}
+                                                    </span>}
+                                                </div>
+                                            </div>
 
-                                        <div className="col-1 px-3">
-                                            <div
-                                                style={{
-                                                    backgroundColor: item.color_dial || "#f0f0f0",
-                                                    width: '100%',
-                                                    height: '30px',
-                                                    borderRadius: '4px',
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center',
-                                                    border: item.color_dial ? 'none' : '1px solid #ddd'
-                                                }}
-                                            >
-                                                {!item.color_dial && <span style={{ fontSize: '12px', color: '#666' }}>
-                                                    {language === 'ar' ? 'لا لون' : 'No Color'}
-                                                </span>}
+                                            <h6 className="color-most-used col-1">{piecePrice}</h6>
+                                            <h6 className="color-most-used col-1">{totalPrice}</h6>
+                                            <div className="col-2 text-center">
+                                                <Button
+                                                    className="rounded-circle color-most-used mx-2"
+                                                    sx={{
+                                                        width: '40px',
+                                                        height: '40px',
+                                                        minWidth: '0',
+                                                        padding: 0,
+                                                    }}
+                                                    onClick={() => handleProductClick(item)}
+                                                >
+                                                    <FaEye size={24} />
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    className="rounded-circle bg-danger text-light p-2"
+                                                    sx={{
+                                                        width: '40px',
+                                                        height: '40px',
+                                                        minWidth: '0',
+                                                        padding: 0,
+                                                    }}
+                                                    onClick={() => handleRemoveItem(item.id)}
+                                                >
+                                                    <CiCircleRemove size={24} />
+                                                </Button>
                                             </div>
                                         </div>
-
-                                        <h6 className="color-most-used col-1">{parseFloat(item.piece_price).toFixed(2)}</h6>
-                                        <h6 className="color-most-used col-1">{(parseFloat(item.piece_price) * item.quantity).toFixed(2)}</h6>
-                                        <div className="col-2 text-center">
-                                            <Button
-                                                className="rounded-circle color-most-used mx-2"
-                                                sx={{
-                                                    width: '40px',
-                                                    height: '40px',
-                                                    minWidth: '0',
-                                                    padding: 0,
-                                                }}
-                                                onClick={() => handleProductClick(item)}
-                                            >
-                                                <FaEye size={24} />
-                                            </Button>
-                                            <Button
-                                                variant="contained"
-                                                className="rounded-circle bg-danger text-light  p-2"
-                                                sx={{
-                                                    width: '40px',
-                                                    height: '40px',
-                                                    minWidth: '0',
-                                                    padding: 0,
-                                                }}
-                                                onClick={() => handleRemoveItem(item.id)}
-                                            >
-                                                <CiCircleRemove size={24} />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                             <div className="col-3 p-3 pt-0">
                                 <div className="row align-items-center px-3 border border-1 rounded-3">
@@ -296,15 +300,27 @@ function Cart() {
                             </div>
                         </div>
                         {selectedProduct && (
-                            <CartModel
-                                open={isModalOpen}
-                                onClose={handleModalClose}
-                                product={selectedProduct}
-                                language={language}
-                                quantity={selectedItem.quantity}
-                                setQuantity={handleQuantityChange}
-                                index={cart.findIndex((item) => item.id === selectedProduct.id)}
-                            />
+                            selectedItem.product_id !== null ? (
+                                <CartProductModel
+                                    open={isModalOpen}
+                                    onClose={handleModalClose}
+                                    product={selectedProduct}
+                                    language={language}
+                                    quantity={selectedItem.quantity}
+                                    setQuantity={handleQuantityChange}
+                                    index={cart.findIndex((item) => item.id === selectedItem.id)}
+                                />
+                            ) : (
+                                <CartOfferModel
+                                    open={isModalOpen}
+                                    onClose={handleModalClose}
+                                    product={selectedProduct}
+                                    language={language}
+                                    quantity={selectedItem.quantity}
+                                    setQuantity={handleQuantityChange}
+                                    index={cart.findIndex((item) => item.id === selectedItem.id)}
+                                />
+                            )
                         )}
                     </>
                 ) : (

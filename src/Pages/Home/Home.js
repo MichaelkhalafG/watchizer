@@ -5,7 +5,7 @@ import ProductSlider from '../../Components/Product/ProductSlider';
 import { MyContext } from '../../App';
 
 function Home() {
-    const { products, tables, language, setgradesfilters, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
+    const { products, tables, language, setgradesfilters, windowWidth, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
     const [grades, setGrades] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState({});
     const [gradeText, setGradeText] = useState({});
@@ -43,16 +43,16 @@ function Home() {
 
     return (
         <div className="home px-md-5 container-fluid">
-            <div className="home-slider py-5">
+            <div className={`home-slider ${windowWidth > 768 ? 'py-5' : "pb-5"} `}>
                 <HomeSlider banners={homeBanners} />
             </div>
             <div className="row position-relative">
-                <div className="col-md-3 side-banners-container" style={{ overflow: "hidden" }}>
+                <div className="col-md-3 d-md-block d-none side-banners-container" style={{ overflow: "hidden" }}>
                     {sideBanners.map((banner, index) => (
                         <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-3" />
                     ))}
                 </div>
-                <div className="col-md-9 lato-regular home-proud">
+                <div className="col-md-9 col-12 lato-regular home-proud">
                     {grades.map(grade => {
                         const gradeProducts = filteredProducts[grade.id] ? filteredProducts[grade.id].slice(0, 12) : [];
                         const gradeLocalization = gradeText[grade.id];

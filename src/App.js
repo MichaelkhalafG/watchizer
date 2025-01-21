@@ -10,17 +10,26 @@ import ProductDisplay from './Components/Product/ProductDisplay';
 import Listing from './Pages/Listing/Listing';
 import ListingGrades from './Pages/Listing/ListingGrades';
 import Cart from './Pages/Cart/Cart';
+import PhoneCart from './Pages/Cart/PhoneCart';
 import Checkout from './Pages/Checkout/Checkout';
 import Listingoffers from './Pages/Listing/Listingoffers';
 import ScrollToTop from './Components/ScrollToTop/ScrollToTop';
 import ProfileSpeed from './Components/Header/Nav/ProfileSpeed';
-import EditProfile from './Pages/EditProfile/EditProfile'
+import ProfileSpeedPhone from './Components/Header/Nav/ProfileSpeedPhone';
+import EditProfile from './Pages/EditProfile/EditProfile';
+import PhoneWishList from './Pages/WishList/PhoneWishList';
+import WishList from './Pages/WishList/WishList';
+import OrderList from './Pages/OrderList/OrderList';
+import OfferDisplay from './Components/Product/OfferDisplay';
+import PhoneNavBar from './Components/Header/PhoneNavBar/PhoneNavBar';
+import PhoneLogo from './Components/Header/Nav/PhoneLogo';
 
 
 const MyContext = createContext();
 
 function App() {
   const [language, setLanguage] = useState('en');
+  const [windowWidth, setwindowWidth] = useState()
   const [productsEn, setProductsEn] = useState([]);
   const [productsAr, setProductsAr] = useState([]);
   const [ratings, setRatings] = useState([]);
@@ -31,8 +40,9 @@ function App() {
   const [homeBanners, setHomeBanners] = useState([]);
   const [productsCount, setProductsCount] = useState(0);
   const [cart, setCart] = useState([]);
+  const [wishList, setwishList] = useState([]);
   const [offers, setOffers] = useState([]);
-  const [user_id, setuser_id] = useState(4);
+  const [user_id, setuser_id] = useState(2);
   const [users, setusers] = useState([]);
   const [total_cart_price, settotal_cart_price] = useState();
   const [shippingData, setShippingData] = useState([]);
@@ -121,7 +131,7 @@ function App() {
           'https://dash.watchizereg.com/api/all_closure_type',
           'https://dash.watchizereg.com/api/all_movement_type',
         ];
-
+        // Fetch the tables data
         const tableResponses = await Promise.all(
           endpoints.map((url) =>
             axios.get(url, {
@@ -146,6 +156,7 @@ function App() {
 
         setTables(tableData);
 
+        // Fetch products, ratings, and images
         const [productResponse, ratingResponse, imageResponse] = await Promise.all([
           axios.get('https://dash.watchizereg.com/api/all_product', {
             headers: { 'Api-Code': 'NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0' },
@@ -163,21 +174,21 @@ function App() {
         setRatings(ratings);
         const images = imageResponse.data;
 
+        // Helper functions
         const getTranslatedName = (translations, locale, fallback) => {
           return translations.find((t) => t.locale === locale)?.[fallback] || 'Unknown';
         };
 
-
-        function getProductRating(product, ratings) {
+        const getProductRating = (product, ratings) => {
           const productRatings = ratings.filter((r) => r.product_id === product.id);
           if (productRatings.length > 0) {
             const totalRating = productRatings.reduce((acc, r) => acc + r.rating, 0);
             return totalRating / productRatings.length;
           }
           return null;
-        }
+        };
 
-        function getcolors(product, name) {
+        const getcolors = (product, name) => {
           const colors = product[name]?.map((color) => {
             const item = {
               color_id: color.id,
@@ -188,8 +199,7 @@ function App() {
             return item;
           });
           return colors || [];
-        }
-
+        };
 
         const transformProductData = (locale) =>
           rawProducts.map((product) => ({
@@ -334,6 +344,7 @@ function App() {
 
     fetchTablesAndProducts();
   }, []);
+
   useEffect(() => {
     const fetchBanners = async () => {
       try {
@@ -370,27 +381,34 @@ function App() {
           headers: { "Api-Code": apiCode },
         });
 
-        const offerData = (response.data || []).map((offer) => ({
-          id: offer.id,
-          main_product_id: offer.main_product_id,
-          category_type_id: offer.category_type_id,
-          gift_product_ids: offer.gift_product_ids,
-          price: parseFloat(offer.price),
-          offer_name: "offer 1",
-          image: `https://dash.watchizereg.com/Uploads_Images/Offer/${offer.image}`,
-          average_rate: parseFloat(offer.average_rate),
-          created_at: offer.created_at,
-          updated_at: offer.updated_at,
-          offer_rating: offer.offer_rating.map((rating) => ({
-            id: rating.id,
-            user_id: rating.user_id,
-            offer_id: rating.offer_id,
-            rating: parseInt(rating.rating),
-            comment: rating.comment,
-            created_at: rating.created_at,
-            updated_at: rating.updated_at,
-          })),
-        }));
+        const offerData = (response.data || []).map((offer) => {
+          const offerNameen = offer.translations.find((translation) => translation.locale === "en")?.offer_name || "Unnamed Offer";
+          const offerNamear = offer.translations.find((translation) => translation.locale === "ar")?.offer_name || "Unnamed Offer";
+
+          return {
+            id: offer.id,
+            main_product_id: offer.main_product_id,
+            category_type_id: offer.category_type_id,
+            gift_product_ids: offer.gift_product_ids.map((id) => parseInt(id)),
+            price: parseFloat(offer.price),
+            stock: offer.stock,
+            image: `https://dash.watchizereg.com/Uploads_Images/Offer/${offer.image}`,
+            average_rate: offer.average_rate ? parseFloat(offer.average_rate) : null,
+            created_at: offer.created_at,
+            updated_at: offer.updated_at,
+            offer_name_en: offerNameen,
+            offer_name_ar: offerNamear,
+            offer_rating: offer.offer_rating.map((rating) => ({
+              id: rating.id,
+              user_id: rating.user_id,
+              offer_id: rating.offer_id,
+              rating: parseInt(rating.rating),
+              comment: rating.comment,
+              created_at: rating.created_at,
+              updated_at: rating.updated_at,
+            })),
+          };
+        });
 
         setOffers(offerData);
       } catch (error) {
@@ -426,7 +444,7 @@ function App() {
             product_rating: product?.average_rate || 0,
             offer_id: item.offer_id,
             offer_image: offer?.image || null,
-            offer_title: offer?.offer_name || "Unknown Offer",
+            offer_title: language === 'ar' ? offer?.offer_name_ar : offer?.offer_name_en || "Unknown Offer",
             offer_rating: offer?.average_rate || 0,
             quantity: item.quantity,
             piece_price: parseFloat(item.piece_price),
@@ -441,13 +459,66 @@ function App() {
     } catch (error) {
       console.error("Error fetching cart data:", error);
     }
-  }, [user_id, offers, products]);
+  }, [user_id, offers, products, language]);
+  const fetchWishList = useCallback(async () => {
+    try {
+      const response = await axios.get("https://dash.watchizereg.com/api/all_wishlist", {
+        headers: { "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0" }
+      });
+
+      const wishlistData = response.data.find(WishList => WishList.user_id === user_id);
+      if (wishlistData) {
+        const formattedWishListItems = wishlistData.wishlist_item.map(item => {
+          const product = products.find(p => p.id === item.product_id);
+          const offer = offers.find(o => o.id === item.offer_id);
+
+          return {
+            id: item.id,
+            product_id: item.product_id,
+            product_image: product?.image || null,
+            product_title: product?.product_title || "Unknown Product",
+            product_rating: product?.average_rate || 0,
+            offer_id: item.offer_id,
+            offer_image: offer?.image || null,
+            offer_title: language === 'ar' ? offer?.offer_name_ar : offer?.offer_name_en || "Unknown Offer",
+            offer_rating: offer?.average_rate || 0,
+            product_price: product?.sale_price_after_discount,
+            offer_price: offer?.price,
+          };
+        });
+
+        setwishList(formattedWishListItems);
+      }
+    } catch (error) {
+      console.error("Error fetching cart data:", error);
+    }
+  }, [user_id, offers, products, language]);
 
   useEffect(() => {
     fetchCart();
-  }, [user_id, offers, products, fetchCart]);
+    fetchWishList()
+  }, [user_id, offers, products, fetchCart, fetchWishList]);
 
+  const handleAddTowishlist = useCallback((id, type) => {
+    const payload = {
+      user_id: user_id,
+      ...(type === "p" ? { product_id: id } : { offer_id: id })
+    };
 
+    axios.post("https://dash.watchizereg.com/api/add_wishlist", payload, {
+      headers: {
+        "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+      }
+    })
+      .then(() => {
+        alert(language === "ar" ? "تمت الإضافة إلى المفضل!" : "Added to the Wish List!");
+        fetchWishList()
+      })
+      .catch((error) => {
+        console.error("Error adding to cart:", error);
+        alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى المفضل." : "An error occurred while adding to the Wish List.");
+      });
+  }, [fetchWishList, language, user_id]);
 
   const handleQuantityChange = useCallback((index, value) => {
     setCart((prevCart) => {
@@ -472,22 +543,33 @@ function App() {
     setProductsCount(cart.reduce((total, item) => total + (item.quantity || 0), 0));
     const calculateTotalCartPrice = () => {
       const subtotal = cart.reduce((total, item) => {
-        const piecePrice = parseFloat(item.piece_price || 0); // Default to 0 if undefined
-        const quantity = parseInt(item.quantity || 1, 10);    // Default to 1 if undefined
+        const piecePrice = parseFloat(item.piece_price || 0);
+        const quantity = parseInt(item.quantity || 1, 10);
         return total + piecePrice * quantity;
       }, 0);
-      const shippingCost = parseFloat(shipping || 0);         // Default to 0 if undefined
+      const shippingCost = parseFloat(shipping || 0);
       const totalPrice = subtotal + shippingCost;
 
-      settotal_cart_price(totalPrice.toFixed(2)); // Set formatted price with 2 decimal places
+      settotal_cart_price(totalPrice.toFixed(2));
     };
     calculateTotalCartPrice();
   }, [cart, shipping]);
 
+  function getWindowWidth() {
+    return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+  }
+  useEffect(() => {
+    setwindowWidth(getWindowWidth())
+  }, []);
+  window.addEventListener('resize', () => {
+    setwindowWidth(getWindowWidth())
+  });
 
   const values = useMemo(() => {
-    return { language, setLanguage, users, gradesfilters, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
-  }, [language, products, tables, users, gradesfilters, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+    return { language, setLanguage, users, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
+  }, [language, products, tables, users, gradesfilters, windowWidth, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+
+
 
   const userData = {
     id: 4,
@@ -503,8 +585,9 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <MyContext.Provider value={values}>
-        <Header />
-        <ProfileSpeed />
+        {windowWidth >= 768 ? <Header /> : <PhoneNavBar />}
+        {windowWidth >= 768 ? <ProfileSpeed /> : <ProfileSpeedPhone />}
+        {windowWidth >= 768 ? null : <PhoneLogo />}
         <Routes>
           <Route path="/" exact element={<Home />} />
           <Route path="/products/:id" element={<Listing />} />
@@ -512,7 +595,11 @@ function App() {
             path="/product/:id"
             element={<ProductDisplay />}
           />
-          <Route path="/cart" element={<Cart />} />
+          <Route
+            path="/offer/:id"
+            element={<OfferDisplay />}
+          />
+          <Route path="/cart" element={windowWidth >= 768 ? <Cart /> : <PhoneCart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/category/:name" element={<Listing />} />
           <Route path="/brand/:name" element={<Listing />} />
@@ -520,6 +607,8 @@ function App() {
           <Route path="/grade/:name" element={<ListingGrades />} />
           <Route path="/offers" element={<Listingoffers />} />
           <Route path="/edit-profile" element={<EditProfile userData={userData} />} />
+          <Route path="/wish-list" element={windowWidth >= 768 ? <WishList /> : <PhoneWishList />} />
+          <Route path="/order-list" element={<OrderList />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Footer />

@@ -1,11 +1,15 @@
-import React, { memo, useContext } from "react";
+import React, { memo, useContext, useState, useEffect } from "react";
 import Slider from "react-slick";
 import { MyContext } from "../../App";
 import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from "react-icons/io";
 
 function HomeSlider({ banners }) {
-    const { language } = useContext(MyContext);
-
+    const { language, windowWidth } = useContext(MyContext);
+    const [sliderheight, setsliderheight] = useState()
+    useEffect(() => {
+        const height = windowWidth >= 768 ? "375px" : "20vh"
+        setsliderheight(height)
+    }, [windowWidth]);
     function NextArrow(props) {
         const { onClick } = props;
         return (
@@ -26,7 +30,6 @@ function HomeSlider({ banners }) {
         );
     }
 
-    // Custom Left Arrow
     function PrevArrow(props) {
         const { onClick } = props;
         return (
@@ -62,7 +65,7 @@ function HomeSlider({ banners }) {
     };
 
     return (
-        <div style={{ position: "relative" }}>
+        <div className={`${windowWidth <= 768 ? 'pt-0' : ""}`} style={{ position: "relative" }}>
             <Slider {...settings}>
                 {banners.map((item, index) => (
                     <div key={index} className="col-12">
@@ -72,7 +75,7 @@ function HomeSlider({ banners }) {
                             loading="lazy"
                             style={{
                                 width: "100%",
-                                height: "375px",
+                                height: sliderheight,
                                 objectFit: "cover",
                             }}
                         />

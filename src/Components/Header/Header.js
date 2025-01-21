@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.webp';
 import LanguageDropdown from '../LanguageDropdown/LanguageDropdowen';
-import { FiUser } from 'react-icons/fi';
 import { IoBagOutline } from 'react-icons/io5';
 import './Header.css';
 import SearchBox from './SearchBox/SearchBox';

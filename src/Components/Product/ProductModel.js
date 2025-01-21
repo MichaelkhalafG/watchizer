@@ -10,7 +10,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function ProductModel({ open, onClose, product, language }) {
-    const { user_id, fetchCart } = useContext(MyContext)
+    const { user_id, fetchCart, handleAddTowishlist } = useContext(MyContext)
     const [selectedImage, setSelectedImage] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [selectedDialColor, setSelectedDialColor] = useState(null);
@@ -128,11 +128,13 @@ function ProductModel({ open, onClose, product, language }) {
                     boxShadow: 24,
                     p: 4,
                     borderRadius: '10px',
+                    overflow: "hidden"
                 }}
                 className={`p-5 ${language === 'ar' ? 'rtl' : 'ltr'}`}
                 style={{
                     position: 'relative',
                     direction: language === 'ar' ? 'rtl' : 'ltr',
+
                 }}
             >
                 <div className="row border-bottom border-2 product-header mb-3">
@@ -162,10 +164,11 @@ function ProductModel({ open, onClose, product, language }) {
                                         borderRadius: "8px",
                                         objectFit: "cover",
                                         maxHeight: "300px",
+
                                     }}
                                     zoomType="hover"
                                     zoomPreload={true}
-                                    zoomScale={2 || 1}
+                                    zoomScale={2}
                                 />
                             )}
                         </div>
@@ -289,7 +292,7 @@ function ProductModel({ open, onClose, product, language }) {
                             </Link>
                             <button
                                 className="btn btn-outline-danger"
-                                onClick={() => alert(language === "ar" ? "تمت الإضافة إلى قائمة الرغبات!" : "Added to wish list!")}
+                                onClick={() => handleAddTowishlist(product.id, "p")}
                             >
                                 {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
                             </button>
@@ -326,7 +329,7 @@ ProductModel.propTypes = {
         selling_price: PropTypes.string.isRequired,
         sale_price_after_discount: PropTypes.string.isRequired,
         percentage_discount: PropTypes.string.isRequired,
-        stock: PropTypes.string.isRequired,
+        stock: PropTypes.number.isRequired,
         rate: PropTypes.number,
         image: PropTypes.string,
         images: PropTypes.arrayOf(PropTypes.string),
@@ -356,7 +359,7 @@ ProductModel.propTypes = {
         band_material: PropTypes.string,
         watch_movement: PropTypes.string,
         water_resistance_size_type: PropTypes.string,
-        water_resistance: PropTypes.string,
+        water_resistance: PropTypes.number,
         case_size_type: PropTypes.string,
         case: PropTypes.string,
         band_size_type: PropTypes.string,
