@@ -6,7 +6,6 @@ import { AiOutlineHome } from "react-icons/ai";
 import { TbDeviceWatchQuestion } from "react-icons/tb";
 import { MdOutlineLocalOffer, MdOutlineWatch, MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { IoShirtOutline } from "react-icons/io5";
-import { BiSolidOffer } from "react-icons/bi";
 import { useContext, useState } from 'react';
 import { MyContext } from '../../../App';
 
@@ -58,14 +57,14 @@ function Nav() {
                         </div>
                     </div>
                     <div className='col-sm-9 d-flex align-items-center'>
-                        <ul className='list list-inline mb-0 col-12 d-flex dosis-regular ms-auto nav-ul' style={{ textTransform: "uppercase" }}>
-                            <li className='list-inline-item text-center'>
+                        <ul className='list list-inline mb-0 col-md-10 col-12 d-flex dosis-regular px-md-5 px-0 nav-ul' style={{ textTransform: "uppercase" }}>
+                            <li className='list-inline-item col-2 text-center'>
                                 <Link to={'/'} className='text-decoration-none color-most-used py-2 px-3'>
                                     <AiOutlineHome className='mx-2' style={{ fontSize: "20px" }} />
                                     {language === 'ar' ? 'الصفحة الرئيسية' : 'Home'}
                                 </Link>
                             </li>
-                            <li className='list-inline-item'>
+                            <li className=' col-2 list-inline-item'>
                                 <Link
                                     to={'/category/Watches'}
                                     className='text-decoration-none color-most-used py-2 px-3'
@@ -86,7 +85,7 @@ function Nav() {
                                     {language === 'ar' ? 'الساعات' : 'Watches'}
                                 </Link>
                             </li>
-                            <li className='list-inline-item'>
+                            <li className='col-2 list-inline-item'>
                                 <Link
                                     to={'/category/Fashion'}
                                     className='text-decoration-none color-most-used py-2 px-3'
@@ -107,7 +106,7 @@ function Nav() {
                                     {language === 'ar' ? 'الموضة' : 'Fashion'}
                                 </Link>
                             </li>
-                            <li className='list-inline-item'>
+                            <li className='col-2 list-inline-item'>
                                 <div className='text-decoration-none color-most-used a py-2 px-3'>
                                     <TbDeviceWatchQuestion className='mx-2' style={{ fontSize: "20px" }} />
                                     {language === 'ar' ? 'العلامات التجارية' : 'Brands'}
@@ -136,16 +135,10 @@ function Nav() {
                                     ))}
                                 </div>
                             </li>
-                            <li className='list-inline-item'>
+                            <li className='col-2 list-inline-item'>
                                 <Link to={'/offers'} className='text-decoration-none color-most-used py-2 px-3'>
                                     <MdOutlineLocalOffer className='mx-2' style={{ fontSize: "20px" }} />
                                     {language === 'ar' ? 'العروض' : 'Offers'}
-                                </Link>
-                            </li>
-                            <li className='list-inline-item'>
-                                <Link to={'/'} className='text-decoration-none color-most-used py-2 px-3'>
-                                    <BiSolidOffer className='mx-2' style={{ fontSize: "20px" }} />
-                                    {language === 'ar' ? 'التخفيضات' : 'Sales'}
                                 </Link>
                             </li>
                         </ul>

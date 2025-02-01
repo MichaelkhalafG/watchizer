@@ -49,36 +49,40 @@ function OfferModel({ open, onClose, product, language }) {
     );
 
     const handleAddToCart = () => {
-        const piecePrice = parseInt(product.price, 10);
-        const totalPrice = piecePrice * quantity;
+        if (!user_id) {
+            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+        } else {
+            const piecePrice = parseInt(product.price, 10);
+            const totalPrice = piecePrice * quantity;
 
-        if (isNaN(totalPrice) || totalPrice <= 0) {
-            console.error("Invalid total price calculation.");
-            alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
-            return;
-        }
-
-        const payload = {
-            user_id: user_id,
-            offer_id: product.id,
-            quantity: quantity,
-            piece_price: piecePrice,
-            total_price: totalPrice,
-        };
-
-        axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
-            headers: {
-                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+            if (isNaN(totalPrice) || totalPrice <= 0) {
+                console.error("Invalid total price calculation.");
+                alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                return;
             }
-        })
-            .then(() => {
-                alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
-                fetchCart()
+
+            const payload = {
+                user_id: user_id,
+                offer_id: product.id,
+                quantity: quantity,
+                piece_price: piecePrice,
+                total_price: totalPrice,
+            };
+
+            axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
+                headers: {
+                    "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+                }
             })
-            .catch((error) => {
-                console.error("Error adding to cart:", error);
-                alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
-            });
+                .then(() => {
+                    alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    fetchCart()
+                })
+                .catch((error) => {
+                    console.error("Error adding to cart:", error);
+                    alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                });
+        }
     };
 
     if (!product) return null;

@@ -5,7 +5,7 @@ import ProductSlider from '../../Components/Product/ProductSlider';
 import { MyContext } from '../../App';
 
 function Home() {
-    const { products, tables, language, setgradesfilters, windowWidth, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
+    const { products, tables, language, windowWidth, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
     const [grades, setGrades] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState({});
     const [gradeText, setGradeText] = useState({});

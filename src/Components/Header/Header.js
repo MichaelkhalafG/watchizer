@@ -15,7 +15,7 @@ function Header() {
 
     return (
         <>
-            <div className="header-strip border-bottom border-1 pb-3 lato-regular" >
+            <div className="header-strip d-md-block d-none border-bottom border-1 pb-3 lato-regular" >
                 <div className="top-strip bg-most-used">
                     <div className="container">
                         <p className="m-0 py-1 text-center text-light">
@@ -28,20 +28,28 @@ function Header() {
                         <div className="row">
                             <div className="logo d-flex justify-content-center col-sm-2">
                                 <Link to={'/'} className='d-flex justify-content-center'>
-                                    <img src={logo} loading='lazy' alt="Watchizer-logo" className='col-6' />
+                                    <img src={logo} loading='lazy' alt="Watchizer-logo" className='col-md-6 col-12' />
                                 </Link>
                             </div>
                             <div className="col-sm-10 d-flex align-items-center">
                                 <LanguageDropdown />
                                 <SearchBox />
                                 <div className='d-flex mx-auto align-items-center'>
-                                    <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
-                                        {users.find(u => u.id === user_id)?.name}
-                                    </span>
-                                    <img
-                                        src={userimg}
-                                        alt='user'
-                                        className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} />
+                                    {user_id && user_id !== null ?
+                                        <>
+                                            <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                                {users.find(u => u.id === user_id)?.first_name}
+                                            </span>
+                                            <img
+                                                src={users.find(u => u.id === user_id)?.image || userimg}
+                                                alt='user'
+                                                className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} />
+                                        </>
+                                        :
+                                        <Link to={'/login'} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                            {language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                                        </Link>
+                                    }
                                     <div className='m-auto cart-tap d-flex align-items-center'>
                                         <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
                                             {productsCount === 0 ? "0.00" : total_cart_price}{language === 'ar' ? ' ج.م ' : ' EG '}

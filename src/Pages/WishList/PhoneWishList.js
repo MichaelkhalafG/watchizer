@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { MyContext } from "../../App";
 import { Button, Rating } from "@mui/material";
 import { FaEye } from "react-icons/fa";
@@ -8,8 +8,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 
 function PhoneWishList() {
-    const { language, wishList, setwishList } = useContext(MyContext);
-    const [productsCount, setproductsCount] = useState(0)
+    const { language, wishList, setwishList, WishListCount } = useContext(MyContext);
     const handleRemoveItem = async (itemId) => {
         try {
             const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
@@ -34,7 +33,7 @@ function PhoneWishList() {
                 </h4>
                 <h6 className="text-secondary mt-2">
                     {language === "ar" ? "هناك عدد " : "There are "}
-                    <span className="text-danger fw-bold">{(productsCount)}</span>
+                    <span className="text-danger fw-bold">{(WishListCount)}</span>
                     {language === "ar" ? " من المنتجات في قائمتك." : " products in your wishlist."}
                 </h6>
             </div>

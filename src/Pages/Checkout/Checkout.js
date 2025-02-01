@@ -1,5 +1,5 @@
-import { Button, TextField, Alert, MenuItem, Select, FormControl } from '@mui/material';
-import { useContext, useState } from 'react';
+import { Button, TextField, Alert, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { useContext, useState, useEffect } from 'react';
 import { MyContext } from '../../App';
 import DOMPurify from "dompurify";
 import CheckIcon from "@mui/icons-material/Check";
@@ -10,20 +10,54 @@ function Checkout() {
 
     const [formData, setFormData] = useState({
         fullName: "",
-        email: "",
+        email: localStorage.getItem("email") || "",
         address: "",
         city: shippingname,
         phone: "",
         additionalPhone: "",
+        paymentMethod: "card", // Default payment method
     });
 
     const [alertMessages, setAlertMessages] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [loadingAddresses, setLoadingAddresses] = useState(true);
+    const [isAddingAddress, setIsAddingAddress] = useState(false); // Track if adding a new address
+
+    const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"; // Add API code here
+
+    useEffect(() => {
+        // Fetch available addresses
+        axios.get('https://dash.watchizereg.com/api/show_address', {
+            params: { user_id: user_id },
+            headers: { "Api-Code": apiCode } // Add API code to headers
+        })
+            .then(response => {
+                if (response.data.success) {
+                    setAddresses(response.data.data || []);
+                } else {
+                    setAddresses([]);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching addresses:', error);
+                setAddresses([]);
+            })
+            .finally(() => setLoadingAddresses(false));
+    }, [user_id]);
 
     const handleChangeshipping = (event) => {
         setShipping(event.target.value);
-        language === "ar"
-            ? setShippingName(event.target.GovernorateAr)
-            : setShippingName(event.target.GovernorateEn);
+        const selectedShipping = shippingPrices.find(price => price.Price === event.target.value);
+        if (selectedShipping) {
+            setShippingName(language === "ar" ? selectedShipping.GovernorateAr : selectedShipping.GovernorateEn);
+        }
+    };
+
+    const handlePaymentMethodChange = (event) => {
+        setFormData((prev) => ({
+            ...prev,
+            paymentMethod: event.target.value,
+        }));
     };
 
     const validateFields = () => {
@@ -69,40 +103,41 @@ function Checkout() {
         const errors = validateFields();
 
         if (errors.length === 0) {
-            setAlertMessages([
-                { severity: "success", message: language === "ar" ? "تم إرسال النموذج بنجاح!" : "Form submitted successfully!" }
-            ]);
-            setFormData({
-                fullName: "",
-                email: "",
-                address: "",
-                city: "",
-                phone: "",
-                additionalPhone: "",
-            });
+            setAlertMessages([{
+                severity: "success",
+                message: language === "ar" ? "تم إرسال النموذج بنجاح!" : "Form submitted successfully!"
+            }]);
+            handlePostOrder();  // Proceed to place the order only after validation passes
         } else {
             setAlertMessages(errors);
         }
     };
+
     const handlePostOrder = () => {
+        const selectedAddressId = formData.address; // Using the selected address ID
+        const cartTotalPrice = cart.reduce((total, item) => total + item.piece_price * item.quantity, 0);
+        const selectedPaymentMethod = formData.paymentMethod; // Use selected payment method
+        const orderNote = "Your order note here";
+
         const payload = {
             user_id: user_id,
-            address_id: 1,
-            total_price_for_order: 8420,
-            payment_method: "card",
+            address_id: selectedAddressId,
+            total_price_for_order: cartTotalPrice + shipping,  // Total price including shipping
+            payment_method: selectedPaymentMethod,
+            note: orderNote
         };
 
         axios.post("https://dash.watchizereg.com/api/add_order", payload, {
             headers: {
-                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+                "Api-Code": apiCode // Add API code to headers
             }
         })
             .then(response => {
-                if (response.data && response.data.redirect_url) {
-                    // Redirect to the payment page
-                    window.location.href = response.data.redirect_url;
+                if (response.data.success) {
+                    const redirectUrl = response.data.redirect_url || 'https://watchizereg.com/';
+                    window.location.href = redirectUrl;
                 } else {
-                    console.error('Unexpected response format:', response.data);
+                    alert('Failed to place the order. Please try again.');
                 }
             })
             .catch(error => {
@@ -111,14 +146,41 @@ function Checkout() {
             });
     };
 
+    const handleAddAddress = () => {
+        const { phone, additionalPhone, address } = formData;
+        const newAddressData = {
+            user_id: user_id,
+            shipping_city_id: 1,
+            address_line: address,
+            phone_number_one: phone,
+            additional_phone_number: additionalPhone,
+        };
+
+        axios.post('https://dash.watchizereg.com/api/add_address', newAddressData, {
+            headers: {
+                "Api-Code": apiCode // Add API code to headers
+            }
+        })
+            .then(response => {
+                if (response.data.success) {
+                    alert("Address added successfully!");
+                    setAddresses(prev => [...prev, response.data.data]);
+                    setIsAddingAddress(false);
+                } else {
+                    alert("Failed to add address. Please try again.");
+                }
+            })
+            .catch(error => {
+                console.error('Error adding address:', error);
+                alert("Failed to add address. Please try again.");
+            });
+    };
 
     return (
         <div
             className="cart container"
             dir={language === "ar" ? "rtl" : "ltr"}
-            style={{
-                textAlign: language === "ar" ? "right" : "left",
-            }}
+            style={{ textAlign: language === "ar" ? "right" : "left" }}
         >
             <div className="row py-3">
                 <div className="col-12 p-3">
@@ -160,37 +222,71 @@ function Checkout() {
                             </div>
                             <div className="col-6 px-2">
                                 <FormControl fullWidth>
+                                    <InputLabel>{language === "ar" ? "طريقة الدفع" : "Payment Method"}</InputLabel>
                                     <Select
-                                        labelId="governorate-select-label"
-                                        id="governorate-select"
-                                        value={shipping}
-                                        onChange={handleChangeshipping}
+                                        value={formData.paymentMethod}
+                                        onChange={handlePaymentMethodChange}
                                         fullWidth
                                     >
-                                        {shippingPrices.map((price, index) => (
-                                            <MenuItem key={index} value={price.Price}>
-                                                {language === "ar" ? price.GovernorateAr : price.GovernorateEn}
-                                            </MenuItem>
-                                        ))}
+                                        <MenuItem value="card">{language === "ar" ? "بطاقة" : "Card"}</MenuItem>
+                                        <MenuItem value="cash">{language === "ar" ? "كاش" : "Cash"}</MenuItem>
                                     </Select>
                                 </FormControl>
-                                <TextField
-                                    label={language === "ar" ? "العنوان" : "Address"}
-                                    variant="outlined"
-                                    className="col-12 my-3"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <TextField
-                                    label={language === "ar" ? "رقم الهاتف الإضافي" : "Additional Phone Number (Optional)"}
-                                    variant="outlined"
-                                    className="col-12 my-3"
-                                    name="additionalPhone"
-                                    value={formData.additionalPhone}
-                                    onChange={handleChange}
-                                />
+
+                                {loadingAddresses ? (
+                                    <p>{language === "ar" ? "جاري تحميل العناوين..." : "Loading addresses..."}</p>
+                                ) : (
+                                    <FormControl fullWidth>
+                                        <InputLabel>{language === "ar" ? "العنوان" : "Address"}</InputLabel>
+                                        <Select
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            name="address"
+                                            fullWidth
+                                        >
+                                            {addresses.length > 0 ? (
+                                                addresses.map((address, index) => (
+                                                    <MenuItem key={index} value={address.id}>
+                                                        {address.address_line}
+                                                    </MenuItem>
+                                                ))
+                                            ) : (
+                                                <MenuItem value="">{language === "ar" ? "لا توجد عناوين" : "No addresses available"}</MenuItem>
+                                            )}
+                                        </Select>
+                                    </FormControl>
+                                )}
+
+                                {addresses.length === 0 && !isAddingAddress && (
+                                    <Button onClick={() => setIsAddingAddress(true)} variant="contained" color="primary">
+                                        {language === "ar" ? "إضافة عنوان" : "Add Address"}
+                                    </Button>
+                                )}
+
+                                {isAddingAddress && (
+                                    <div>
+                                        <TextField
+                                            label={language === "ar" ? "العنوان" : "Address"}
+                                            variant="outlined"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            fullWidth
+                                            required
+                                        />
+                                        <TextField
+                                            label={language === "ar" ? "الهاتف الإضافي" : "Additional Phone"}
+                                            variant="outlined"
+                                            name="additionalPhone"
+                                            value={formData.additionalPhone}
+                                            onChange={handleChange}
+                                            fullWidth
+                                        />
+                                        <Button onClick={handleAddAddress} variant="contained" color="primary" className="mt-3">
+                                            {language === "ar" ? "إضافة" : "Add"}
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -201,7 +297,6 @@ function Checkout() {
                                 </Alert>
                             ))}
                     </form>
-
                     <div className="col-3 p-3 pt-0">
                         <div className="row align-items-center px-3 pb-3 border border-1 rounded-3">
                             <h5 className="color-most-used py-3 border-bottom border-1 col-12 fw-bold">
@@ -212,11 +307,10 @@ function Checkout() {
                                     <p className="color-most-used m-0 p-0 col-8">
                                         {item.product_title}
                                     </p>
-                                    <h6
-                                        className={`text-secondary m-0 col-4 ${language === 'ar' ? 'text-start' : 'text-end'}`}>
+                                    <h6 className={`text-secondary m-0 col-4 ${language === 'ar' ? 'text-start' : 'text-end'}`}>
                                         {language === "ar" ? "ج.م" : "EGP"}
                                         <span className="fw-bold mx-2 text-danger">
-                                            {item.sale_price_after_discount * item.quantity}
+                                            {item.piece_price * item.quantity}
                                         </span>
                                     </h6>
                                 </div>
@@ -237,7 +331,7 @@ function Checkout() {
                                 <h6 className={`text-secondary m-0 col-6 ${language === 'ar' ? 'text-start' : 'text-end'}`}>
                                     {language === "ar" ? "ج.م" : "EGP"}
                                     <span className="fw-bold mx-2 text-danger">
-                                        {cart.reduce((total, item) => total + item.sale_price_after_discount * item.quantity, 0) + shipping}
+                                        {cart.reduce((total, item) => total + item.piece_price * item.quantity, 0) + parseFloat(shipping)}
                                     </span>
                                 </h6>
                             </div>
@@ -246,7 +340,6 @@ function Checkout() {
                                 type="submit"
                                 variant="contained"
                                 className="rounded-3 bg-most-used text-light col-12 p-2"
-                                onClick={() => handlePostOrder()}
                             >
                                 {language === "ar" ? "إرسال" : "Submit"}
                             </Button>

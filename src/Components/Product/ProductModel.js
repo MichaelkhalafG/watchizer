@@ -41,43 +41,47 @@ function ProductModel({ open, onClose, product, language }) {
     );
 
     const handleAddToCart = () => {
-        if (!selectedDialColor || !selectedBandColor) {
-            alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
-            return;
-        }
-
-        const piecePrice = parseInt(product.sale_price_after_discount, 10);
-        const totalPrice = piecePrice * quantity;
-
-        if (isNaN(totalPrice) || totalPrice <= 0) {
-            console.error("Invalid total price calculation.");
-            alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
-            return;
-        }
-
-        const payload = {
-            user_id: user_id,
-            product_id: product.id,
-            quantity: quantity,
-            piece_price: piecePrice,
-            color_band: selectedBandColor,
-            color_dial: selectedDialColor,
-            total_price: totalPrice,
-        };
-
-        axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
-            headers: {
-                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+        if (!user_id) {
+            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+        } else {
+            if (!selectedDialColor || !selectedBandColor) {
+                alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
+                return;
             }
-        })
-            .then(() => {
-                alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
-                fetchCart()
+
+            const piecePrice = parseInt(product.sale_price_after_discount, 10);
+            const totalPrice = piecePrice * quantity;
+
+            if (isNaN(totalPrice) || totalPrice <= 0) {
+                console.error("Invalid total price calculation.");
+                alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                return;
+            }
+
+            const payload = {
+                user_id: user_id,
+                product_id: product.id,
+                quantity: quantity,
+                piece_price: piecePrice,
+                color_band: selectedBandColor,
+                color_dial: selectedDialColor,
+                total_price: totalPrice,
+            };
+
+            axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
+                headers: {
+                    "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+                }
             })
-            .catch((error) => {
-                console.error("Error adding to cart:", error);
-                alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
-            });
+                .then(() => {
+                    alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    fetchCart()
+                })
+                .catch((error) => {
+                    console.error("Error adding to cart:", error);
+                    alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                });
+        }
     };
 
 

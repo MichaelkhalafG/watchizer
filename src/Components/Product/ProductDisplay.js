@@ -42,43 +42,47 @@ function ProductDisplay() {
     );
 
     const handleAddToCart = () => {
-        if (!selectedDialColor || !selectedBandColor) {
-            alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
-            return;
-        }
-
-        const piecePrice = parseInt(product.sale_price_after_discount, 10);
-        const totalPrice = piecePrice * quantity;
-
-        if (isNaN(totalPrice) || totalPrice <= 0) {
-            console.error("Invalid total price calculation.");
-            alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
-            return;
-        }
-
-        const payload = {
-            user_id: user_id,
-            product_id: product.id,
-            quantity: quantity,
-            piece_price: piecePrice,
-            color_band: selectedBandColor,
-            color_dial: selectedDialColor,
-            total_price: totalPrice,
-        };
-
-        axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
-            headers: {
-                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+        if (!user_id) {
+            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+        } else {
+            if (!selectedDialColor || !selectedBandColor) {
+                alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
+                return;
             }
-        })
-            .then(() => {
-                alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
-                fetchCart()
+
+            const piecePrice = parseInt(product.sale_price_after_discount, 10);
+            const totalPrice = piecePrice * quantity;
+
+            if (isNaN(totalPrice) || totalPrice <= 0) {
+                console.error("Invalid total price calculation.");
+                alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                return;
+            }
+
+            const payload = {
+                user_id: user_id,
+                product_id: product.id,
+                quantity: quantity,
+                piece_price: piecePrice,
+                color_band: selectedBandColor,
+                color_dial: selectedDialColor,
+                total_price: totalPrice,
+            };
+
+            axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
+                headers: {
+                    "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+                }
             })
-            .catch((error) => {
-                console.error("Error adding to cart:", error);
-                alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
-            });
+                .then(() => {
+                    alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    fetchCart()
+                })
+                .catch((error) => {
+                    console.error("Error adding to cart:", error);
+                    alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                });
+        }
     };
 
 
@@ -154,42 +158,46 @@ function ProductDisplay() {
     }, [ratings]);
 
     const handleRatingSubmit = async (value, comment) => {
-        const sanitizedComment = DOMPurify.sanitize(comment);
+        if (!user_id) {
+            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+        } else {
+            const sanitizedComment = DOMPurify.sanitize(comment);
 
-        if (value && sanitizedComment.trim()) {
-            try {
-                await axios.post(
-                    "https://dash.watchizereg.com/api/add_product_rating",
-                    null,
-                    {
-                        params: {
-                            product_id: product.id,
-                            rating: value,
-                            comment: sanitizedComment,
-                            user_id: user_id,
-                        },
-                        headers: {
-                            "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
-                        },
-                    }
-                );
+            if (value && sanitizedComment.trim()) {
+                try {
+                    await axios.post(
+                        "https://dash.watchizereg.com/api/add_product_rating",
+                        null,
+                        {
+                            params: {
+                                product_id: product.id,
+                                rating: value,
+                                comment: sanitizedComment,
+                                user_id: user_id,
+                            },
+                            headers: {
+                                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
+                            },
+                        }
+                    );
 
-                await fetchRatings();
-                setNewRating({ value: 0, comment: "" });
-            } catch (error) {
-                console.error("Error submitting rating:", error);
+                    await fetchRatings();
+                    setNewRating({ value: 0, comment: "" });
+                } catch (error) {
+                    console.error("Error submitting rating:", error);
+                    alert(
+                        language === "ar"
+                            ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."
+                            : "An error occurred while submitting the rating. Please try again."
+                    );
+                }
+            } else {
                 alert(
                     language === "ar"
-                        ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."
-                        : "An error occurred while submitting the rating. Please try again."
+                        ? "يرجى إدخال تقييم وتعليق صحيح"
+                        : "Please enter a valid rating and comment"
                 );
             }
-        } else {
-            alert(
-                language === "ar"
-                    ? "يرجى إدخال تقييم وتعليق صحيح"
-                    : "Please enter a valid rating and comment"
-            );
         }
     };
 
@@ -384,7 +392,7 @@ function ProductDisplay() {
                             <div key={rating.id} className="rating-item col-md-6 col-12 mb-3">
                                 <Rating name="read-only" value={rating.rating} readOnly size="small" />
                                 <p>{rating.comment}</p>
-                                <small className="me-3">by : {users.find(u => u.id === rating.user_id)?.name}</small>
+                                <small className="me-3">by : {users.find(u => u.id === rating.user_id)?.first_name}</small>
                                 <small>{new Date(rating.created_at).toLocaleDateString()}</small>
                             </div>
                         ))

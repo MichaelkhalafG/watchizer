@@ -21,7 +21,10 @@ function Cart() {
         setShippingName,
         shipping,
         setShipping,
-        products, offers
+        fetchCart,
+        products,
+        offers,
+        user_id
     } = useContext(MyContext);
 
     const [selectedProduct, setSelectedProduct] = useState();
@@ -71,7 +74,41 @@ function Cart() {
             console.error("Error removing item from cart:", error);
         }
     };
+    const goToCheckout = async () => {
+        try {
+            const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
+            const userId = user_id;
 
+            for (const item of cart) {
+                const response = await axios.post(`https://dash.watchizereg.com/api/add_to_cart`, {
+                    user_id: userId,
+                    product_id: item.product_id,
+                    offer_id: item.offer_id,
+                    quantity: item.quantity,
+                    piece_price: item.piece_price,
+                    color_band: item.color_band,
+                    color_dial: item.color_dial,
+                    total_price: item.piece_price * item.quantity
+                }, {
+                    headers: {
+                        "Api-Code": apiCode
+                    }
+                });
+
+                if (response.status === 200) {
+                    console.log(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`);
+                } else {
+                    console.error("Failed to update cart item:", response.data);
+                }
+            }
+            fetchCart();
+            window.location.href = "/checkout";
+
+        } catch (error) {
+            console.error("Error updating cart:", error);
+        }
+
+    };
 
     return (
         <div className="cart container-fluid px-5">
@@ -288,14 +325,15 @@ function Cart() {
                                             </span>
                                         </h6>
                                     </div>
-                                    <Link to={"/checkout"} className="col-12 p-3">
+                                    <div className="col-12 p-3">
                                         <Button
                                             variant="contained"
                                             className="rounded-3 bg-most-used text-light col-12 p-2"
+                                            onClick={goToCheckout}
                                         >
                                             {language === "ar" ? "الدفع" : "Checkout"}
                                         </Button>
-                                    </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>

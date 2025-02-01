@@ -1,11 +1,11 @@
-import { useState, useContext } from 'react';
-import PropTypes from 'prop-types';
-import { Tabs, Tab } from '@mui/material';
-import DOMPurify from 'dompurify';
+import { useState, useContext } from "react";
+import PropTypes from "prop-types";
+import { Tabs, Tab } from "@mui/material";
+import DOMPurify from "dompurify";
 import { IoMdCloudUpload } from "react-icons/io";
-import userimg from '../../assets/images/user.webp';
-import './EditProfile.css';
-import { MyContext } from '../../App';
+import userimg from "../../assets/images/user.webp";
+import "./EditProfile.css";
+import { MyContext } from "../../App";
 
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -31,20 +31,25 @@ CustomTabPanel.propTypes = {
 function a11yProps(index) {
     return {
         id: `simple-tab-${index}`,
-        'aria-controls': `simple-tabpanel-${index}`,
+        "aria-controls": `simple-tabpanel-${index}`,
     };
 }
 
-function EditProfile({ userData }) {
+function EditProfile() {
+    const userData = localStorage.getItem("userData")
+        ? JSON.parse(localStorage.getItem("userData"))
+        : {};
     const { language } = useContext(MyContext);
+
     const [value, setValue] = useState(0);
-    const [name, setName] = useState(userData.name || '');
-    const [email] = useState(userData.email || '');
-    const [phone, setPhone] = useState(userData.phone_number || '');
-    const [extraphone, setextraphone] = useState(userData.extra_phone_number || '');
+    const [firstName, setFirstName] = useState(userData.first_name || "");
+    const [lastName, setLastName] = useState(userData.last_name || "");
+    const [email] = useState(userData.email || "");
+    const [phone, setPhone] = useState(userData.phone_number || "");
+    const [extraPhone, setExtraPhone] = useState(userData.extra_phone_number || "");
     const [image, setImage] = useState(userData.image || null);
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
 
     const handleChange = (event, newValue) => setValue(newValue);
 
@@ -59,65 +64,120 @@ function EditProfile({ userData }) {
 
     const handleProfileSave = () => {
         const sanitizedData = {
-            name: DOMPurify.sanitize(name),
-            email: DOMPurify.sanitize(email),
+            firstName: DOMPurify.sanitize(firstName),
+            lastName: DOMPurify.sanitize(lastName),
             phone: DOMPurify.sanitize(phone),
+            extraPhone: DOMPurify.sanitize(extraPhone),
             image,
         };
-        console.log('Profile data saved:', sanitizedData);
+
+        console.log("Profile data saved:", sanitizedData);
     };
 
     const handlePasswordChange = () => {
         if (password === confirmPassword) {
-            console.log('Password changed:', password);
+            console.log("Password changed:", password);
         } else {
-            console.error('Passwords do not match');
+            console.error("Passwords do not match");
         }
     };
 
     return (
-        <div className={`container mt-4 ${language === 'ar' ? 'text-right' : 'text-left'}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
-            <div className="border-bottom mb-3" style={{ overflowX: "scroll" }}>
-                <Tabs value={value} onChange={handleChange} aria-label="profile tabs">
-                    <Tab label={language === 'ar' ? 'تعديل الملف الشخصي' : 'Edit Profile'} {...a11yProps(0)} />
-                    <Tab label={language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'} {...a11yProps(1)} />
-                    <Tab label={language === 'ar' ? 'تعديل العناوين' : 'Edit Address'} {...a11yProps(2)} />
+        <div
+            className={`container mt-4 ${language === "ar" ? "text-right" : "text-left"}`}
+            dir={language === "ar" ? "rtl" : "ltr"}
+        >
+            <div className="border-bottom mb-3">
+                <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    aria-label="profile tabs"
+                    className="d-flex justify-content-center"
+                >
+                    <Tab
+                        className="col-4"
+                        label={language === "ar" ? "تعديل الملف الشخصي" : "Edit Profile"}
+                        {...a11yProps(0)}
+                    />
+                    <Tab
+                        className="col-4"
+                        label={language === "ar" ? "تغيير كلمة المرور" : "Change Password"}
+                        {...a11yProps(1)}
+                    />
+                    <Tab
+                        className="col-4"
+                        label={language === "ar" ? "تعديل العناوين" : "Edit Address"}
+                        {...a11yProps(2)}
+                    />
                 </Tabs>
             </div>
             <CustomTabPanel value={value} index={0}>
                 <div className="row gx-3 gy-3">
                     <div className="col-md-5 d-flex justify-content-center mb-3">
                         <div className="position-relative col-8 rounded-circle border">
-                            <img src={image || userimg} alt="User profile" className="img-fluid rounded-circle" />
+                            <img
+                                src={image || userimg}
+                                alt="User profile"
+                                className="img-fluid rounded-circle"
+                            />
                             <label className="upload-icon position-absolute rounded-circle">
                                 <IoMdCloudUpload size={40} />
-                                <input type="file" accept="image/*" className="d-none" onChange={handleImageUpload} />
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="d-none"
+                                    onChange={handleImageUpload}
+                                />
                             </label>
                         </div>
                     </div>
                     <form className="col-md-7">
                         <div className="row mb-3">
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">{language === 'ar' ? 'الاسم' : 'Name'}</label>
-                                <input type="text" className="form-control" value={name} onChange={(e) => setName(e.target.value)} />
+                                <label className="form-label">{language === "ar" ? "الاسم الأول" : "First Name"}</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                />
                             </div>
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">{language === 'ar' ? 'البريد الإلكتروني' : 'Email'}</label>
-                                <input type="email" className="form-control" value={email} disabled />
+                                <label className="form-label">{language === "ar" ? "الاسم الأخير" : "Last Name"}</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="row mb-3">
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">{language === 'ar' ? 'الهاتف' : 'Phone'}</label>
-                                <input type="text" className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                                <label className="form-label">{language === "ar" ? "الهاتف" : "Phone"}</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                />
                             </div>
                             <div className="col-12 col-sm-6">
-                                <label className="form-label">{language === 'ar' ? 'هاتف اضافي' : 'Extra phone'}</label>
-                                <input type="text" className="form-control" value={extraphone} onChange={(e) => setextraphone(e.target.value)} />
+                                <label className="form-label">{language === "ar" ? "هاتف إضافي" : "Extra Phone"}</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    value={extraPhone}
+                                    onChange={(e) => setExtraPhone(e.target.value)}
+                                />
                             </div>
                         </div>
-                        <button type="button" className="w-100 p-2 btn btn-dark" onClick={handleProfileSave}>
-                            {language === 'ar' ? 'حفظ' : 'Save'}
+                        <button
+                            type="button"
+                            className="w-100 p-2 btn btn-dark"
+                            onClick={handleProfileSave}
+                        >
+                            {language === "ar" ? "حفظ" : "Save"}
                         </button>
                     </form>
                 </div>
@@ -125,33 +185,38 @@ function EditProfile({ userData }) {
             <CustomTabPanel value={value} index={1}>
                 <form>
                     <div className="mb-3">
-                        <label className="form-label">{language === 'ar' ? 'كلمة المرور القديمة' : 'Old Password'}</label>
-                        <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <label className="form-label">
+                            {language === "ar" ? "كلمة المرور الجديدة" : "New Password"}
+                        </label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                     <div className="mb-3">
-                        <label className="form-label">{language === 'ar' ? 'كلمة المرور الجديدة' : 'New Password'}</label>
-                        <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <label className="form-label">
+                            {language === "ar" ? "تأكيد كلمة المرور" : "Confirm Password"}
+                        </label>
+                        <input
+                            type="password"
+                            className="form-control"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
                     </div>
-                    <div className="mb-3">
-                        <label className="form-label">{language === 'ar' ? 'تأكيد كلمة المرور' : 'Confirm Password'}</label>
-                        <input type="password" className="form-control" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-                    </div>
-                    <button type="button" className="w-100 p-2 btn btn-dark" onClick={handlePasswordChange}>
-                        {language === 'ar' ? 'تغيير كلمة المرور' : 'Change Password'}
+                    <button
+                        type="button"
+                        className="w-100 p-2 btn btn-dark"
+                        onClick={handlePasswordChange}
+                    >
+                        {language === "ar" ? "تغيير كلمة المرور" : "Change Password"}
                     </button>
                 </form>
             </CustomTabPanel>
         </div>
     );
 }
-
-EditProfile.propTypes = {
-    userData: PropTypes.shape({
-        name: PropTypes.string,
-        email: PropTypes.string,
-        phone_number: PropTypes.string,
-        image: PropTypes.string,
-    }).isRequired,
-};
 
 export default EditProfile;

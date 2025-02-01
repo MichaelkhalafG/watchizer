@@ -23,7 +23,7 @@ function PhoneNavBar() {
     };
 
     return (
-        <div className="phone-nav-bar bg-light position-relative position-fixed text-light p-3">
+        <div className="phone-nav-bar d-md-none d-block bg-light position-relative position-fixed text-light p-3">
             <div className="rounded-circle align-items-center justify-content-center d-flex flex-column text-center bg-dark"
                 style={{ position: "absolute", top: "-8px", left: "50%", transform: "translate(-50%,-50%)", height: "50px", width: "50px" }}>
                 <Link to="/cart" className="text-light d-flex align-items-center justify-content-center p-2">
