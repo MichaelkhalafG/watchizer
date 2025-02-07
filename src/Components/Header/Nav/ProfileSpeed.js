@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import Box from "@mui/material/Box";
 import { Link, useNavigate } from "react-router-dom";
 import SpeedDial from "@mui/material/SpeedDial";
@@ -7,7 +7,6 @@ import { FaRegHeart } from "react-icons/fa";
 import { RiBillLine } from "react-icons/ri";
 import { IoPersonSharp } from "react-icons/io5";
 import { IoIosPerson, IoIosLogOut } from "react-icons/io";
-import { MyContext } from "../../../App";
 
 const actions = [
     { icon: <IoIosPerson />, name: "Edit Profile", to: "/edit-profile" },
@@ -16,11 +15,10 @@ const actions = [
 ];
 
 export default function ProfileSpeed() {
-    const { getDecryptedItem } = useContext(MyContext);
     const navigate = useNavigate();
 
     const handleLogout = async () => {
-        const token = getDecryptedItem("token");
+        const token = sessionStorage.getItem("token");
         const API_URL = `https://dash.watchizereg.com/api/logout?token=${token}`;
 
         try {
@@ -33,6 +31,7 @@ export default function ProfileSpeed() {
 
             if (response.ok) {
                 console.log("Logout successful");
+                sessionStorage.clear();
                 localStorage.clear();
                 navigate("/");
                 window.location.reload();

@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
-import { Button, Rating } from '@mui/material';
+import { Rating } from '@mui/material';
 import {
     IoIosArrowForward,
     IoIosArrowBack,
@@ -13,7 +13,7 @@ import { FaRegHeart } from 'react-icons/fa';
 import { SlSizeFullscreen } from 'react-icons/sl';
 import { MyContext } from '../../App';
 import './Product.css';
-import ProductModel from './ProductModel';
+import OfferModel from './OfferModel';
 
 function NextArrow({ onClick }) {
     return (
@@ -51,11 +51,10 @@ function PrevArrow({ onClick }) {
     );
 }
 
-function ProductSlider({ text, products, to, moreid }) {
-    const { language, setgradesfilters, windowWidth, handleAddTowishlist } = useContext(MyContext);
+function OfferSlider({ text, products, to }) {
+    const { language, windowWidth, handleAddTowishlist } = useContext(MyContext);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const filteredProducts = products.filter((product) => product.active === 1);
 
     const handleProductClick = (product) => {
         setSelectedProduct(product);
@@ -95,28 +94,17 @@ function ProductSlider({ text, products, to, moreid }) {
                     </p>
                 </div>
                 <div className="col-md-2 col-4">
-                    <Link to={to}>
-                        <Button className="color-most-used rounded-4 px-3 border border-1"
-                            onClick={() =>
-                                setgradesfilters({
-                                    categories: [],
-                                    brands: [],
-                                    subTypes: [],
-                                    grades: [moreid],
-                                    price: [0, 6000],
-                                })
-                            }>
-                            {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
-                            {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
-                        </Button>
+                    <Link className="color-most-used rounded-4 p-2 border border-1" to={to}>
+                        {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
+                        {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
                     </Link>
                 </div>
             </div>
 
             <div className="row product-slider pb-5">
                 <Slider {...sliderSettings}>
-                    {filteredProducts.map((product) => (
-                        <div key={product.product_title} className="p-2" style={{ height: '100%' }}>
+                    {products.map((product) => (
+                        <div key={product.id} className="p-2" style={{ height: '100%' }}>
                             <div className="card product-card border-0 rounded-3 shadow-sm d-flex flex-column position-relative">
                                 <div className="action-menu position-absolute">
                                     {windowWidth >= 768 ?
@@ -128,38 +116,41 @@ function ProductSlider({ text, products, to, moreid }) {
                                         </button>
                                         :
                                         <Link
-                                            to={`/product/${product.product_title}`}
+                                            to={`/offer/${product.id}`}
                                             className="btn btn-dark rounded-circle"
                                         >
                                             <SlSizeFullscreen />
                                         </Link>
                                     }
-
                                     <button
                                         className="btn mt-2 btn-danger rounded-circle"
-                                        onClick={() => handleAddTowishlist(product.id, "p")}
-                                    >
+                                        onClick={() => handleAddTowishlist(product.id, "o")}>
                                         <FaRegHeart />
                                     </button>
                                 </div>
-
-                                <Link to={`/product/${product.product_title}`} className="product-img-container">
-                                    <img
-                                        src={product.image}
-                                        alt={product.wa_code}
-                                        className="img-fluid rounded-top"
-                                        loading="lazy"
-                                    />
-                                </Link>
-
+                                <div className="product-img-container">
+                                    <Link to={`/offer/${product.id}`}>
+                                        <img
+                                            src={product.image || "/placeholder.png"}
+                                            alt={product.offer_name_en || "Product"}
+                                            className="img-fluid rounded-top"
+                                            loading="lazy"
+                                        />
+                                    </Link>
+                                </div>
                                 <div className="card-body d-flex flex-column justify-content-between p-3">
-                                    <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>{product.product_title}</h6>
+                                    <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>{language === "ar" ? product.product_name_ar : product.offer_name_en}</h6>
                                     <p className={`card-text ${language === 'ar' ? 'text-end' : ''}  text-secondary mb-3`} style={{ fontSize: '0.9rem' }}>
-                                        {product.short_description.length > 100
-                                            ? `${product.short_description.slice(0, 100)}...`
-                                            : product.short_description}
+                                        {language === "ar" ?
+                                            product?.short_description_ar?.length > 100
+                                                ? `${product?.short_description_ar?.slice(0, 100)}...`
+                                                : product?.short_description_ar
+                                            :
+                                            product?.short_description_en?.length > 100
+                                                ? `${product?.short_description_en?.slice(0, 100)}...`
+                                                : product?.short_description_en
+                                        }
                                     </p>
-
                                     <div className="d-flex justify-content-center align-items-center mb-2">
                                         <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'small' }}>
                                             {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
@@ -168,24 +159,19 @@ function ProductSlider({ text, products, to, moreid }) {
                                             {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                         </span>
                                     </div>
-
                                     <div className="d-md-flex  justify-content-between align-items-center">
-                                        <div className='col-md-6 col-12 p-1'>
+                                        <div className='col-md-5 col-12 p-1'>
                                             <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-success' : 'bg-danger'} col-12`}>
                                                 {language === 'ar' ? (parseInt(product.stock) > 0 ? 'متوفر' : 'غير متوفر') : (parseInt(product.stock) > 0 ? 'In Stock' : 'Out of Stock')}
                                             </span>
                                         </div>
-                                        <div className="d-flex col-md-6 p-1 justify-content-center col-12 align-items-center">
-                                            <Rating name="read-only" className={`${windowWidth <= 768 ? "col-12" : ""}`} value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
-                                            <span className={` ms-2 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.rating === null ? 5 : product.rating)})</span>
+                                        <div className="d-flex col-md-7 p-1 justify-content-center col-12 align-items-center">
+                                            <Rating name="read-only" className={`${windowWidth <= 768 ? "col-12" : ""}`} value={Math.round(product.average_rate === null ? 5 : product.average_rate)} size="small" readOnly />
+                                            <span className={` mx-1 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.average_rate === null ? 5 : product.average_rate)})</span>
                                         </div>
                                     </div>
-
-                                    <Link to={`/product/${product.product_title}`}
-                                        className="btn btn-outline-dark rounded-4 mt-2"
-                                        disabled={parseInt(product.stock) <= 0}
-                                    >
-                                        {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
+                                    <Link className="btn btn-outline-dark rounded-4 mt-2" to={`/offer/${product.id}`} disabled={product.stock <= 0}>
+                                        {language === "ar" ? "أضف إلى السلة" : "Add to Cart"}
                                     </Link>
                                 </div>
                             </div>
@@ -195,7 +181,7 @@ function ProductSlider({ text, products, to, moreid }) {
             </div>
 
             {selectedProduct && (
-                <ProductModel
+                <OfferModel
                     open={isModalOpen}
                     onClose={handleModalClose}
                     product={selectedProduct}
@@ -206,7 +192,7 @@ function ProductSlider({ text, products, to, moreid }) {
     );
 }
 
-ProductSlider.propTypes = {
+OfferSlider.propTypes = {
     text: PropTypes.shape({
         title: PropTypes.shape({
             en: PropTypes.string.isRequired,
@@ -220,68 +206,38 @@ ProductSlider.propTypes = {
     products: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
-            product_title: PropTypes.string.isRequired,
-            model_name: PropTypes.string,
-            long_description: PropTypes.string.isRequired,
-            short_description: PropTypes.string.isRequired,
-            selling_price: PropTypes.string.isRequired,
-            sale_price_after_discount: PropTypes.string.isRequired,
-            percentage_discount: PropTypes.string.isRequired,
+            main_product_id: PropTypes.number.isRequired,
+            category_type_id: PropTypes.number.isRequired,
+            gift_product_ids: PropTypes.arrayOf(PropTypes.number),
+            selling_price: PropTypes.number.isRequired,
+            sale_price_after_discount: PropTypes.number.isRequired,
             stock: PropTypes.number.isRequired,
-            rate: PropTypes.number,
-            image: PropTypes.string,
-            images: PropTypes.arrayOf(PropTypes.string),
-            category_type: PropTypes.string.isRequired,
-            brand: PropTypes.string.isRequired,
-            grade: PropTypes.string,
-            sub_type: PropTypes.string.isRequired,
-            dial_color: PropTypes.arrayOf(
+            image: PropTypes.string.isRequired,
+            average_rate: PropTypes.number,
+            created_at: PropTypes.string.isRequired,
+            updated_at: PropTypes.string.isRequired,
+            short_description_en: PropTypes.string,
+            short_description_ar: PropTypes.string,
+            long_description_en: PropTypes.string,
+            long_description_ar: PropTypes.string,
+            in_season: PropTypes.string,
+            offer_name_en: PropTypes.string.isRequired,
+            offer_name_ar: PropTypes.string.isRequired,
+            offer_rating: PropTypes.arrayOf(
                 PropTypes.shape({
-                    color_id: PropTypes.number,
-                    color_value: PropTypes.string,
-                    color_name_ar: PropTypes.string,
-                    color_name_en: PropTypes.string,
+                    id: PropTypes.number.isRequired,
+                    user_id: PropTypes.number.isRequired,
+                    offer_id: PropTypes.number.isRequired,
+                    rating: PropTypes.number.isRequired,
+                    comment: PropTypes.string,
+                    created_at: PropTypes.string.isRequired,
+                    updated_at: PropTypes.string.isRequired,
                 })
             ),
-            band_color: PropTypes.arrayOf(
-                PropTypes.shape({
-                    color_id: PropTypes.number,
-                    color_value: PropTypes.string,
-                    color_name_ar: PropTypes.string,
-                    color_name_en: PropTypes.string,
-                })
-            ),
-            band_closure: PropTypes.string,
-            dial_display_type: PropTypes.string,
-            case_shape: PropTypes.string,
-            band_material: PropTypes.string,
-            watch_movement: PropTypes.string,
-            water_resistance_size_type: PropTypes.string,
-            water_resistance: PropTypes.number,
-            case_size_type: PropTypes.string,
-            case: PropTypes.string,
-            band_size_type: PropTypes.string,
-            band_length: PropTypes.string,
-            band_width_size_type: PropTypes.string,
-            band_width: PropTypes.string,
-            case_thickness_size_type: PropTypes.string,
-            case_thickness: PropTypes.string,
-            watch_height_size_type: PropTypes.string,
-            watch_width_size_type: PropTypes.string,
-            watch_length_size_type: PropTypes.string,
-            dial_glass_material: PropTypes.string,
-            watch_height: PropTypes.string,
-            watch_width: PropTypes.string,
-            watch_length: PropTypes.string,
-            dial_case_material: PropTypes.string,
-            country: PropTypes.string,
-            stone: PropTypes.string,
-            features: PropTypes.arrayOf(PropTypes.string),
-            gender: PropTypes.arrayOf(PropTypes.string),
         })
     ).isRequired,
 };
 
 
 
-export default ProductSlider;
+export default OfferSlider;

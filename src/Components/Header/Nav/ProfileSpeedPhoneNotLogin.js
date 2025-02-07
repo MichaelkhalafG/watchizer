@@ -1,58 +1,28 @@
 import React, { useContext } from 'react';
 import { MyContext } from "../../../App";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
-import { FaRegHeart, FaLanguage } from 'react-icons/fa';
-import { RiBillLine } from "react-icons/ri";
+import { FaLanguage } from 'react-icons/fa';
 import { IoPersonSharp } from "react-icons/io5";
-import { IoIosPerson, IoIosLogOut } from "react-icons/io";
+import { IoMdLogIn } from "react-icons/io";
 import logo from '../../../assets/images/logo.webp';
 
-export default function ProfileSpeedPhone() {
+export default function ProfileSpeedPhoneNotLogin() {
     const { language, setLanguage } = useContext(MyContext);
-    const navigate = useNavigate();
 
     function toggleLang() {
         setLanguage(language === 'ar' ? 'en' : 'ar');
     }
 
     const actions = [
-        { icon: <IoIosPerson />, name: language === 'ar' ? 'تعديل الملف الشخصي' : 'Edit Profile', to: '/edit-profile' },
-        { icon: <FaRegHeart />, name: language === 'ar' ? 'قائمة الأمنيات' : 'Wish List', to: '/wish-list' },
-        { icon: <RiBillLine />, name: language === 'ar' ? 'قائمة الطلبات' : 'Order List', to: '/order-list' },
         {
             icon: <FaLanguage />,
             name: language === 'ar' ? 'تغيير اللغة' : 'Language',
             onClick: toggleLang,
         },
+        { icon: <IoMdLogIn />, name: language === 'ar' ? 'تسجيل الدخول' : 'Log in', to: '/login' },
     ];
-    const handleLogout = async () => {
-        const token = sessionStorage.getItem("token");
-        const API_URL = `https://dash.watchizereg.com/api/logout?token=${token}`;
-
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: {
-                    "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
-                },
-            });
-
-            if (response.ok) {
-                console.log("Logout successful");
-                sessionStorage.clear();
-                localStorage.clear();
-                navigate("/");
-                window.location.reload();
-
-            } else {
-                console.error("Failed to log out:", response.statusText);
-            }
-        } catch (error) {
-            console.error("Logout error:", error);
-        }
-    };
 
     return (
         <div className="col-12 p-3 d-flex sticky-top" sx={{ position: 'relative', zIndex: 1000 }}>
@@ -99,12 +69,6 @@ export default function ProfileSpeedPhone() {
                         tooltipTitle={action.name}
                     />
                 ))}
-                <SpeedDialAction
-                    key="Log Out"
-                    icon={<IoIosLogOut />}
-                    tooltipTitle="Log Out"
-                    onClick={handleLogout}
-                />
             </SpeedDial>
         </div>
     );

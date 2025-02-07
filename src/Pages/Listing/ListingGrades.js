@@ -191,7 +191,7 @@ function ListingGrades() {
                                                             <FaRegHeart />
                                                         </button>
                                                     </div>
-                                                    <Link to={`/product/${product.id}`} className="product-img-container">
+                                                    <Link to={`/product/${product.product_title}`} className="product-img-container">
                                                         <img
                                                             src={product.image || "/placeholder.png"}
                                                             alt={product.wa_code || "Product"}
@@ -227,12 +227,12 @@ function ListingGrades() {
                                                                 <span className={` mx-1 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.rating === null ? 5 : product.rating)})</span>
                                                             </div>
                                                         </div>
-                                                        <button
+                                                        <Link to={`/product/${product.product_title}`}
                                                             className="btn btn-outline-dark rounded-4 mt-2"
-                                                            disabled={product.stock <= 0}
+                                                            disabled={parseInt(product.stock) <= 0}
                                                         >
-                                                            {isRTL ? "أضف إلى السلة" : "Add to Cart"}
-                                                        </button>
+                                                            {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
+                                                        </Link>
                                                     </div>
                                                 </div>
                                             </div>

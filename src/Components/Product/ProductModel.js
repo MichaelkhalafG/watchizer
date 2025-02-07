@@ -286,7 +286,7 @@ function ProductModel({ open, onClose, product, language }) {
                                 {language === "ar" ? "أضف إلى السلة" : "Add to Cart"}
                             </button>
                             <Link
-                                to={`/product/${product.id}`}
+                                to={`/product/${product.product_title}`}
                             >
                                 <button
                                     className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}

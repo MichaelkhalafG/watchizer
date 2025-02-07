@@ -69,14 +69,16 @@ function Register() {
 
             if (response.ok) {
                 setSuccess("Registration successful!");
-                setError("");
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user_id", data.id);
-                localStorage.setItem("first_name", data.first_name);
-                localStorage.setItem("last_name", data.last_name);
-                localStorage.setItem("email", data.email);
-                localStorage.setItem("phone_number", data.phone_number);
-                localStorage.setItem("image", data.image ? `https://dash.watchizereg.com/Uploads_Images/Category/${data.image}` : null);
+                sessionStorage.setItem("user_id", data.id);
+                sessionStorage.setItem("first_name", data.first_name);
+                sessionStorage.setItem("last_name", data.last_name);
+                sessionStorage.setItem("email", data.email);
+                sessionStorage.setItem("phone_number", data.phone_number);
+                sessionStorage.setItem(
+                    "image",
+                    data.image ? `https://dash.watchizereg.com/Uploads_Images/Category/${data.image}` : null
+                );
+                sessionStorage.setItem("token", data.token);
                 setTimeout(() => {
                     window.location.href = "/";
                 }, 2000);

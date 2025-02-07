@@ -11,12 +11,12 @@ import { MyContext } from "../../App";
 import axios from "axios";
 
 function ProductDisplay() {
-    const { id } = useParams();
+    const { name } = useParams();
     const { language, users, products, user_id, windowWidth, handleAddTowishlist, fetchCart } = useContext(MyContext);
     const [realetedProducts, setRelatedProducts] = useState();
     const [selectedDialColor, setSelectedDialColor] = useState(null);
     const [selectedBandColor, setSelectedBandColor] = useState(null);
-    const product = products.find((p) => p.id === parseInt(id));
+    const product = products.find((p) => p.product_title === name);
     const [selectedImage, setSelectedImage] = useState("");
     const [ratings, setRatings] = useState([]);
     const [stock, setstock] = useState();

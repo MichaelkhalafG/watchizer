@@ -25,9 +25,8 @@ import PhoneNavBar from './Components/Header/PhoneNavBar/PhoneNavBar';
 import PhoneLogo from './Components/Header/Nav/PhoneLogo';
 import Login from './Pages/Auth/Login/Login';
 import Register from './Pages/Auth/Register/Register';
-import CryptoJS from 'crypto-js';
-
-
+// import CryptoJS from 'crypto-js';
+import ProfileSpeedPhoneNotLogin from './Components/Header/Nav/ProfileSpeedPhoneNotLogin';
 
 
 const MyContext = createContext();
@@ -38,7 +37,6 @@ function App() {
   const [productsEn, setProductsEn] = useState([]);
   const [productsAr, setProductsAr] = useState([]);
   const [ratings, setRatings] = useState([]);
-  const [shipping, setShipping] = useState();
   const [tables, setTables] = useState({});
   const [sideBanners, setSideBanners] = useState([]);
   const [bottomBanners, setBottomBanners] = useState([]);
@@ -51,6 +49,8 @@ function App() {
   const [user_id, setuser_id] = useState(null);
   const [users, setusers] = useState([]);
   const [total_cart_price, settotal_cart_price] = useState();
+  const [shippingid, setShippingid] = useState("");
+  const [shipping, setShipping] = useState("");
   const [shippingData, setShippingData] = useState([]);
   const [shippingname, setShippingName] = useState('');
   const [filters, setFilters] = useState({
@@ -71,43 +71,43 @@ function App() {
     price: [0, 6000],
     ratings: [],
   });
-  const secretKey = 'miky';
+  // const secretKey = 'miky';
 
-  function setEncryptedItem(key, value) {
-    try {
-      if (!key || typeof key !== 'string') {
-        throw new Error('Invalid key. Key must be a non-empty string.');
-      }
-      if (typeof value !== 'string') {
-        throw new Error('Invalid value. Value must be a string.');
-      }
-      const encrypted = CryptoJS.AES.encrypt(value, secretKey).toString();
-      localStorage.setItem(key, encrypted);
-    } catch (error) {
-      console.error(`Error setting encrypted item for key "${key}":`, error.message);
-    }
-  }
 
-  function getDecryptedItem(key) {
-    try {
-      if (!key || typeof key !== 'string') {
-        throw new Error('Invalid key. Key must be a non-empty string.');
-      }
-      const encrypted = localStorage.getItem(key);
-      if (!encrypted) {
-        return null;
-      }
-      const bytes = CryptoJS.AES.decrypt(encrypted, secretKey);
-      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
-      if (!decrypted) {
-        throw new Error('Decryption failed. Check if the secret key matches.');
-      }
-      return decrypted;
-    } catch (error) {
-      console.error(`Error getting decrypted item for key "${key}":`, error.message);
-      return null;
-    }
-  }
+  // function setEncryptedItem(key, value) {
+  //   try {
+  //     if (!key || typeof key !== 'string') {
+  //       throw new Error('Invalid key. Key must be a non-empty string.');
+  //     }
+  //     if (typeof value !== 'string') {
+  //       throw new Error('Invalid value. Value must be a string.');
+  //     }
+  //     const encrypted = CryptoJS.AES.encrypt(value, secretKey).toString();
+  //     sessionStorage.setItem(key, encrypted);
+  //   } catch (error) {
+  //     console.error(`Error setting encrypted item for key "${key}":`, error.message);
+  //   }
+  // }
+  // function getDecryptedItem(key) {
+  //   try {
+  //     if (!key || typeof key !== 'string') {
+  //       throw new Error('Invalid key. Key must be a non-empty string.');
+  //     }
+  //     const encrypted = sessionStorage.getItem(key);
+  //     if (!encrypted) {
+  //       return null;
+  //     }
+  //     const bytes = CryptoJS.AES.decrypt(encrypted, secretKey);
+  //     const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+  //     if (!decrypted) {
+  //       throw new Error('Decryption failed. Check if the secret key matches.');
+  //     }
+  //     return decrypted;
+  //   } catch (error) {
+  //     console.error(`Error getting decrypted item for key "${key}":`, error.message);
+  //     return null;
+  //   }
+  // }
 
   useEffect(() => {
     const fetchShippingCities = async () => {
@@ -136,7 +136,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    setuser_id(localStorage.getItem('user_id') ? parseInt(localStorage.getItem('user_id')) : null);
+    setuser_id(sessionStorage.getItem('user_id') ? parseInt(sessionStorage.getItem('user_id')) : null);
   }, []);
 
   useEffect(() => {
@@ -157,6 +157,7 @@ function App() {
 
   const shippingPrices = useMemo(() => {
     return shippingData.map(city => ({
+      id: city.id.toString(),
       GovernorateEn: city.translations.find(t => t.locale === "en")?.city_name || city.city_name,
       GovernorateAr: city.translations.find(t => t.locale === "ar")?.city_name || city.city_name,
       Price: parseFloat(city.shipping_cost)
@@ -166,16 +167,19 @@ function App() {
   useEffect(() => {
     if (shippingPrices.length > 0) {
       const defaultShipping = shippingPrices[0];
-      setShippingName(language === 'ar' ? defaultShipping.GovernorateAr : defaultShipping.GovernorateEn);
+      setShippingid(defaultShipping.id);
       setShipping(defaultShipping.Price.toString());
+      setShippingName(language === 'ar' ? defaultShipping.GovernorateAr : defaultShipping.GovernorateEn);
     } else {
-      setShipping('');
+      setShippingid("");
+      setShipping("");
     }
   }, [shippingPrices, language]);
 
   useEffect(() => {
     const getTranslatedName = (translations, locale, fallback) => {
-      return translations.find((t) => t.locale === locale)?.[fallback] || "Unknown";
+      const translation = translations?.find((t) => t.locale === locale);
+      return translation && translation[fallback] ? translation[fallback] : "Unknown";
     };
 
     const getProductRating = (product, ratings) => {
@@ -195,138 +199,143 @@ function App() {
     };
 
     const transformProductData = (rawProducts, tableData, ratings, images, locale) => {
-      return rawProducts.map((product) => ({
-        ...product,
-        category_type: getTranslatedName(
-          tableData.categoryTypes.find((t) => t.id === product.category_type_id)?.translations || [],
-          locale,
-          'category_type_name'
-        ),
-        brand: getTranslatedName(
-          tableData.brands.find((b) => b.id === product.brand_id)?.translations || [],
-          locale,
-          'brand_name'
-        ),
-        grade: getTranslatedName(
-          tableData.grades.find((g) => g.id === product.grade_id)?.translations || [],
-          locale,
-          'grade_name'
-        ),
-        sub_type: getTranslatedName(
-          tableData.subTypes.find((s) => s.id === product.sub_type_id)?.translations || [],
-          locale,
-          'sub_type_name'
-        ),
-        dial_colors: getColors(product, 'dial_color'),
-        band_colors: getColors(product, 'band_color'),
-        band_closure: getTranslatedName(
-          tableData.closureTypes.find((ct) => ct.id === product.band_closure_id)?.translations || [],
-          locale,
-          'closure_type_name'
-        ),
-        case_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.case_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        dial_display_type: getTranslatedName(
-          tableData.displayTypes.find((dt) => dt.id === product.dial_display_type_id)?.translations || [],
-          locale,
-          'display_type_name'
-        ),
-        case_shape: getTranslatedName(
-          tableData.shapes.find((s) => s.id === product.case_shape_id)?.translations || [],
-          locale,
-          'shape_name'
-        ),
-        watch_movement: getTranslatedName(
-          tableData.movementTypes.find((mt) => mt.id === product.watch_movement_id)?.translations || [],
-          locale,
-          'movement_type_name'
-        ),
-        dial_glass_material: getTranslatedName(
-          tableData.materials.find((m) => m.id === product.dial_glass_material_id)?.translations || [],
-          locale,
-          'material_name'
-        ),
-        dial_case_material: getTranslatedName(
-          tableData.materials.find((m) => m.id === product.dial_case_material_id)?.translations || [],
-          locale,
-          'material_name'
-        ),
-        band_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.band_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        band_length: product.band_length,
-        water_resistance_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.water_resistance_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        band_width_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.band_width_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        case_thickness_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.case_thickness_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        watch_height_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.watch_height_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        watch_width_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.watch_width_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        band_material: getTranslatedName(
-          tableData.materials.find((m) => m.id === product.band_material_id)?.translations || [],
-          locale,
-          'material_name'
-        ),
-        watch_length_size_type: getTranslatedName(
-          tableData.sizeTypes.find((st) => st.id === product.watch_length_size_type_id)?.translations || [],
-          locale,
-          'size_type_name'
-        ),
-        rating: getProductRating(product, ratings),
-        images: images.filter((img) => img.product_id === product.id).map((img) => `https://dash.watchizereg.com/Uploads_Images/Product_image/${img.image}`),
-        features: product.feature.map((f) =>
-          getTranslatedName(f.translations || [], locale, 'feature_name')
-        ),
-        gender: product.gender.map((g) =>
-          getTranslatedName(g.translations || [], locale, 'gender_name')
-        ),
-        image: `https://dash.watchizereg.com/Uploads_Images/Product/${product.image}`,
-        product_title: getTranslatedName(product.translations || [], locale, 'product_title'),
-        model_name: getTranslatedName(product.translations || [], locale, 'model_name'),
-        country: getTranslatedName(product.translations || [], locale, 'country'),
-        stone: getTranslatedName(product.translations || [], locale, 'stone'),
-        stock: product.stock,
-        warranty_years: product.warranty_years,
-        interchangeable_dial: product.interchangeable_dial,
-        interchangeable_strap: product.interchangeable_strap,
-        purchase_price: product.purchase_price,
-        percentage_discount: product.percentage_discount,
-        sale_price_after_discount: product.sale_price_after_discount,
-        selling_price: product.selling_price,
-        watch_box: product.watch_box,
-        active: product.active,
-        watch_length: product.watch_length,
-        watch_width: product.watch_width,
-        watch_height: product.watch_height,
-        case_thickness: product.case_thickness,
-        band_width: product.band_width,
-        water_resistance: product.water_resistance,
-        long_description: getTranslatedName(product.translations || [], locale, 'long_description'),
-        short_description: getTranslatedName(product.translations || [], locale, 'short_description'),
-      }));
+      if (!rawProducts || !Array.isArray(rawProducts)) {
+        console.error("Error: rawProducts is not valid", rawProducts);
+        return [];
+      } else {
+        return rawProducts.map((product) => ({
+          ...product,
+          category_type: getTranslatedName(
+            tableData.categoryTypes.find((t) => t.id === product.category_type_id)?.translations || [],
+            locale,
+            'category_type_name'
+          ),
+          brand: getTranslatedName(
+            tableData.brands.find((b) => b.id === product.brand_id)?.translations || [],
+            locale,
+            'brand_name'
+          ),
+          grade: getTranslatedName(
+            tableData.grades.find((g) => g.id === product.grade_id)?.translations || [],
+            locale,
+            'grade_name'
+          ),
+          sub_type: getTranslatedName(
+            tableData.subTypes.find((s) => s.id === product.sub_type_id)?.translations || [],
+            locale,
+            'sub_type_name'
+          ),
+          dial_colors: getColors(product, 'dial_color'),
+          band_colors: getColors(product, 'band_color'),
+          band_closure: getTranslatedName(
+            tableData.closureTypes.find((ct) => ct.id === product.band_closure_id)?.translations || [],
+            locale,
+            'closure_type_name'
+          ),
+          case_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.case_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          dial_display_type: getTranslatedName(
+            tableData.displayTypes.find((dt) => dt.id === product.dial_display_type_id)?.translations || [],
+            locale,
+            'display_type_name'
+          ),
+          case_shape: getTranslatedName(
+            tableData.shapes.find((s) => s.id === product.case_shape_id)?.translations || [],
+            locale,
+            'shape_name'
+          ),
+          watch_movement: getTranslatedName(
+            tableData.movementTypes.find((mt) => mt.id === product.watch_movement_id)?.translations || [],
+            locale,
+            'movement_type_name'
+          ),
+          dial_glass_material: getTranslatedName(
+            tableData.materials.find((m) => m.id === product.dial_glass_material_id)?.translations || [],
+            locale,
+            'material_name'
+          ),
+          dial_case_material: getTranslatedName(
+            tableData.materials.find((m) => m.id === product.dial_case_material_id)?.translations || [],
+            locale,
+            'material_name'
+          ),
+          band_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.band_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          band_length: product.band_length,
+          water_resistance_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.water_resistance_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          band_width_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.band_width_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          case_thickness_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.case_thickness_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          watch_height_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.watch_height_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          watch_width_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.watch_width_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          band_material: getTranslatedName(
+            tableData.materials.find((m) => m.id === product.band_material_id)?.translations || [],
+            locale,
+            'material_name'
+          ),
+          watch_length_size_type: getTranslatedName(
+            tableData.sizeTypes.find((st) => st.id === product.watch_length_size_type_id)?.translations || [],
+            locale,
+            'size_type_name'
+          ),
+          rating: getProductRating(product, ratings),
+          images: images.filter((img) => img.product_id === product.id).map((img) => `https://dash.watchizereg.com/Uploads_Images/Product_image/${img.image}`),
+          features: product.feature.map((f) =>
+            getTranslatedName(f.translations || [], locale, 'feature_name')
+          ),
+          gender: product.gender.map((g) =>
+            getTranslatedName(g.translations || [], locale, 'gender_name')
+          ),
+          image: `https://dash.watchizereg.com/Uploads_Images/Product/${product.image}`,
+          product_title: getTranslatedName(product.translations || [], locale, 'product_title'),
+          model_name: getTranslatedName(product.translations || [], locale, 'model_name'),
+          country: getTranslatedName(product.translations || [], locale, 'country'),
+          stone: getTranslatedName(product.translations || [], locale, 'stone'),
+          stock: product.stock,
+          warranty_years: product.warranty_years,
+          interchangeable_dial: product.interchangeable_dial,
+          interchangeable_strap: product.interchangeable_strap,
+          purchase_price: product.purchase_price,
+          percentage_discount: product.percentage_discount,
+          sale_price_after_discount: product.sale_price_after_discount,
+          selling_price: product.selling_price,
+          watch_box: product.watch_box,
+          active: product.active,
+          watch_length: product.watch_length,
+          watch_width: product.watch_width,
+          watch_height: product.watch_height,
+          case_thickness: product.case_thickness,
+          band_width: product.band_width,
+          water_resistance: product.water_resistance,
+          long_description: getTranslatedName(product.translations || [], locale, 'long_description'),
+          short_description: getTranslatedName(product.translations || [], locale, 'short_description'),
+        }));
+      }
     };
 
     const fetchTablesAndProducts = async () => {
@@ -750,18 +759,28 @@ function App() {
         const offerData = (response.data || []).map((offer) => {
           const offerNameen = offer.translations.find((translation) => translation.locale === "en")?.offer_name || "Unnamed Offer";
           const offerNamear = offer.translations.find((translation) => translation.locale === "ar")?.offer_name || "Unnamed Offer";
+          const short_descriptionen = offer.translations.find((translation) => translation.locale === "en")?.short_description || "No Description";
+          const short_descriptionar = offer.translations.find((translation) => translation.locale === "ar")?.short_description || "No Description";
+          const long_descriptionen = offer.translations.find((translation) => translation.locale === "en")?.long_description || "No Description";
+          const long_descriptionar = offer.translations.find((translation) => translation.locale === "ar")?.long_description || "No Description";
 
           return {
             id: offer.id,
             main_product_id: offer.main_product_id,
             category_type_id: offer.category_type_id,
             gift_product_ids: offer.gift_product_ids.map((id) => parseInt(id)),
-            price: parseFloat(offer.price),
+            selling_price: parseFloat(offer.selling_price),
+            sale_price_after_discount: parseFloat(offer.sale_price_after_discount),
             stock: offer.stock,
             image: `https://dash.watchizereg.com/Uploads_Images/Offer/${offer.image}`,
             average_rate: offer.average_rate ? parseFloat(offer.average_rate) : null,
             created_at: offer.created_at,
             updated_at: offer.updated_at,
+            short_description_en: short_descriptionen,
+            short_description_ar: short_descriptionar,
+            long_description_en: long_descriptionen,
+            in_season: offer.in_season,
+            long_description_ar: long_descriptionar,
             offer_name_en: offerNameen,
             offer_name_ar: offerNamear,
             offer_rating: offer.offer_rating.map((rating) => ({
@@ -943,26 +962,33 @@ function App() {
   setInterval(() => {
     localStorage.clear();
     window.location.reload();
-  }, 15 * 60 * 1000);
+  }, 10 * 60 * 1000);
 
 
   const values = useMemo(() => {
-    return { language, setLanguage, getDecryptedItem, setEncryptedItem, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
-  }, [language, products, tables, users, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+    return { language, setLanguage, shippingid, setShippingid, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
+  }, [language, products, tables, users, shippingid, setShippingid, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
 
+  const renderProfileComponent = () => {
+    if (user_id !== null) {
+      return windowWidth >= 768 ? <ProfileSpeed /> : <ProfileSpeedPhone />;
+    } else {
+      return windowWidth >= 768 ? null : <ProfileSpeedPhoneNotLogin />;
+    }
+  };
   return (
     <BrowserRouter>
       <ScrollToTop />
       <MyContext.Provider value={values}>
         <div className="header"><Header /></div>
         <div className="phone-nav"><PhoneNavBar /></div>
-        {user_id !== null ? windowWidth >= 768 ? <ProfileSpeed /> : <ProfileSpeedPhone /> : null}
+        {renderProfileComponent()}
         {windowWidth >= 768 ? null : <PhoneLogo />}
         <Routes>
           <Route path="/" exact element={<Home />} />
           <Route path="/products/:id" element={<Listing />} />
           <Route
-            path="/product/:id"
+            path="/product/:name"
             element={<ProductDisplay />}
           />
           <Route
@@ -983,7 +1009,7 @@ function App() {
           <Route path="/order-list" element={<OrderList />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-        <Footer />
+        {windowWidth >= 768 ? <Footer /> : null}
       </MyContext.Provider>
     </BrowserRouter>
   );

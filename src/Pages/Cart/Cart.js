@@ -24,7 +24,9 @@ function Cart() {
         fetchCart,
         products,
         offers,
-        user_id
+        user_id,
+        shippingid,
+        setShippingid
     } = useContext(MyContext);
 
     const [selectedProduct, setSelectedProduct] = useState();
@@ -50,10 +52,12 @@ function Cart() {
     };
 
     const handleChange = (event) => {
-        const selectedPrice = event.target.value;
-        setShipping(selectedPrice);
-        const selectedShipping = shippingPrices.find(price => price.Price.toString() === selectedPrice);
+        const selectedId = event.target.value;
+        setShippingid(selectedId);
+
+        const selectedShipping = shippingPrices.find(city => city.id === selectedId);
         if (selectedShipping) {
+            setShipping(selectedShipping.Price.toString());
             setShippingName(language === 'ar' ? selectedShipping.GovernorateAr : selectedShipping.GovernorateEn);
         }
     };
@@ -205,7 +209,7 @@ function Cart() {
                                                         display: 'flex',
                                                         justifyContent: 'center',
                                                         alignItems: 'center',
-                                                        border: item.color_band ? 'none' : '1px solid #ddd'
+                                                        border: '1px solid #ddd'
                                                     }}
                                                 >
                                                     {!item.color_band && <span style={{ fontSize: '12px', color: '#666' }}>
@@ -223,7 +227,7 @@ function Cart() {
                                                         display: 'flex',
                                                         justifyContent: 'center',
                                                         alignItems: 'center',
-                                                        border: item.color_dial ? 'none' : '1px solid #ddd'
+                                                        border: '1px solid #ddd'
                                                     }}
                                                 >
                                                     {!item.color_dial && <span style={{ fontSize: '12px', color: '#666' }}>
@@ -290,13 +294,13 @@ function Cart() {
                                                 <Select
                                                     labelId="governorate-select-label"
                                                     id="governorate-select"
-                                                    value={shipping}
+                                                    value={shippingid}
                                                     onChange={handleChange}
                                                     fullWidth
                                                 >
-                                                    {shippingPrices.map((price, index) => (
-                                                        <MenuItem key={index} value={price.Price.toString()}>
-                                                            {language === 'ar' ? price.GovernorateAr : price.GovernorateEn}
+                                                    {shippingPrices.map((city) => (
+                                                        <MenuItem key={city.id} value={city.id}>
+                                                            {language === 'ar' ? city.GovernorateAr : city.GovernorateEn}
                                                         </MenuItem>
                                                     ))}
                                                 </Select>

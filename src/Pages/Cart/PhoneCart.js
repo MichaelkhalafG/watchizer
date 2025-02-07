@@ -20,13 +20,17 @@ function PhoneCart() {
         setShippingName,
         shipping,
         setShipping,
+        shippingid,
+        setShippingid
     } = useContext(MyContext);
 
     const handleChange = (event) => {
-        const selectedPrice = event.target.value;
-        setShipping(selectedPrice);
-        const selectedShipping = shippingPrices.find(price => price.Price.toString() === selectedPrice);
+        const selectedId = event.target.value;
+        setShippingid(selectedId);
+
+        const selectedShipping = shippingPrices.find(city => city.id === selectedId);
         if (selectedShipping) {
+            setShipping(selectedShipping.Price.toString());
             setShippingName(language === 'ar' ? selectedShipping.GovernorateAr : selectedShipping.GovernorateEn);
         }
     };
@@ -63,7 +67,7 @@ function PhoneCart() {
             </div>
             {cart.length > 0 ? (
                 <>
-                    <div className="row m-0">
+                    <div className="row m-0 pb-md-0 pb-5">
                         <h6 className="color-most-used fw-bold m-0 px-0 py-3">
                             {language === "ar" ? "اسحب لتشاهد المعلومات" : "Scroll To See Data"}
                         </h6>
@@ -213,8 +217,8 @@ function PhoneCart() {
                             })}
                         </div>
 
-                        <div className="col-md-3 col-12 p-3 pt-3">
-                            <div className="row align-items-center px-3 border border-1 rounded-3">
+                        <div className="col-md-3 col-12 p-3 pb-md-0 pb-5 pt-3">
+                            <div className="row align-items-center px-3  border border-1 rounded-3">
                                 <h6 className="color-most-used py-3 border-bottom border-1 col-12 fw-bold">
                                     {language === "ar" ? "مجموع السلة" : "CART TOTALS"}
                                 </h6>
@@ -238,13 +242,13 @@ function PhoneCart() {
                                             <Select
                                                 labelId="governorate-select-label"
                                                 id="governorate-select"
-                                                value={shipping}
+                                                value={shippingid}
                                                 onChange={handleChange}
                                                 fullWidth
                                             >
-                                                {shippingPrices.map((price, index) => (
-                                                    <MenuItem key={index} value={price.Price.toString()}>
-                                                        {language === 'ar' ? price.GovernorateAr : price.GovernorateEn}
+                                                {shippingPrices.map((city) => (
+                                                    <MenuItem key={city.id} value={city.id}>
+                                                        {language === 'ar' ? city.GovernorateAr : city.GovernorateEn}
                                                     </MenuItem>
                                                 ))}
                                             </Select>
@@ -295,9 +299,9 @@ function PhoneCart() {
 
 function EmptyCartMessage({ language }) {
     return (
-        <div className="row justify-content-center">
+        <div className="row m-0 justify-content-center">
             <div className="col-12 d-flex justify-content-center">
-                <img src={emptyCart} loading="lazy" alt="empty cart" className="col-2" />
+                <img src={emptyCart} loading="lazy" alt="empty cart" className="col-6" />
             </div>
             <h4 className="text-center fw-bold color-most-used mt-1">
                 {language === "ar" ? "السلة فارغة" : "Your Cart is currently empty"}
@@ -306,7 +310,7 @@ function EmptyCartMessage({ language }) {
                 {language === "ar" ? "الرجاء اختيار المنتجات التي ترغب في شرائها" : "Please choose the products you want to buy"}
             </h6>
             <div className="col-12 d-flex justify-content-center mt-3">
-                <Link to={"/"} className="text-decoration-none col-3">
+                <Link to={"/"} className="text-decoration-none col-6">
                     <Button
                         variant="contained"
                         className="rounded-pill bg-most-used text-light col-12 p-2"

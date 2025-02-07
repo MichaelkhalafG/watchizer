@@ -1,11 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import "../auth.css";
-import { MyContext } from "../../../App";
 
 function Login() {
-    const { setEncryptedItem } = useContext(MyContext);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -62,16 +60,16 @@ function Login() {
             if (response.ok) {
                 setSuccess(`Welcome, ${data.first_name} ${data.last_name}!`);
 
-                localStorage.setItem("user_id", data.id);
-                localStorage.setItem("first_name", data.first_name);
-                localStorage.setItem("last_name", data.last_name);
-                localStorage.setItem("email", data.email);
-                localStorage.setItem("phone_number", data.phone_number);
-                localStorage.setItem(
+                sessionStorage.setItem("user_id", data.id);
+                sessionStorage.setItem("first_name", data.first_name);
+                sessionStorage.setItem("last_name", data.last_name);
+                sessionStorage.setItem("email", data.email);
+                sessionStorage.setItem("phone_number", data.phone_number);
+                sessionStorage.setItem(
                     "image",
                     data.image ? `https://dash.watchizereg.com/Uploads_Images/Category/${data.image}` : null
                 );
-                setEncryptedItem("token", data.token);
+                sessionStorage.setItem("token", data.token);
 
                 const userData = {
                     email: cleanEmail,
@@ -79,13 +77,13 @@ function Login() {
                 };
 
                 if (rememberMe) {
-                    localStorage.setItem("rememberMe", "true");
-                    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
-                    localStorage.setItem(LOGIN_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
+                    sessionStorage.setItem("rememberMe", "true");
+                    sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(userData));
+                    sessionStorage.setItem(LOGIN_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
                 } else {
-                    localStorage.removeItem("rememberMe");
-                    localStorage.removeItem(USER_CACHE_KEY);
-                    localStorage.removeItem(LOGIN_CACHE_EXPIRATION);
+                    sessionStorage.removeItem("rememberMe");
+                    sessionStorage.removeItem(USER_CACHE_KEY);
+                    sessionStorage.removeItem(LOGIN_CACHE_EXPIRATION);
                 }
 
                 navigate("/");
@@ -101,9 +99,9 @@ function Login() {
     return (
         <div className="login" style={{ height: "100%", width: "100vw", position: "fixed", top: 0, left: 0 }}>
             <div className="container" style={{ height: "100%" }}>
-                <div className="row justify-content-center px-md-5 px-4" style={{ height: "100%" }}>
+                <div className="row justify-content-center px-md-5 px-2" style={{ height: "100%" }}>
                     <div className="col-md-6 col-12 d-flex flex-column justify-content-center align-items-center" style={{ height: "100%" }}>
-                        <div className="login-form col-12 p-5 bg-light rounded-3">
+                        <div className="login-form col-12 p-5 px-md-5 px-3 bg-light rounded-3">
                             <h2 className="text-center">Login</h2>
                             {error && <div className="alert alert-danger">{error}</div>}
                             {success && <div className="alert alert-success">{success}</div>}

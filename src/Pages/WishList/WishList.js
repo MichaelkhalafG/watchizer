@@ -90,7 +90,7 @@ function WishList() {
                                     </h6>
                                     <div className="col-3 text-center">
                                         {item.product_id &&
-                                            <Link to={`/product/${item.product_id}`}>
+                                            <Link to={`/product/${item.product_title}`}>
                                                 <Button
                                                     className="rounded-circle color-most-used mx-2"
                                                     sx={{

@@ -12,7 +12,6 @@ import { MyContext } from '../../App';
 
 function Header() {
     const { language, productsCount, users, user_id, total_cart_price } = useContext(MyContext);
-
     return (
         <>
             <div className="header-strip d-md-block d-none border-bottom border-1 pb-3 lato-regular" >
@@ -37,6 +36,9 @@ function Header() {
                                 <div className='d-flex mx-auto align-items-center'>
                                     {user_id && user_id !== null ?
                                         <>
+                                            {/* <Button onClick={() => { localStorage.clear() }} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                                {language === 'ar' ? 'تسجيل الدخول' : 'clear cach'}
+                                            </Button> */}
                                             <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
                                                 {users.find(u => u.id === user_id)?.first_name}
                                             </span>
@@ -45,10 +47,14 @@ function Header() {
                                                 alt='user'
                                                 className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} />
                                         </>
-                                        :
-                                        <Link to={'/login'} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
-                                            {language === 'ar' ? 'تسجيل الدخول' : 'Login'}
-                                        </Link>
+                                        : <>
+                                            <Link to={'/login'} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                                {language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                                            </Link>
+                                            {/* <Button onClick={() => { localStorage.clear(); sessionStorage.clear(); }} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
+                                                {language === 'ar' ? 'تسجيل الدخول' : 'clear cach'}
+                                            </Button> */}
+                                        </>
                                     }
                                     <div className='m-auto cart-tap d-flex align-items-center'>
                                         <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>

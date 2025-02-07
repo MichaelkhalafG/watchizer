@@ -15,11 +15,10 @@ import Pagination from "@mui/material/Pagination";
 function Listingoffers() {
     const { language, offers, windowWidth, offersfilters, setOffersFilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
-    const col = windowWidth >= 768 ? "col-3" : "col-6";
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [colselected, setColselected] = useState(col);
+    const [colselected, setColselected] = useState("col-md-3 col-6");
     const [currentPage, setCurrentPage] = useState(1);
     const [open, setOpen] = useState(false);
 
@@ -191,14 +190,22 @@ function Listingoffers() {
                                                 <div className="card-body d-flex flex-column justify-content-between p-3">
                                                     <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>{product.offer_name}</h6>
                                                     <p className={`card-text ${language === 'ar' ? 'text-end' : ''}  text-secondary mb-3`} style={{ fontSize: '0.9rem' }}>
-                                                        {/* {product.short_description.length > 100
-                                                            ? `${product.short_description.slice(0, 100)}...`
-                                                            : product.short_description} */}
-                                                        xfbmksnbkwsnvkakvanvn
+                                                        {language === "ar" ?
+                                                            product?.short_description_ar?.length > 100
+                                                                ? `${product?.short_description_ar?.slice(0, 100)}...`
+                                                                : product?.short_description_ar
+                                                            :
+                                                            product?.short_description_en?.length > 100
+                                                                ? `${product?.short_description_en?.slice(0, 100)}...`
+                                                                : product?.short_description_en
+                                                        }
                                                     </p>
                                                     <div className="d-flex justify-content-center align-items-center mb-2">
-                                                        <span className="color-most-used fw-bold me-2" style={{ fontSize: "1.1rem" }}>
-                                                            {Math.round(product.price)} {isRTL ? "ج.م" : "EGP"}
+                                                        <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'small' }}>
+                                                            {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                                        </span>
+                                                        <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'small' }}>
+                                                            {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                                         </span>
                                                     </div>
                                                     <div className="d-md-flex  justify-content-between align-items-center">

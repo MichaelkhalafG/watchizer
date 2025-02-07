@@ -2,19 +2,29 @@ import React, { useContext, useState, useEffect } from 'react';
 import HomeSlider from "./HomeSlider";
 import './home.css';
 import ProductSlider from '../../Components/Product/ProductSlider';
+import OfferSlider from '../../Components/Product/OfferSlider';
 import { MyContext } from '../../App';
 
 function Home() {
-    const { products, tables, language, windowWidth, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
+    const { products, tables, language, windowWidth, offers, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
     const [grades, setGrades] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState({});
     const [gradeText, setGradeText] = useState({});
+    const [filteredOffers, setfilteredOffers] = useState([]);
+
+    useEffect(() => {
+        setfilteredOffers(offers.filter(o => o.in_season === "yes"));
+    }, [offers]);
 
     useEffect(() => {
         if (tables && tables.grades) {
             setGrades(tables.grades);
         }
     }, [tables]);
+
+    useEffect(() => {
+
+    }, [])
 
 
     useEffect(() => {
@@ -42,7 +52,7 @@ function Home() {
     }, [products, grades, language]);
 
     return (
-        <div className="home px-md-5 container-fluid">
+        <div className="home px-md-5 pb-md-0 pb-5 container-fluid">
             <div className={`home-slider ${windowWidth > 768 ? 'py-5' : "pb-5"} `}>
                 <HomeSlider banners={homeBanners} />
             </div>
@@ -72,9 +82,20 @@ function Home() {
                         }
                         return null;
                     })}
+                    {filteredOffers.length !== 0 &&
+                        <OfferSlider
+                            key={0}
+                            text={{
+                                title: { en: "Season Offers.", ar: "عروض الموسم." },
+                                description: { en: "skbvkwbvjkwbnvkebnivkwvnksnve", ar: "صنقرثنصقرنصثلاقرنتثصلاقر" }
+                            }}
+                            products={filteredOffers}
+                            to={`/offers`}
+                        />
+                    }
                 </div>
             </div>
-            <div className="row bottom-banners-container">
+            <div className="row pb-md-0 pb-5 bottom-banners-container">
                 {bottomBanners.map((banner, index) => (
                     <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Bottom/${banner.image}`} alt={`bottombanner${index + 1}`} className="col-6 mb-2 rounded-3 img-fluid" style={{ maxHeight: "300px" }} />
                 ))}

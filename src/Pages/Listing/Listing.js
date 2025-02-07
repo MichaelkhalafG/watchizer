@@ -187,7 +187,7 @@ function Listing() {
                                                             </button>
                                                             :
                                                             <Link
-                                                                to={`/product/${product.id}`}
+                                                                to={`/product/${product.product_title}`}
                                                                 className="btn btn-dark rounded-circle"
                                                             >
                                                                 <SlSizeFullscreen />
@@ -200,7 +200,7 @@ function Listing() {
                                                             <FaRegHeart />
                                                         </button>
                                                     </div>
-                                                    <Link to={`/product/${product.id}`} className="product-img-container">
+                                                    <Link to={`/product/${product.product_title}`} className="product-img-container">
                                                         <img
                                                             src={product.image || "/placeholder.png"}
                                                             alt={product.wa_code || "Product"}
@@ -236,7 +236,7 @@ function Listing() {
                                                                 <span className={` mx-1 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.rating === null ? 5 : product.rating)})</span>
                                                             </div>
                                                         </div>
-                                                        <Link to={`/product/${product.id}`}
+                                                        <Link to={`/product/${product.product_title}`}
                                                             className="btn btn-outline-dark rounded-4 mt-2"
                                                             disabled={parseInt(product.stock) <= 0}
                                                         >

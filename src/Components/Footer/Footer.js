@@ -75,11 +75,11 @@ function Footer() {
                 <div className='row align-items-center'>
                     <div className='col-6'>
                         <p className={`text-${language === 'ar' ? 'end' : 'start'}`}>
-                            &copy; {new Date().getFullYear()} {language === 'ar' ? 'جميع الحقوق محفوظة' : 'Watchizer All Rights Reserved'}
+                            &copy; {new Date().getFullYear()} {language === 'ar' ? 'جميع الحقوق محفوظة لمايكل خلف' : 'Watchizer All Rights Reserved For Michael Khalaf'}
                         </p>
                     </div>
                     <div className={`col-6 d-flex ${language === 'ar' ? 'justify-content-start' : 'justify-content-end'} social-buttons`}>
-                        <a href="https://www.facebook.com/watchizer.fashion.egypt" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className='mx-2'>
+                        <a href="https://www.facebook.com/profile.php?id=100076267296916" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className='mx-2'>
                             <FaFacebookF style={{ height: '20px', width: '20px' }} />
                         </a>
                         <a href="https://www.instagram.com/watchizer_eg/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
