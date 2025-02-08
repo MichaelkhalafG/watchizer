@@ -4,7 +4,7 @@ import {
     Tabs, Tab, TextField, Button, CircularProgress, MenuItem,
     Select,
     FormControl,
-    InputLabel,
+    InputLabel, Alert, Snackbar
 } from "@mui/material";
 import DOMPurify from "dompurify";
 import { MyContext } from "../../App";
@@ -33,19 +33,25 @@ CustomTabPanel.propTypes = {
 
 function EditProfile() {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const { language, user_id, shippingid, shippingPrices, setShipping, setShippingName, setShippingid } = useContext(MyContext);
+    const { language, user_id, windowWidth, shippingid, shippingPrices, setShipping, setShippingName, setShippingid } = useContext(MyContext);
 
     const [value, setValue] = useState(0);
     const [addresses, setAddresses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    // Address Form State
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
     const [streetName, setStreetName] = useState("");
     const [buildingNumber, setBuildingNumber] = useState("");
     const [floorNumber, setFloorNumber] = useState("");
     const [apartmentNumber, setApartmentNumber] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
 
     const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
 
@@ -79,15 +85,15 @@ function EditProfile() {
 
     const handleAddAddress = () => {
         if (!shippingid) {
-            alert(language === "ar" ? "الرجاء اختيار مدينة الشحن أولاً" : "Please select a shipping city first");
+            showAlert(language === "ar" ? "الرجاء اختيار مدينة الشحن أولاً" : "Please select a shipping city first", "warning");
             return;
         }
         if (!streetName.trim() || !buildingNumber.trim()) {
-            alert(language === "ar" ? "يرجى إدخال اسم الشارع ورقم المبنى." : "Please enter the street name and building number.");
+            showAlert(language === "ar" ? "يرجى إدخال اسم الشارع ورقم المبنى." : "Please enter the street name and building number.", "warning");
             return;
         }
         if (!phoneNumber.trim()) {
-            alert(language === "ar" ? "يرجى إدخال رقم الهاتف." : "Please enter a phone number.");
+            showAlert(language === "ar" ? "يرجى إدخال رقم الهاتف." : "Please enter a phone number.", "warning");
             return;
         }
 
@@ -107,7 +113,7 @@ function EditProfile() {
         })
             .then(response => {
                 if (response.data.success) {
-                    alert(language === "ar" ? "تم إضافة العنوان بنجاح!" : "Address added successfully!");
+                    showAlert(language === "ar" ? "تم إضافة العنوان بنجاح!" : "Address added successfully!", "success");
                     fetchAddresses();
                     setStreetName("");
                     setBuildingNumber("");
@@ -115,7 +121,7 @@ function EditProfile() {
                     setApartmentNumber("");
                     setPhoneNumber("");
                 } else {
-                    alert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.");
+                    showAlert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.", "error");
                 }
             })
             .catch(error => console.error("Error adding address:", error));
@@ -133,6 +139,13 @@ function EditProfile() {
 
     return (
         <div className={`container mt-4 ${language === "ar" ? "text-right" : "text-left"}`} dir={language === "ar" ? "rtl" : "ltr"}>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
             <Tabs value={value} onChange={handleChange} className="d-flex justify-content-center">
                 <Tab className="col-4" label={language === "ar" ? "تعديل الملف الشخصي" : "Edit Profile"} />
                 <Tab className="col-4" label={language === "ar" ? "تغيير كلمة المرور" : "Change Password"} />

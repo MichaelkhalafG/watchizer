@@ -46,6 +46,9 @@ function GradeSideBar({ setFilters }) {
     //     setSelectedRating(rating);
     //     setFilters((prevFilters) => ({ ...prevFilters, rating }));
     // };
+    useEffect(() => {
+        setPriceRange([0, 6000])
+    }, [])
 
     const handleCheckboxChange = (id, filterType) => {
         const updateSelectedItems = (prevSelected) =>

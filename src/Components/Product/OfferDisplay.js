@@ -316,7 +316,7 @@ function OfferDisplay() {
                 </div>
             </div>
 
-            <div className="ratings-section row align-items-center rounded-5 border border-2 p-5 mt-4">
+            <div className="ratings-section row align-items-center rounded-5 border border-2 p-md-5 p-3 mx-md-0 mx-2 mt-4">
                 <Typography variant="h5" className="col-md-10 col-6">{language === "ar" ? "التقييمات" : "Ratings"}</Typography>
                 <button
                     onClick={handleRatingClick}

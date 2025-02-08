@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { MyContext } from "../../App";
-import { Button, Rating, MenuItem, Select, FormControl } from "@mui/material";
+import { Button, Rating, MenuItem, Select, FormControl, Alert, Snackbar } from "@mui/material";
 import CartProductModel from "./CartProductModel";
 import CartOfferModel from "./CartOfferModel";
 import { FaEye } from "react-icons/fa";
@@ -26,12 +26,22 @@ function Cart() {
         offers,
         user_id,
         shippingid,
-        setShippingid
+        setShippingid,
+        windowWidth
     } = useContext(MyContext);
 
     const [selectedProduct, setSelectedProduct] = useState();
     const [selectedItem, setselectedItem] = useState();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
+
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
 
     const handleProductClick = (item) => {
         let product;
@@ -71,8 +81,10 @@ function Cart() {
 
             if (response.status === 200) {
                 setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+                showAlert(language === "ar" ? "تم ازالة المنتج من السلة" : "The product has been removed from the cart", "success");
             } else {
                 console.error("Failed to remove item from cart:", response.data);
+
             }
         } catch (error) {
             console.error("Error removing item from cart:", error);
@@ -100,7 +112,7 @@ function Cart() {
                 });
 
                 if (response.status === 200) {
-                    console.log(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`);
+                    showAlert(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`, "success");
                 } else {
                     console.error("Failed to update cart item:", response.data);
                 }
@@ -369,6 +381,13 @@ function Cart() {
                     <EmptyCartMessage language={language} />
                 )}
             </div>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

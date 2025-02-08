@@ -40,7 +40,7 @@ export default function ProfileSpeedPhone() {
             });
 
             if (response.ok) {
-                console.log("Logout successful");
+                // console.log("Logout successful");
                 sessionStorage.clear();
                 localStorage.clear();
                 navigate("/");

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Box, Button, Rating } from '@mui/material';
+import { Modal, Box, Button, Rating, Alert, Snackbar } from '@mui/material';
 import { MdClose } from 'react-icons/md';
 import InnerImageZoom from 'react-inner-image-zoom';
 import defimg from '../../assets/images/1.webp'
@@ -10,13 +10,23 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function ProductModel({ open, onClose, product, language }) {
-    const { user_id, fetchCart, handleAddTowishlist } = useContext(MyContext)
+    const { user_id, fetchCart, handleAddTowishlist, windowWidth } = useContext(MyContext)
     const [selectedImage, setSelectedImage] = useState('');
     const [quantity, setQuantity] = useState(1);
-    const [selectedDialColor, setSelectedDialColor] = useState(null);
-    const [selectedBandColor, setSelectedBandColor] = useState(null);
+    const DialColor = product?.dial_color[0]?.color_value;
+    const BandColor = product?.band_color[0]?.color_value;
+    const [selectedDialColor, setSelectedDialColor] = useState(DialColor || null);
+    const [selectedBandColor, setSelectedBandColor] = useState(BandColor || null);
     const [stock, setstock] = useState();
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
 
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
     useEffect(() => {
         if (product) {
             setSelectedImage(product.image || product.images?.[0] || "");
@@ -42,19 +52,13 @@ function ProductModel({ open, onClose, product, language }) {
 
     const handleAddToCart = () => {
         if (!user_id) {
-            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+            showAlert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!", "warning");
         } else {
-            if (!selectedDialColor || !selectedBandColor) {
-                alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
-                return;
-            }
-
             const piecePrice = parseInt(product.sale_price_after_discount, 10);
             const totalPrice = piecePrice * quantity;
 
             if (isNaN(totalPrice) || totalPrice <= 0) {
-                console.error("Invalid total price calculation.");
-                alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                showAlert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.", "warning");
                 return;
             }
 
@@ -74,12 +78,12 @@ function ProductModel({ open, onClose, product, language }) {
                 }
             })
                 .then(() => {
-                    alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    showAlert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!", "success");
                     fetchCart()
                 })
                 .catch((error) => {
                     console.error("Error adding to cart:", error);
-                    alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                    showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.", "error");
                 });
         }
     };
@@ -119,6 +123,13 @@ function ProductModel({ open, onClose, product, language }) {
 
     return (
         <Modal open={open} onClose={onClose}>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
             <Box
                 sx={{
                     position: 'absolute',
@@ -231,8 +242,8 @@ function ProductModel({ open, onClose, product, language }) {
                             <div className="fw-bold text-secondary mb-2 col-12" style={{ fontSize: 'medium' }}>
                                 {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
                             </div>
-                            {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6", setSelectedDialColor)}
-                            {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6", setSelectedBandColor)}
+                            {product?.dial_color.length > 0 && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6", setSelectedDialColor)}
+                            {product?.band_color.length > 0 && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6", setSelectedBandColor)}
                             <div className="quantity-control col-6 d-flex align-items-center">
                                 <Button
                                     variant="outlined"

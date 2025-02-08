@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { IoBagOutline } from 'react-icons/io5';
 import { AiOutlineHome } from "react-icons/ai";
 import { MdOutlineLocalOffer, MdOutlineWatch } from "react-icons/md";
-import { IoShirtOutline } from "react-icons/io5";
+import { IoSearch } from "react-icons/io5";
 import './PhoneNavBar.css';
 import { MyContext } from '../../../App';
 
@@ -52,11 +52,10 @@ function PhoneNavBar() {
                     <MdOutlineWatch style={{ fontSize: "20px" }} />
                 </Link>
                 <Link
-                    to="/category/Fashion"
-                    className="col-3 text-decoration-none border-end text-center color-most-used px-3"
-                    onClick={() => handleSetFilters("Fashion")}
+                    to="/Search"
+                    className="col-3 text-decoration-none fw-bold border-end text-center color-most-used px-3"
                 >
-                    <IoShirtOutline style={{ fontSize: "20px" }} />
+                    <IoSearch style={{ fontSize: "20px" }} />
                 </Link>
                 <Link to="/offers" className="col-3 text-decoration-none border-end text-center color-most-used px-3">
                     <MdOutlineLocalOffer style={{ fontSize: "20px" }} />

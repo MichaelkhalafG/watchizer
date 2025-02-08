@@ -1,6 +1,6 @@
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { MyContext } from "../../App";
-import { Button, Rating, MenuItem, Select, FormControl } from "@mui/material";
+import { Button, Rating, MenuItem, Select, FormControl, Snackbar, Alert } from "@mui/material";
 import { FaEye } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
 import emptyCart from "../../assets/images/emptyCart.svg";
@@ -12,7 +12,6 @@ function PhoneCart() {
         language,
         cart,
         setCart,
-        windowWidth,
         total_cart_price,
         shippingPrices,
         productsCount,
@@ -20,9 +19,22 @@ function PhoneCart() {
         setShippingName,
         shipping,
         setShipping,
+        fetchCart,
+        user_id,
         shippingid,
-        setShippingid
+        setShippingid,
+        windowWidth
     } = useContext(MyContext);
+
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
+
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
 
     const handleChange = (event) => {
         const selectedId = event.target.value;
@@ -44,17 +56,59 @@ function PhoneCart() {
 
             if (response.status === 200) {
                 setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+                showAlert(language === "ar" ? "تم ازالة المنتج من السلة" : "The product has been removed from the cart", "success");
             } else {
                 console.error("Failed to remove item from cart:", response.data);
+
             }
         } catch (error) {
             console.error("Error removing item from cart:", error);
         }
     };
+    const goToCheckout = async () => {
+        try {
+            const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
+            const userId = user_id;
 
+            for (const item of cart) {
+                const response = await axios.post(`https://dash.watchizereg.com/api/add_to_cart`, {
+                    user_id: userId,
+                    product_id: item.product_id,
+                    offer_id: item.offer_id,
+                    quantity: item.quantity,
+                    piece_price: item.piece_price,
+                    color_band: item.color_band,
+                    color_dial: item.color_dial,
+                    total_price: item.piece_price * item.quantity
+                }, {
+                    headers: {
+                        "Api-Code": apiCode
+                    }
+                });
 
+                if (response.status === 200) {
+                    showAlert(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`, "success");
+                } else {
+                    console.error("Failed to update cart item:", response.data);
+                }
+            }
+            fetchCart();
+            window.location.href = "/checkout";
+
+        } catch (error) {
+            console.error("Error updating cart:", error);
+        }
+
+    };
     return (
         <div className="row m-0 py-3 px-md-4 px-0">
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
             <div className="col-12 p-3">
                 <h4 className="color-most-used fw-bold">
                     {language === "ar" ? "سلة المشتريات" : "Your Cart"}
@@ -277,14 +331,15 @@ function PhoneCart() {
                                         </span>
                                     </h6>
                                 </div>
-                                <Link to={"/checkout"} className="col-12 p-3">
+                                <div className="col-12 p-3">
                                     <Button
                                         variant="contained"
                                         className="rounded-3 bg-most-used text-light col-12 p-2"
+                                        onClick={goToCheckout}
                                     >
                                         {language === "ar" ? "الدفع" : "Checkout"}
                                     </Button>
-                                </Link>
+                                </div>
                             </div>
                         </div>
                     </div>

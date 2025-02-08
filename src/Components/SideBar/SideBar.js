@@ -38,6 +38,9 @@ function SideBar({ setFilters }) {
         setValue(newValue);
         setFilters((prevFilters) => ({ ...prevFilters, price: newValue }));
     };
+    useEffect(() => {
+        setPriceRange([0, 6000])
+    }, [])
 
     // const handleRatingChange = (event) => {
     //     const rating = event.target.value;

@@ -9,13 +9,14 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions
+    DialogActions,
+    Alert, Snackbar
 } from "@mui/material";
 import { MyContext } from "../../App";
 import axios from "axios";
 
 function Checkout() {
-    const { language, user_id, shippingPrices, shippingname, shipping, setShipping, cart, setShippingName, shippingid, setShippingid } = useContext(MyContext);
+    const { language, user_id, windowWidth, shippingPrices, shippingname, shipping, setShipping, cart, setShippingName, shippingid, setShippingid } = useContext(MyContext);
     const [formData, setFormData] = useState({
         address: "",
         city: shippingname,
@@ -29,6 +30,14 @@ function Checkout() {
     const [floorNumber, setFloorNumber] = useState("");
     const [apartmentNumber, setApartmentNumber] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
     const apiCode = "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0";
 
     const fetchAddresses = useCallback(() => {
@@ -81,15 +90,15 @@ function Checkout() {
 
     const handleAddAddress = () => {
         if (!shippingid) {
-            alert(language === "ar" ? "الرجاء اختيار مدينة الشحن أولاً" : "Please select a shipping city first");
+            showAlert(language === "ar" ? "الرجاء اختيار مدينة الشحن أولاً" : "Please select a shipping city first", "warning");
             return;
         }
         if (!streetName.trim() || !buildingNumber.trim()) {
-            alert(language === "ar" ? "يرجى إدخال اسم الشارع ورقم المبنى." : "Please enter the street name and building number.");
+            showAlert(language === "ar" ? "يرجى إدخال اسم الشارع ورقم المبنى." : "Please enter the street name and building number.", "warning");
             return;
         }
         if (!phoneNumber.trim()) {
-            alert(language === "ar" ? "يرجى إدخال رقم الهاتف." : "Please enter a phone number.");
+            showAlert(language === "ar" ? "يرجى إدخال رقم الهاتف." : "Please enter a phone number.", "warning");
             return;
         }
         let fullAddress = `${streetName}, Building ${buildingNumber}`;
@@ -106,7 +115,7 @@ function Checkout() {
         })
             .then(response => {
                 if (response.data.success) {
-                    alert(language === "ar" ? "تم إضافة العنوان بنجاح!" : "Address added successfully!");
+                    showAlert(language === "ar" ? "تم إضافة العنوان بنجاح!" : "Address added successfully!", "success");
                     fetchAddresses();
                     setOpenAddAddress(false);
                     setStreetName("");
@@ -115,7 +124,7 @@ function Checkout() {
                     setApartmentNumber("");
                     setPhoneNumber("");
                 } else {
-                    alert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.");
+                    showAlert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.", "error");
                 }
             })
             .catch(error => console.error("Error adding address:", error));
@@ -139,7 +148,7 @@ function Checkout() {
     const addOrder = () => {
         let totalPriceForOrder = cart.reduce((total, item) => total + (item.piece_price || 0) * (item.quantity || 0), 0) + (isNaN(parseFloat(shipping)) ? 0 : parseFloat(shipping));
         if (isNaN(totalPriceForOrder) || totalPriceForOrder <= 0) {
-            alert(language === "ar" ? "مجموع السعر غير صحيح." : "Total price is invalid.");
+            showAlert(language === "ar" ? "مجموع السعر غير صحيح." : "Total price is invalid.", "warning");
             return;
         }
 
@@ -148,13 +157,13 @@ function Checkout() {
         const selectedAddress = addresses.find(address => address.id === formData.address);
 
         if (!selectedAddress) {
-            alert(language === "ar" ? "الرجاء اختيار عنوان الشحن أولاً" : "Please select a shipping address first");
+            showAlert(language === "ar" ? "الرجاء اختيار عنوان الشحن أولاً" : "Please select a shipping address first", "warning");
             return;
         }
 
         const selectedPaymentMethod = formData.paymentMethod;
         if (!selectedPaymentMethod) {
-            alert(language === "ar" ? "الرجاء اختيار طريقة الدفع أولاً" : "Please select a payment method first");
+            showAlert(language === "ar" ? "الرجاء اختيار طريقة الدفع أولاً" : "Please select a payment method first", "warning");
             return;
         }
 
@@ -169,8 +178,6 @@ function Checkout() {
 
         const url = "https://dash.watchizereg.com/api/add_order";
 
-        console.log("Request Data:", requestData);
-
         axios.post(url, requestData, {
             headers: {
                 "Api-Code": apiCode,
@@ -179,11 +186,12 @@ function Checkout() {
         })
             .then(response => {
                 if (response.data.success) {
+                    showAlert(language === "ar" ? "تم إرسال الطلب بنجاح!" : "Order submitted successfully!", "success");
                     const redirectUrl = response.data.redirect_url || 'https://watchizereg.com/';
                     window.location.href = redirectUrl;
                     localStorage.clear();
                 } else {
-                    alert(language === "ar" ? "فشل في إرسال الطلب." : "Failed to submit order.");
+                    showAlert(language === "ar" ? "فشل في إرسال الطلب." : "Failed to submit order.", "error");;
                 }
             })
             .catch(error => {
@@ -191,12 +199,19 @@ function Checkout() {
                 if (error.response) {
                     console.error("Response error data:", error.response.data);
                 }
-                alert(language === "ar" ? "فشل في إرسال الطلب." : "Failed to submit order.");
+                showAlert(language === "ar" ? "فشل في إرسال الطلب." : "Failed to submit order.", "error");;
             });
     };
 
     return (
         <div className="cart container" dir={language === "ar" ? "rtl" : "ltr"} style={{ textAlign: language === "ar" ? "right" : "left" }}>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
             <div className="row py-3">
                 <div className="col-12 p-3">
                     <h4 className="color-most-used fw-bold">
@@ -339,6 +354,7 @@ function Checkout() {
                                 type="submit" variant="contained"
                                 className="rounded-3 bg-most-used text-light col-12 p-2"
                                 onClick={() => addOrder()}
+                                disabled={true}
                             >
                                 {language === "ar" ? "إرسال" : "Submit"}
                             </Button>

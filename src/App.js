@@ -27,6 +27,8 @@ import Login from './Pages/Auth/Login/Login';
 import Register from './Pages/Auth/Register/Register';
 // import CryptoJS from 'crypto-js';
 import ProfileSpeedPhoneNotLogin from './Components/Header/Nav/ProfileSpeedPhoneNotLogin';
+import { Alert, Snackbar } from '@mui/material';
+import SearchPageForPhone from './Pages/SearchPageForPhone/SearchPageForPhone'
 
 
 const MyContext = createContext();
@@ -36,6 +38,7 @@ function App() {
   const [windowWidth, setwindowWidth] = useState()
   const [productsEn, setProductsEn] = useState([]);
   const [productsAr, setProductsAr] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [ratings, setRatings] = useState([]);
   const [tables, setTables] = useState({});
   const [sideBanners, setSideBanners] = useState([]);
@@ -53,6 +56,9 @@ function App() {
   const [shipping, setShipping] = useState("");
   const [shippingData, setShippingData] = useState([]);
   const [shippingname, setShippingName] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertType, setAlertType] = useState("info");
+  const [openAlert, setOpenAlert] = useState(false);
   const [filters, setFilters] = useState({
     categories: [],
     brands: [],
@@ -71,6 +77,11 @@ function App() {
     price: [0, 6000],
     ratings: [],
   });
+  const showAlert = (message, type) => {
+    setAlertMessage(message);
+    setAlertType(type);
+    setOpenAlert(true);
+  };
   // const secretKey = 'miky';
 
 
@@ -114,7 +125,7 @@ function App() {
       try {
         const cachedData = localStorage.getItem("shippingCities");
         if (cachedData) {
-          console.log("Using cached shipping cities");
+          // console.log("Using cached shipping cities");
           setShippingData(JSON.parse(cachedData));
           return;
         }
@@ -179,7 +190,7 @@ function App() {
   useEffect(() => {
     const getTranslatedName = (translations, locale, fallback) => {
       const translation = translations?.find((t) => t.locale === locale);
-      return translation && translation[fallback] ? translation[fallback] : "Unknown";
+      return translation && translation[fallback] ? translation[fallback] : null;
     };
 
     const getProductRating = (product, ratings) => {
@@ -362,7 +373,7 @@ function App() {
           isCacheValid(RATINGS_CACHE_EXPIRATION) &&
           isCacheValid(IMAGES_CACHE_EXPIRATION)
         ) {
-          console.log("Using cached data");
+          // console.log("Using cached data");
 
           const cachedTables = JSON.parse(localStorage.getItem(TABLES_CACHE_KEY));
           const cachedProducts = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY));
@@ -695,7 +706,7 @@ function App() {
           setSideBanners(parsedData.sideBanners);
           setBottomBanners(parsedData.bottomBanners);
           setHomeBanners(parsedData.homeBanners);
-          console.log("Using cached banners");
+          // console.log("Using cached banners");
           return;
         }
 
@@ -745,7 +756,7 @@ function App() {
         };
 
         if (isCacheValid(OFFERS_CACHE_EXPIRATION)) {
-          console.log("Using cached offers");
+          // console.log("Using cached offers");
           const cachedOffers = JSON.parse(localStorage.getItem(OFFERS_CACHE_KEY));
           setOffers(cachedOffers);
           return;
@@ -890,7 +901,7 @@ function App() {
 
   const handleAddTowishlist = useCallback((id, type) => {
     if (!user_id) {
-      alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+      showAlert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!", "warning");
     } else {
       const payload = {
         user_id: user_id,
@@ -903,12 +914,12 @@ function App() {
         }
       })
         .then(() => {
-          alert(language === "ar" ? "تمت الإضافة إلى المفضل!" : "Added to the Wish List!");
+          showAlert(language === "ar" ? "تمت الإضافة إلى المفضل!" : "Added to the Wish List!", "success");
           fetchWishList()
         })
         .catch((error) => {
           console.error("Error adding to cart:", error);
-          alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى المفضل." : "An error occurred while adding to the Wish List.");
+          showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى المفضل." : "An error occurred while adding to the Wish List.", "error");
         });
     }
   }, [fetchWishList, language, user_id]);
@@ -966,8 +977,8 @@ function App() {
 
 
   const values = useMemo(() => {
-    return { language, setLanguage, shippingid, setShippingid, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
-  }, [language, products, tables, users, shippingid, setShippingid, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+    return { language, setLanguage, shippingid, filteredProducts, setFilteredProducts, setShippingid, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
+  }, [language, products, tables, users, shippingid, setShippingid, filteredProducts, setFilteredProducts, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
 
   const renderProfileComponent = () => {
     if (user_id !== null) {
@@ -984,6 +995,13 @@ function App() {
         <div className="phone-nav"><PhoneNavBar /></div>
         {renderProfileComponent()}
         {windowWidth >= 768 ? null : <PhoneLogo />}
+        <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+          anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+        >
+          <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+            {alertMessage}
+          </Alert>
+        </Snackbar>
         <Routes>
           <Route path="/" exact element={<Home />} />
           <Route path="/products/:id" element={<Listing />} />
@@ -1005,6 +1023,7 @@ function App() {
           <Route path="/grade/:name" element={<ListingGrades />} />
           <Route path="/offers" element={<Listingoffers />} />
           <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/Search" element={<SearchPageForPhone />} />
           <Route path="/wish-list" element={windowWidth >= 768 ? <WishList /> : <PhoneWishList />} />
           <Route path="/order-list" element={<OrderList />} />
           <Route path="*" element={<NotFound />} />

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState, useCallback } from "react";
-import { Rating, Button, TextField, Typography } from "@mui/material";
+import { Rating, Button, TextField, Typography, Alert, Snackbar } from "@mui/material";
 import { useParams } from "react-router-dom";
 import InnerImageZoom from "react-inner-image-zoom";
 import "react-inner-image-zoom/lib/InnerImageZoom/styles.css";
@@ -11,12 +11,17 @@ import { MyContext } from "../../App";
 import axios from "axios";
 
 function ProductDisplay() {
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("info");
+    const [openAlert, setOpenAlert] = useState(false);
     const { name } = useParams();
     const { language, users, products, user_id, windowWidth, handleAddTowishlist, fetchCart } = useContext(MyContext);
-    const [realetedProducts, setRelatedProducts] = useState();
-    const [selectedDialColor, setSelectedDialColor] = useState(null);
-    const [selectedBandColor, setSelectedBandColor] = useState(null);
     const product = products.find((p) => p.product_title === name);
+    const [realetedProducts, setRelatedProducts] = useState();
+    const DialColor = product?.dial_color[0]?.color_value;
+    const BandColor = product?.band_color[0]?.color_value;
+    const [selectedDialColor, setSelectedDialColor] = useState(DialColor || null);
+    const [selectedBandColor, setSelectedBandColor] = useState(BandColor || null);
     const [selectedImage, setSelectedImage] = useState("");
     const [ratings, setRatings] = useState([]);
     const [stock, setstock] = useState();
@@ -40,22 +45,25 @@ function ProductDisplay() {
             </p>
         </div>
     );
+    const showAlert = (message, type) => {
+        setAlertMessage(message);
+        setAlertType(type);
+        setOpenAlert(true);
+    };
 
     const handleAddToCart = () => {
         if (!user_id) {
-            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+            setAlertMessage(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
+            setAlertType("warning");
+            setOpenAlert(true);
         } else {
-            if (!selectedDialColor || !selectedBandColor) {
-                alert(language === "ar" ? "يرجى اختيار لون السوار ولون وجه الساعة." : "Please select both dial color and band color.");
-                return;
-            }
-
             const piecePrice = parseInt(product.sale_price_after_discount, 10);
             const totalPrice = piecePrice * quantity;
 
             if (isNaN(totalPrice) || totalPrice <= 0) {
-                console.error("Invalid total price calculation.");
-                alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                setAlertMessage(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
+                setAlertType("error");
+                setOpenAlert(true);
                 return;
             }
 
@@ -75,12 +83,16 @@ function ProductDisplay() {
                 }
             })
                 .then(() => {
-                    alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
+                    setAlertType("success");
+                    setOpenAlert(true);
                     fetchCart()
                 })
                 .catch((error) => {
                     console.error("Error adding to cart:", error);
-                    alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                    setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
+                    setAlertType("error");
+                    setOpenAlert(true);
                 });
         }
     };
@@ -157,53 +169,62 @@ function ProductDisplay() {
         }
     }, [ratings]);
 
+
     const handleRatingSubmit = async (value, comment) => {
         if (!user_id) {
-            alert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
-        } else {
-            const sanitizedComment = DOMPurify.sanitize(comment);
+            showAlert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!", "warning");
+            return;
+        }
+        const sanitizedComment = DOMPurify.sanitize(comment);
+        if (value && sanitizedComment.trim()) {
+            try {
+                await axios.post(
+                    "https://dash.watchizereg.com/api/add_product_rating",
+                    null,
+                    {
+                        params: {
+                            product_id: product.id,
+                            rating: value,
+                            comment: sanitizedComment,
+                            user_id: user_id,
+                        },
+                        headers: {
+                            "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
+                        },
+                    }
+                );
 
-            if (value && sanitizedComment.trim()) {
-                try {
-                    await axios.post(
-                        "https://dash.watchizereg.com/api/add_product_rating",
-                        null,
-                        {
-                            params: {
-                                product_id: product.id,
-                                rating: value,
-                                comment: sanitizedComment,
-                                user_id: user_id,
-                            },
-                            headers: {
-                                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
-                            },
-                        }
-                    );
-
-                    await fetchRatings();
-                    setNewRating({ value: 0, comment: "" });
-                } catch (error) {
-                    console.error("Error submitting rating:", error);
-                    alert(
-                        language === "ar"
-                            ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."
-                            : "An error occurred while submitting the rating. Please try again."
-                    );
-                }
-            } else {
-                alert(
+                await fetchRatings();
+                setNewRating({ value: 0, comment: "" });
+                showAlert(language === "ar" ? "تم إرسال التقييم بنجاح!" : "Rating submitted successfully!", "success");
+            } catch (error) {
+                console.error("Error submitting rating:", error);
+                showAlert(
                     language === "ar"
-                        ? "يرجى إدخال تقييم وتعليق صحيح"
-                        : "Please enter a valid rating and comment"
+                        ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."
+                        : "An error occurred while submitting the rating. Please try again.",
+                    "error"
                 );
             }
+        } else {
+            showAlert(
+                language === "ar" ? "يرجى إدخال تقييم وتعليق صحيح" : "Please enter a valid rating and comment",
+                "warning"
+            );
         }
     };
 
 
     return (
+
         <div className="container">
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
             <div className={`row ${windowWidth >= 768 ? 'border-bottom' : ""}  border-2 ps-1 p-4 pb-2 product-header mb-3`}>
                 <div className={`col-12 ${language === 'ar' ? "text-end" : "text-start"}`}>
                     <h3 className="fw-bold">{product?.product_title || "-"}</h3>
@@ -313,8 +334,8 @@ function ProductDisplay() {
                         <div className={`fw-bold text-secondary mb-1 col-12 ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: 'medium' }}>
                             {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
                         </div>
-                        {product?.dial_color && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-md-4 col-6", setSelectedDialColor)}
-                        {product?.band_color && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor)}
+                        {product?.dial_color.length > 0 && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-md-4 col-6", setSelectedDialColor)}
+                        {product?.band_color.length > 0 && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor)}
                         <div className={`quantity-control col-6 d-flex align-items-center ${language === 'ar' ? "justify-content-end" : ""}`}>
                             <Button
                                 variant="outlined"
@@ -378,7 +399,7 @@ function ProductDisplay() {
                 </div>
             </div>
 
-            <div className="ratings-section row align-items-center rounded-5 border border-2 p-5 mt-4">
+            <div className="ratings-section row align-items-center rounded-5 border border-2 p-md-5 p-3 mx-md-0 mx-2 mt-4">
                 <Typography variant="h5" className="col-md-10 col-6">{language === "ar" ? "التقييمات" : "Ratings"}</Typography>
                 <button
                     onClick={handleRatingClick}

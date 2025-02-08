@@ -50,6 +50,9 @@ function OffersSideBar({ setFilters }) {
             });
         }
     };
+    useEffect(() => {
+        setPriceRange([0, 6000])
+    }, [])
 
     useEffect(() => {
         const extractLocalizedNames = (data, key) => {

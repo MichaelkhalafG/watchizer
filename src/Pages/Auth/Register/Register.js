@@ -65,7 +65,7 @@ function Register() {
             });
 
             const data = await response.json();
-            console.log("Server Response:", data);
+            // console.log("Server Response:", data);
 
             if (response.ok) {
                 setSuccess("Registration successful!");
