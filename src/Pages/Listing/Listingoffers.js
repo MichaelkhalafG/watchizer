@@ -2,6 +2,8 @@ import OffersSideBar from "../../Components/SideBar/OffersSideBar";
 import "./Listing.css";
 import { MyContext } from "../../App";
 import { Link } from "react-router-dom";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import { FormControl, Drawer, InputLabel, MenuItem, Select, Button } from "@mui/material";
 import { useContext, useState, useEffect } from "react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
@@ -13,13 +15,12 @@ import OfferModel from "../../Components/Product/OfferModel";
 import Pagination from "@mui/material/Pagination";
 
 function Listingoffers() {
-    const { language, offers, windowWidth, offersfilters, setOffersFilters, handleAddTowishlist } = useContext(MyContext);
+    const { language, offers, windowWidth, currentPage, setCurrentPage, offersfilters, setOffersFilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [colselected, setColselected] = useState("col-md-3 col-6");
-    const [currentPage, setCurrentPage] = useState(1);
     const [open, setOpen] = useState(false);
 
     const toggleDrawer = (newOpen) => {
@@ -68,6 +69,7 @@ function Listingoffers() {
     };
     const handlePageChange = (event, value) => {
         setCurrentPage(value);
+        window.scrollTo(0, 0);
     };
     const totalPages = Math.ceil(filteredProducts.length / shownum);
     const displayedProducts = filteredProducts.slice(
@@ -93,7 +95,7 @@ function Listingoffers() {
                         <OffersSideBar setFilters={setOffersFilters} />
                     </div>
                 }
-                <div className="col-md-9 col-12">
+                <div className="col-md-9 pb-md-1 pb-5 col-12">
                     {filteredProducts.length === 0 ? (
                         <div className="row pt-4">
                             <div className="row justify-content-center align-items-center p-5 text-center" style={{ minHeight: "50vh" }}>
@@ -155,7 +157,7 @@ function Listingoffers() {
                                     {displayedProducts.map((product) => (
                                         <div key={product.id} className={`p-2 ${colselected}`} style={{ height: "100%" }}>
                                             <div className="card product-card border-0 rounded-3 shadow-sm d-flex flex-column position-relative">
-                                                <div className="action-menu position-absolute">
+                                                <div className="action-menu position-absolute" style={{ zIndex: 1000 }}>
                                                     {windowWidth >= 768 ?
                                                         <button
                                                             className="btn btn-dark rounded-circle"
@@ -179,11 +181,20 @@ function Listingoffers() {
                                                 </div>
                                                 <div className="product-img-container">
                                                     <Link to={`/offer/${product.id}`}>
-                                                        <img
+                                                        {/* <img
                                                             src={product.image || "/placeholder.png"}
                                                             alt={product.offer_name || "Product"}
                                                             className="img-fluid rounded-top"
                                                             loading="lazy"
+                                                        /> */}
+                                                        <LazyLoadImage
+                                                            src={product.image || "/placeholder.png"}
+                                                            alt={product.wa_code || "Product"}
+                                                            srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
+                                                            effect="blur"
+                                                            width="100%"
+                                                            height="auto"
+                                                            className="img-fluid rounded-top"
                                                         />
                                                     </Link>
                                                 </div>
@@ -227,7 +238,7 @@ function Listingoffers() {
                                         </div>
                                     ))}
                                 </div>
-                                <div className="d-flex justify-content-center mt-4">
+                                <div className="d-flex justify-content-center mb-md-0 mb-5 mt-4">
                                     <Pagination count={totalPages} page={currentPage} onChange={handlePageChange} color="primary" />
                                 </div>
                                 {selectedProduct && (

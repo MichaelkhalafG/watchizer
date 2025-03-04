@@ -2,10 +2,30 @@ import './Footer.css';
 import { FaShippingFast, FaPhoneVolume, FaUndoAlt, FaTag, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { useContext } from 'react';
 import { MyContext } from '../../App';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaRegHeart } from "react-icons/fa";
+import { RiBillLine } from "react-icons/ri";
+import { IoIosPerson } from "react-icons/io";
 
 function Footer() {
-    const { language } = useContext(MyContext);
+    const { language, tables, setFilters } = useContext(MyContext);
+    const navigate = useNavigate();
+    const half = Math.ceil((tables.brands?.length || 0) / 2);
+    const firstHalfBrands = tables.brands?.slice(0, half) || [];
+    const secondHalfBrands = tables.brands?.slice(half) || [];
+
+    const profileActions = [
+        { icon: <IoIosPerson />, name: language === "ar" ? "تعديل الملف الشخصي" : "Edit Profile", to: "/edit-profile" },
+        { icon: <FaRegHeart />, name: language === "ar" ? "قائمة الامنيات" : "Wish List", to: "/wish-list" },
+        { icon: <RiBillLine />, name: language === "ar" ? "قائمة الاوردرات" : "Order List", to: "/order-list" },
+    ];
+
+    const handleLogout = async () => {
+        sessionStorage.clear();
+        localStorage.clear();
+        navigate("/");
+        window.location.reload();
+    };
 
     return (
         <footer className='footer'>
@@ -29,48 +49,66 @@ function Footer() {
 
             {/* Footer Categories */}
             <div className='footer-categories container py-5'>
-                <div className='row'>
+                <div className='row m-0'>
                     <div className='col-6 col-lg-3 mb-4'>
-                        <h6 className='category-title'>Men's Watches</h6>
+                        <h6 className='category-title'>{language === 'ar' ? 'الفئات الفرعية' : 'SubTypes'}</h6>
                         <ul className='list-unstyled'>
-                            <li><Link to="/luxury-watches">Luxury Watches</Link></li>
-                            <li><Link to="/sports-watches">Sports Watches</Link></li>
-                            <li><Link to="/casual-watches">Casual Watches</Link></li>
-                            <li><Link to="/smart-watches">Smart Watches</Link></li>
+                            {tables.subTypes && tables.subTypes.map((subtype, i) => (
+                                <li key={i}>
+                                    <Link to={`/subtypes/${subtype.sub_type_name}`} onClick={() => setFilters({ categories: [], brands: [], subTypes: [subtype.id], price: [0, 6000] })}>
+                                        {subtype.translations.find(t => t.locale === language)?.sub_type_name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                     <div className='col-6 col-lg-3 mb-4'>
-                        <h6 className='category-title'>Women's Watches</h6>
+                        <h6 className='category-title'>{language === "ar" ? "العلامات التجارية" : "Brands"}</h6>
                         <ul className='list-unstyled'>
-                            <li><Link to="/womens-luxury">Luxury Watches</Link></li>
-                            <li><Link to="/womens-fitness">Fitness Watches</Link></li>
-                            <li><Link to="/womens-casual">Casual Watches</Link></li>
-                            <li><Link to="/womens-smart">Smart Watches</Link></li>
+                            {firstHalfBrands.map((brand, i) => (
+                                <li key={i}>
+                                    <Link to={`/brand/${brand.brand_name}`} onClick={() => setFilters({ categories: [], brands: [brand.id], subTypes: [], price: [0, 6000] })}>
+                                        {brand.translations.find(t => t.locale === language)?.brand_name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                     <div className='col-6 col-lg-3 mb-4'>
-                        <h6 className='category-title'>Brands</h6>
+                        <h6 className='category-title'>{language === "ar" ? "العلامات التجارية" : "Brands"}</h6>
                         <ul className='list-unstyled'>
-                            <li><Link to="/brands/rolex">Rolex</Link></li>
-                            <li><Link to="/brands/omega">Omega</Link></li>
-                            <li><Link to="/brands/seiko">Seiko</Link></li>
-                            <li><Link to="/brands/casio">Casio</Link></li>
+                            {secondHalfBrands.map((brand, i) => (
+                                <li key={i}>
+                                    <Link to={`/brand/${brand.brand_name}`} onClick={() => setFilters({ categories: [], brands: [brand.id], subTypes: [], price: [0, 6000] })}>
+                                        {brand.translations.find(t => t.locale === language)?.brand_name}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </div>
                     <div className='col-6 col-lg-3 mb-4'>
-                        <h6 className='category-title'>Customer Service</h6>
+                        <h6 className='category-title'>{language === "ar" ? "افعال سريعة" : "Fast Actions"}</h6>
                         <ul className='list-unstyled'>
-                            <li><Link to="/faqs">FAQs</Link></li>
-                            <li><Link to="/shipping-policy">Shipping Policy</Link></li>
-                            <li><Link to="/return-policy">Return Policy</Link></li>
-                            <li><Link to="/contact">Contact Us</Link></li>
+                            {profileActions.map((action, i) => (
+                                <li key={i}>
+                                    <Link to={action.to}>{action.name}</Link>
+                                </li>
+                            ))}
+                            <li>
+                                <Link to={'/cart'}>{language === "ar" ? "سلة المشتريات" : "Cart"}</Link>
+                            </li>
+                            <li>
+                                <Link to={'/blogs'}>{language === "ar" ? "المدونات" : "Blogs"}</Link>
+                            </li>
+                            <li>
+                                <button className='btn btn-link  p-0' onClick={handleLogout}>{language === "ar" ? "تسجيل الخروج" : "Log Out"}</button>
+                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
 
             {/* Footer Bottom */}
-
             <div className='footer-bottom container py-3 text-center'>
                 <div className='row align-items-center'>
                     <div className='col-6'>
@@ -88,7 +126,6 @@ function Footer() {
                     </div>
                 </div>
             </div>
-
         </footer>
     );
 }

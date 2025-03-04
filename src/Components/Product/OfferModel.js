@@ -56,7 +56,7 @@ function OfferModel({ open, onClose, product, language }) {
             const totalPrice = piecePrice * quantity;
 
             if (isNaN(totalPrice) || totalPrice <= 0) {
-                console.error("Invalid total price calculation.");
+                // console.error("Invalid total price calculation.");
                 alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
                 return;
             }
@@ -79,7 +79,7 @@ function OfferModel({ open, onClose, product, language }) {
                     fetchCart()
                 })
                 .catch((error) => {
-                    console.error("Error adding to cart:", error);
+                    // console.error("Error adding to cart:", error);
                     alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                 });
         }

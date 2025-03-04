@@ -55,7 +55,7 @@ function Checkout() {
                     setAddresses([]);
                 }
             })
-            .catch(error => console.error("Error fetching addresses:", error))
+            // .catch(error => console.error("Error fetching addresses:", error))
             .finally(() => setLoadingAddresses(false));
     }, [user_id]);
 
@@ -127,7 +127,7 @@ function Checkout() {
                     showAlert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.", "error");
                 }
             })
-            .catch(error => console.error("Error adding address:", error));
+        // .catch(error => console.error("Error adding address:", error));
     };
 
 
@@ -195,16 +195,16 @@ function Checkout() {
                 }
             })
             .catch(error => {
-                console.error("Error submitting order:", error);
+                // console.error("Error submitting order:", error);
                 if (error.response) {
-                    console.error("Response error data:", error.response.data);
+                    // console.error("Response error data:", error.response.data);
                 }
                 showAlert(language === "ar" ? "فشل في إرسال الطلب." : "Failed to submit order.", "error");;
             });
     };
 
     return (
-        <div className="cart container" dir={language === "ar" ? "rtl" : "ltr"} style={{ textAlign: language === "ar" ? "right" : "left" }}>
+        <div className="cart container mb-md-0 mb-5" dir={language === "ar" ? "rtl" : "ltr"} style={{ textAlign: language === "ar" ? "right" : "left" }}>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
                 anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
             >
@@ -212,7 +212,7 @@ function Checkout() {
                     {alertMessage}
                 </Alert>
             </Snackbar>
-            <div className="row py-3">
+            <div className="row mb-md-0 mb-5 py-3">
                 <div className="col-12 p-3">
                     <h4 className="color-most-used fw-bold">
                         {language === "ar" ? "تفاصيل الفواتير" : "BILLING DETAILS"}
@@ -353,8 +353,7 @@ function Checkout() {
                                 form="checkout-form"
                                 type="submit" variant="contained"
                                 className="rounded-3 bg-most-used text-light col-12 p-2"
-                                onClick={() => addOrder()}
-                                disabled={true}
+                                onClick={() => { addOrder(); }}
                             >
                                 {language === "ar" ? "إرسال" : "Submit"}
                             </Button>

@@ -199,9 +199,11 @@ function SideBar({ setFilters }) {
                     ))}
                 </div>
             </div> */}
-            {sideBanners.map((banner, index) => (
-                <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-3" />
-            ))}
+            <div className="col-12 m-0 px-2 row">
+                {sideBanners.map((banner, index) => (
+                    <img key={index} width="100%" height="auto" loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-4" />
+                ))}
+            </div>
         </div>
     );
 }

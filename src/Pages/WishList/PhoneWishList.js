@@ -19,10 +19,10 @@ function PhoneWishList() {
             if (response.status === 200) {
                 setwishList((prevCart) => prevCart.filter((item) => item.id !== itemId));
             } else {
-                console.error("Failed to remove item from wishlist", response.data);
+                // console.error("Failed to remove item from wishlist", response.data);
             }
         } catch (error) {
-            console.error("Error removing item from wishlist:", error);
+            // console.error("Error removing item from wishlist:", error);
         }
     };
     return (
@@ -89,7 +89,7 @@ function PhoneWishList() {
                                 </h6>
                                 <div className="col-4 text-center">
                                     {item.product_id &&
-                                        <Link to={`/product/${item.product_id}`}>
+                                        <Link to={`/product/${item.product_title}`}>
                                             <Button
                                                 className="rounded-circle color-most-used mx-2"
                                                 sx={{

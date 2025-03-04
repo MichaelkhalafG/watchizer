@@ -19,10 +19,10 @@ function WishList() {
             if (response.status === 200) {
                 setwishList((prevCart) => prevCart.filter((item) => item.id !== itemId));
             } else {
-                console.error("Failed to remove item from wishlist", response.data);
+                // console.error("Failed to remove item from wishlist", response.data);
             }
         } catch (error) {
-            console.error("Error removing item from wishlist:", error);
+            // console.error("Error removing item from wishlist:", error);
         }
     };
     return (

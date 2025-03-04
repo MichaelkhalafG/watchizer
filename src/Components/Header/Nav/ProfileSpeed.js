@@ -30,17 +30,22 @@ export default function ProfileSpeed() {
             });
 
             if (response.ok) {
-                // console.log("Logout successful");
                 sessionStorage.clear();
                 localStorage.clear();
                 navigate("/");
                 window.location.reload();
 
             } else {
-                console.error("Failed to log out:", response.statusText);
+                // console.error("Failed to log out:", response.statusText);
             }
         } catch (error) {
-            console.error("Logout error:", error);
+            // console.error("Logout error:", error);
+            if (error === "Token has expired") {
+                sessionStorage.clear();
+                localStorage.clear();
+                navigate("/");
+                window.location.reload();
+            }
         }
     };
 

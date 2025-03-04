@@ -25,13 +25,16 @@ export default function ProfileSpeedPhoneNotLogin() {
     ];
 
     return (
-        <div className="col-12 p-3 d-flex sticky-top" sx={{ position: 'relative', zIndex: 1000 }}>
-            <img src={logo} alt="logo" className="logo" style={{ height: "50px", maxWidth: "150px" }} />
+        <>
+            <div className="col-12 p-3 d-flex" sx={{ position: 'relative', zIndex: 1000 }}>
+                <img src={logo} alt="logo" className={`logo`} style={{ height: "50px", maxWidth: "150px" }} />
+            </div>
             <SpeedDial
                 ariaLabel="Profile actions"
                 sx={{
-                    position: 'absolute',
+                    position: 'fixed',
                     right: 16,
+                    top: 16,
                     zIndex: 1000,
                     '& .MuiFab-primary': {
                         backgroundColor: '#262626FF',
@@ -47,6 +50,10 @@ export default function ProfileSpeedPhoneNotLogin() {
                     '& .MuiSpeedDialAction-staticTooltipLabel': {
                         backgroundColor: '#444',
                         color: '#fff',
+                        whiteSpace: 'nowrap',
+                        minWidth: '120px',
+                        textAlign: 'center',
+                        padding: '5px 10px',
                     },
                 }}
                 direction="down"
@@ -67,9 +74,10 @@ export default function ProfileSpeedPhoneNotLogin() {
                             )
                         }
                         tooltipTitle={action.name}
+                        tooltipOpen={true}
                     />
                 ))}
             </SpeedDial>
-        </div>
+        </ >
     );
 }

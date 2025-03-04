@@ -1,34 +1,39 @@
-import React, { createContext, useCallback, useEffect, useState, useMemo } from 'react';
+import React, { createContext, startTransition, useCallback, Suspense, useEffect, useState, useMemo, lazy } from 'react';
 import axios from 'axios';
 import './App.css';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { useNavigate, Route, Routes } from 'react-router-dom';
 import Home from './Pages/Home/Home';
 import Header from './Components/Header/Header';
-import NotFound from './Pages/Not Found/NotFound';
 import Footer from './Components/Footer/Footer';
-import ProductDisplay from './Components/Product/ProductDisplay';
-import Listing from './Pages/Listing/Listing';
-import ListingGrades from './Pages/Listing/ListingGrades';
 import Cart from './Pages/Cart/Cart';
 import PhoneCart from './Pages/Cart/PhoneCart';
 import Checkout from './Pages/Checkout/Checkout';
-import Listingoffers from './Pages/Listing/Listingoffers';
 import ScrollToTop from './Components/ScrollToTop/ScrollToTop';
-import ProfileSpeed from './Components/Header/Nav/ProfileSpeed';
-import ProfileSpeedPhone from './Components/Header/Nav/ProfileSpeedPhone';
-import EditProfile from './Pages/EditProfile/EditProfile';
-import PhoneWishList from './Pages/WishList/PhoneWishList';
-import WishList from './Pages/WishList/WishList';
-import OrderList from './Pages/OrderList/OrderList';
-import OfferDisplay from './Components/Product/OfferDisplay';
 import PhoneNavBar from './Components/Header/PhoneNavBar/PhoneNavBar';
-import PhoneLogo from './Components/Header/Nav/PhoneLogo';
-import Login from './Pages/Auth/Login/Login';
-import Register from './Pages/Auth/Register/Register';
+import { BiLoaderCircle } from "react-icons/bi";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 // import CryptoJS from 'crypto-js';
-import ProfileSpeedPhoneNotLogin from './Components/Header/Nav/ProfileSpeedPhoneNotLogin';
 import { Alert, Snackbar } from '@mui/material';
-import SearchPageForPhone from './Pages/SearchPageForPhone/SearchPageForPhone'
+const NotFound = lazy(() => import('./Pages/Not Found/NotFound'));
+const ProductDisplay = lazy(() => import('./Components/Product/ProductDisplay'));
+const Listing = lazy(() => import('./Pages/Listing/Listing'));
+const ListingSearch = lazy(() => import('./Pages/Listing/ListingSearch'));
+const ListingGrades = lazy(() => import('./Pages/Listing/ListingGrades'));
+const Listingoffers = lazy(() => import('./Pages/Listing/Listingoffers'));
+const ProfileSpeed = lazy(() => import('./Components/Header/Nav/ProfileSpeed'));
+const ProfileSpeedPhone = lazy(() => import('./Components/Header/Nav/ProfileSpeedPhone'));
+const EditProfile = lazy(() => import('./Pages/EditProfile/EditProfile'));
+const PhoneWishList = lazy(() => import('./Pages/WishList/PhoneWishList'));
+const WishList = lazy(() => import('./Pages/WishList/WishList'));
+const OrderList = lazy(() => import('./Pages/OrderList/OrderList'));
+const OfferDisplay = lazy(() => import('./Components/Product/OfferDisplay'));
+// const PhoneLogo = lazy(() => import('./Components/Header/Nav/PhoneLogo'));
+const Login = lazy(() => import('./Pages/Auth/Login/Login'));
+const Register = lazy(() => import('./Pages/Auth/Register/Register'));
+const ProfileSpeedPhoneNotLogin = lazy(() => import('./Components/Header/Nav/ProfileSpeedPhoneNotLogin'));
+const SearchPageForPhone = lazy(() => import('./Pages/SearchPageForPhone/SearchPageForPhone'));
+const Blog = lazy(() => import('./Pages/Blog/Blog'));
+const Blogs = lazy(() => import('./Pages/Blog/Blogs'));
 
 
 const MyContext = createContext();
@@ -37,6 +42,7 @@ function App() {
   const [language, setLanguage] = useState('en');
   const [windowWidth, setwindowWidth] = useState()
   const [productsEn, setProductsEn] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [productsAr, setProductsAr] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [ratings, setRatings] = useState([]);
@@ -49,6 +55,7 @@ function App() {
   const [cart, setCart] = useState([]);
   const [wishList, setwishList] = useState([]);
   const [offers, setOffers] = useState([]);
+  const navigate = useNavigate();
   const [user_id, setuser_id] = useState(null);
   const [users, setusers] = useState([]);
   const [total_cart_price, settotal_cart_price] = useState();
@@ -82,6 +89,12 @@ function App() {
     setAlertType(type);
     setOpenAlert(true);
   };
+  const Loader = useCallback(() => (
+    <div className='loader-container'>
+      <BiLoaderCircle className="spinner" size={50} color="#007bff" />
+      <div className='loader-text'>جارِ التحميل...</div>
+    </div>
+  ), []);
   // const secretKey = 'miky';
 
 
@@ -96,7 +109,7 @@ function App() {
   //     const encrypted = CryptoJS.AES.encrypt(value, secretKey).toString();
   //     sessionStorage.setItem(key, encrypted);
   //   } catch (error) {
-  //     console.error(`Error setting encrypted item for key "${key}":`, error.message);
+  // console.error(`Error setting encrypted item for key "${key}":`, error.message);
   //   }
   // }
   // function getDecryptedItem(key) {
@@ -115,7 +128,7 @@ function App() {
   //     }
   //     return decrypted;
   //   } catch (error) {
-  //     console.error(`Error getting decrypted item for key "${key}":`, error.message);
+  // console.error(`Error getting decrypted item for key "${key}":`, error.message);
   //     return null;
   //   }
   // }
@@ -139,7 +152,7 @@ function App() {
         localStorage.setItem("shippingCities", JSON.stringify(response.data));
 
       } catch (error) {
-        console.error("Error fetching shipping cities:", error);
+        // console.error("Error fetching shipping cities:", error);
       }
     };
 
@@ -160,7 +173,7 @@ function App() {
         });
         setusers(response.data);
       } catch (error) {
-        console.error("Error fetching shipping cities:", error);
+        // console.error("Error fetching users data", error);
       }
     };
     fetchusers();
@@ -211,7 +224,7 @@ function App() {
 
     const transformProductData = (rawProducts, tableData, ratings, images, locale) => {
       if (!rawProducts || !Array.isArray(rawProducts)) {
-        console.error("Error: rawProducts is not valid", rawProducts);
+        // console.error("Error: rawProducts is not valid", rawProducts);
         return [];
       } else {
         return rawProducts.map((product) => ({
@@ -314,6 +327,8 @@ function App() {
             locale,
             'size_type_name'
           ),
+          created_at: product.created_at ? new Date(product.created_at) : new Date(0),
+          updated_at: product.updated_at ? new Date(product.updated_at) : new Date(0),
           rating: getProductRating(product, ratings),
           images: images.filter((img) => img.product_id === product.id).map((img) => `https://dash.watchizereg.com/Uploads_Images/Product_image/${img.image}`),
           features: product.feature.map((f) =>
@@ -324,11 +339,14 @@ function App() {
           ),
           image: `https://dash.watchizereg.com/Uploads_Images/Product/${product.image}`,
           product_title: getTranslatedName(product.translations || [], locale, 'product_title'),
+          name: getTranslatedName(product.translations || [], "en", 'product_title'),
           model_name: getTranslatedName(product.translations || [], locale, 'model_name'),
           country: getTranslatedName(product.translations || [], locale, 'country'),
           stone: getTranslatedName(product.translations || [], locale, 'stone'),
-          stock: product.stock,
-          warranty_years: product.warranty_years,
+          stock: product.stock ?? 0,
+          market_stock: product.market_stock ?? 0,
+          search_keywords: product.search_keywords,
+          warranty_years: parseInt(product.warranty_years),
           interchangeable_dial: product.interchangeable_dial,
           interchangeable_strap: product.interchangeable_strap,
           purchase_price: product.purchase_price,
@@ -345,7 +363,12 @@ function App() {
           water_resistance: product.water_resistance,
           long_description: getTranslatedName(product.translations || [], locale, 'long_description'),
           short_description: getTranslatedName(product.translations || [], locale, 'short_description'),
-        }));
+        })).sort((a, b) => {
+          const dateComparison = new Date(b.created_at) - new Date(a.created_at);
+          if (a.market_stock === 0 && b.market_stock !== 0) return 1;
+          if (b.market_stock === 0 && a.market_stock !== 0) return -1;
+          return dateComparison;
+        });
       }
     };
 
@@ -353,38 +376,41 @@ function App() {
       try {
         const CACHE_DURATION = 60 * 60 * 1000;
 
-        const TABLES_CACHE_KEY = "tablesCache";
-        const TABLES_CACHE_EXPIRATION = "tablesCacheExpiration";
-        const PRODUCTS_CACHE_KEY = "productsCache";
-        const PRODUCTS_CACHE_EXPIRATION = "productsCacheExpiration";
-        const RATINGS_CACHE_KEY = "ratingsCache";
-        const RATINGS_CACHE_EXPIRATION = "ratingsCacheExpiration";
-        const IMAGES_CACHE_KEY = "imagesCache";
-        const IMAGES_CACHE_EXPIRATION = "imagesCacheExpiration";
+        const CACHE_KEYS = {
+          TABLES: "tablesCache",
+          TABLES_EXPIRATION: "tablesCacheExpiration",
+          PRODUCTS: "productsCache",
+          PRODUCTS_EXPIRATION: "productsCacheExpiration",
+          RATINGS: "ratingsCache",
+          RATINGS_EXPIRATION: "ratingsCacheExpiration",
+          IMAGES: "imagesCache",
+          IMAGES_EXPIRATION: "imagesCacheExpiration",
+        };
 
         const isCacheValid = (expirationKey) => {
           const expiration = localStorage.getItem(expirationKey);
           return expiration && new Date().getTime() < Number(expiration);
         };
 
+        const getCachedData = (key) => {
+          const data = localStorage.getItem(key);
+          return data ? JSON.parse(data) : null;
+        };
+
         if (
-          isCacheValid(TABLES_CACHE_EXPIRATION) &&
-          isCacheValid(PRODUCTS_CACHE_EXPIRATION) &&
-          isCacheValid(RATINGS_CACHE_EXPIRATION) &&
-          isCacheValid(IMAGES_CACHE_EXPIRATION)
+          Object.values(CACHE_KEYS).every((key) => key.includes("EXPIRATION") ? isCacheValid(key) : getCachedData(key))
         ) {
           // console.log("Using cached data");
 
-          const cachedTables = JSON.parse(localStorage.getItem(TABLES_CACHE_KEY));
-          const cachedProducts = JSON.parse(localStorage.getItem(PRODUCTS_CACHE_KEY));
-          const cachedRatings = JSON.parse(localStorage.getItem(RATINGS_CACHE_KEY));
-          const cachedImages = JSON.parse(localStorage.getItem(IMAGES_CACHE_KEY));
+          const cachedTables = getCachedData(CACHE_KEYS.TABLES);
+          const cachedProducts = getCachedData(CACHE_KEYS.PRODUCTS);
+          const cachedRatings = getCachedData(CACHE_KEYS.RATINGS);
+          const cachedImages = getCachedData(CACHE_KEYS.IMAGES);
 
           setTables(cachedTables);
           setRatings(cachedRatings);
           setProductsEn(transformProductData(cachedProducts, cachedTables, cachedRatings, cachedImages, "en"));
           setProductsAr(transformProductData(cachedProducts, cachedTables, cachedRatings, cachedImages, "ar"));
-
           return;
         }
 
@@ -393,20 +419,19 @@ function App() {
             "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0",
           },
         };
-
         const tableEndpoints = [
-          "https://dash.watchizereg.com/api/all_category_type",
-          "https://dash.watchizereg.com/api/all_brand",
-          "https://dash.watchizereg.com/api/all_grade",
-          "https://dash.watchizereg.com/api/all_sub_type",
-          "https://dash.watchizereg.com/api/all_color",
-          "https://dash.watchizereg.com/api/all_material",
-          "https://dash.watchizereg.com/api/all_shape",
-          "https://dash.watchizereg.com/api/all_size_type",
-          "https://dash.watchizereg.com/api/all_display_type",
-          "https://dash.watchizereg.com/api/all_closure_type",
-          "https://dash.watchizereg.com/api/all_movement_type",
-        ];
+          "all_category_type",
+          "all_brand",
+          "all_grade",
+          "all_sub_type",
+          "all_color",
+          "all_material",
+          "all_shape",
+          "all_size_type",
+          "all_display_type",
+          "all_closure_type",
+          "all_movement_type",
+        ].map((endpoint) => `https://dash.watchizereg.com/api/${endpoint}`);
 
         const tableResponses = await Promise.all(tableEndpoints.map((url) => axios.get(url, headers)));
 
@@ -425,8 +450,8 @@ function App() {
         };
 
         setTables(tableData);
-        localStorage.setItem(TABLES_CACHE_KEY, JSON.stringify(tableData));
-        localStorage.setItem(TABLES_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
+        localStorage.setItem(CACHE_KEYS.TABLES, JSON.stringify(tableData));
+        localStorage.setItem(CACHE_KEYS.TABLES_EXPIRATION, new Date().getTime() + CACHE_DURATION);
 
         const [productResponse, ratingResponse, imageResponse] = await Promise.all([
           axios.get("https://dash.watchizereg.com/api/all_product", headers),
@@ -442,18 +467,19 @@ function App() {
         setProductsEn(transformProductData(rawProducts, tableData, ratingsData, imagesData, "en"));
         setProductsAr(transformProductData(rawProducts, tableData, ratingsData, imagesData, "ar"));
 
-        localStorage.setItem(PRODUCTS_CACHE_KEY, JSON.stringify(rawProducts));
-        localStorage.setItem(PRODUCTS_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
+        localStorage.setItem(CACHE_KEYS.PRODUCTS, JSON.stringify(rawProducts));
+        localStorage.setItem(CACHE_KEYS.PRODUCTS_EXPIRATION, new Date().getTime() + CACHE_DURATION);
 
-        localStorage.setItem(RATINGS_CACHE_KEY, JSON.stringify(ratingsData));
-        localStorage.setItem(RATINGS_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
+        localStorage.setItem(CACHE_KEYS.RATINGS, JSON.stringify(ratingsData));
+        localStorage.setItem(CACHE_KEYS.RATINGS_EXPIRATION, new Date().getTime() + CACHE_DURATION);
 
-        localStorage.setItem(IMAGES_CACHE_KEY, JSON.stringify(imagesData));
-        localStorage.setItem(IMAGES_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
+        localStorage.setItem(CACHE_KEYS.IMAGES, JSON.stringify(imagesData));
+        localStorage.setItem(CACHE_KEYS.IMAGES_EXPIRATION, new Date().getTime() + CACHE_DURATION);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
       }
     };
+
 
 
     fetchTablesAndProducts();
@@ -683,7 +709,7 @@ function App() {
   //       setProductsEn(transformProductData('en'));
   //       setProductsAr(transformProductData('ar'));
   //     } catch (error) {
-  //       console.error('Error fetching data:', error);
+  // console.error('Error fetching data:', error);
   //     }
   //   };
 
@@ -735,7 +761,7 @@ function App() {
         setBottomBanners(bannersData.bottomBanners);
         setHomeBanners(bannersData.homeBanners);
       } catch (error) {
-        console.error("Error fetching banners:", error);
+        // console.error("Error fetching banners:", error);
       }
     };
 
@@ -746,7 +772,7 @@ function App() {
   useEffect(() => {
     const fetchOffers = async () => {
       try {
-        const CACHE_DURATION = 60 * 60 * 1000;
+        const CACHE_DURATION = 10 * 60 * 1000;
         const OFFERS_CACHE_KEY = "offersCache";
         const OFFERS_CACHE_EXPIRATION = "offersCacheExpiration";
 
@@ -811,7 +837,7 @@ function App() {
         localStorage.setItem(OFFERS_CACHE_EXPIRATION, new Date().getTime() + CACHE_DURATION);
 
       } catch (error) {
-        console.error("Error fetching offers:", error);
+        // console.error("Error fetching offers:", error);
       }
     };
 
@@ -843,6 +869,7 @@ function App() {
             product_title: product?.product_title || "Unknown Product",
             product_rating: product?.average_rate || 0,
             offer_id: item.offer_id,
+            type_stock: item.type_stock,
             offer_image: offer?.image || null,
             offer_title: language === 'ar' ? offer?.offer_name_ar : offer?.offer_name_en || "Unknown Offer",
             offer_rating: offer?.average_rate || 0,
@@ -857,7 +884,7 @@ function App() {
         setCart(formattedCartItems);
       }
     } catch (error) {
-      console.error("Error fetching cart data:", error);
+      // console.error("Error fetching cart data:", error);
     }
   }, [user_id, offers, products, language]);
   const fetchWishList = useCallback(async () => {
@@ -890,7 +917,7 @@ function App() {
         setwishList(formattedWishListItems);
       }
     } catch (error) {
-      console.error("Error fetching cart data:", error);
+      // console.error("Error fetching cart data:", error);
     }
   }, [user_id, offers, products, language]);
 
@@ -902,6 +929,7 @@ function App() {
   const handleAddTowishlist = useCallback((id, type) => {
     if (!user_id) {
       showAlert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!", "warning");
+      navigate("/login")
     } else {
       const payload = {
         user_id: user_id,
@@ -918,11 +946,11 @@ function App() {
           fetchWishList()
         })
         .catch((error) => {
-          console.error("Error adding to cart:", error);
+          // console.error("Error adding to cart:", error);
           showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى المفضل." : "An error occurred while adding to the Wish List.", "error");
         });
     }
-  }, [fetchWishList, language, user_id]);
+  }, [fetchWishList, language, navigate, user_id]);
 
   const handleQuantityChange = useCallback((index, value) => {
     setCart((prevCart) => {
@@ -964,11 +992,22 @@ function App() {
     return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
   }
   useEffect(() => {
-    setwindowWidth(getWindowWidth())
+    startTransition(() => {
+      setwindowWidth(getWindowWidth());
+    });
+
+    const handleResize = () => {
+      startTransition(() => {
+        setwindowWidth(getWindowWidth());
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
-  window.addEventListener('resize', () => {
-    setwindowWidth(getWindowWidth())
-  });
 
   setInterval(() => {
     localStorage.clear();
@@ -977,8 +1016,8 @@ function App() {
 
 
   const values = useMemo(() => {
-    return { language, setLanguage, shippingid, filteredProducts, setFilteredProducts, setShippingid, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
-  }, [language, products, tables, users, shippingid, setShippingid, filteredProducts, setFilteredProducts, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
+    return { language, setLanguage, Loader, shippingid, currentPage, setCurrentPage, filteredProducts, setFilteredProducts, setShippingid, users, WishListCount, setWishListCount, gradesfilters, windowWidth, handleAddTowishlist, fetchWishList, setgradesfilters, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, shippingPrices, products, tables, sideBanners, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, wishList, setwishList, handleQuantityChange, shippingname, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters };
+  }, [language, products, tables, Loader, users, shippingid, currentPage, setCurrentPage, setShippingid, filteredProducts, setFilteredProducts, gradesfilters, windowWidth, WishListCount, setWishListCount, handleAddTowishlist, setgradesfilters, fetchWishList, ratings, user_id, fetchCart, setuser_id, total_cart_price, settotal_cart_price, sideBanners, shippingPrices, bottomBanners, homeBanners, productsCount, setProductsCount, cart, setCart, handleQuantityChange, shippingname, wishList, setwishList, setShippingName, shipping, setShipping, filters, setFilters, offers, offersfilters, setOffersFilters]);
 
   const renderProfileComponent = () => {
     if (user_id !== null) {
@@ -988,13 +1027,118 @@ function App() {
     }
   };
   return (
-    <BrowserRouter>
-      <ScrollToTop />
+    <>
+      <HelmetProvider>
+        <Helmet>
+          {/* Basic SEO */}
+          <title>Watchizer - أفخم الساعات والإكسسوارات | تسوق الآن بأسعار مميزة</title>
+          <meta name="description"
+            content="اكتشف أفخم الساعات والإكسسوارات في Watchizer. تسوق الآن أرقى الساعات الفاخرة بتصاميم أنيقة وجودة عالمية بأسعار تنافسية." />
+          <meta name="keywords"
+            content="luxury watches, men's watches, women's watches, branded watches, best watch store Egypt, online watch shop, stylish watches, Rolex, Omega, TAG Heuer, Swiss watches, ساعات فاخرة, ساعات رجالي, ساعات نسائية, متجر ساعات في مصر, ساعات كوارتز, ساعات ذكية, شراء ساعات أونلاين" />
+          <meta name="author" content="Watchizer - خبراء الساعات الفاخرة" />
+          <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+          <link rel="canonical" href="https://www.watchizereg.com/" />
+
+          {/* Open Graph / Facebook */}
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="Watchizer - أفخم الساعات والإكسسوارات الفاخرة" />
+          <meta property="og:description"
+            content="اكتشف مجموعة رائعة من الساعات الفاخرة والإكسسوارات العصرية في Watchizer. جودة استثنائية، تصاميم راقية، وعروض لا تُقاوم." />
+          <meta property="og:image" content="https://www.watchizereg.com/logo.png" />
+          <meta property="og:image:alt" content="مجموعة من الساعات الفاخرة من Watchizer" />
+          <meta property="og:url" content="https://www.watchizereg.com/" />
+          <meta property="og:site_name" content="Watchizer" />
+          <meta property="og:locale" content="ar_EG" />
+
+          {/* Twitter */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content="Watchizer - أفخم الساعات والإكسسوارات الفاخرة" />
+          <meta name="twitter:description"
+            content="تسوق أحدث موديلات الساعات الفاخرة والإكسسوارات الراقية بأفضل الأسعار فقط على Watchizer." />
+          <meta name="twitter:image" content="https://www.watchizereg.com/logo.png" />
+          <meta name="twitter:site" content="@Watchizer" />
+          <meta name="twitter:creator" content="@Watchizer" />
+          <meta name="google-site-verification" content="ySFGJkGj9eU9lzj8qAvuoqI9xt4Wcaswa_Q0Ke4Uoqg" />
+
+          {/* Language and Region */}
+          <meta name="language" content="ar-eg, en-eg" />
+          <meta name="geo.region" content="EG" />
+          <meta name="geo.placename" content="Cairo, Egypt" />
+
+          {/* Theme & Appearance */}
+          <meta name="theme-color" content="#000000" />
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/logo.png" />
+
+          {/* Preload Fonts */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Lato:wght@100;300;400;700;900&display=swap"
+            rel="stylesheet" />
+
+          {/* Web Manifest for PWA */}
+          <link rel="manifest" href="/manifest.json" />
+
+          {/* Structured Data (Schema.org) */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org/",
+              "@type": "Store",
+              "name": "Watchizer - Luxury Watches & Accessories",
+              "url": "https://www.watchizereg.com/",
+              "logo": "https://www.watchizereg.com/logo.png",
+              "image": "https://www.watchizereg.com/logo.png",
+              "description": "Discover a premium collection of luxury watches and fashion accessories at Watchizer. Shop exclusive timepieces with elegant designs and unbeatable prices in Egypt.",
+              "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "اركديا مول . كورنيش النيل . امتداد ماسبيرو",
+                "addressLocality": "Cairo",
+                "addressRegion": "Cairo Governorate",
+                "addressCountry": "EG"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": 30.0444,
+                "longitude": 31.2357
+              },
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": [
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                    "Sunday"
+                  ],
+                  "opens": "10:00",
+                  "closes": "22:00"
+                }
+              ],
+              "sameAs": [
+                "https://www.facebook.com/watchizer",
+                "https://www.instagram.com/watchizer"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+201551096234",
+                "contactType": "customer service",
+                "areaServed": "EG",
+                "availableLanguage": ["English", "Arabic"]
+              }
+            })}
+          </script>
+        </Helmet>
+      </HelmetProvider>
       <MyContext.Provider value={values}>
         <div className="header"><Header /></div>
         <div className="phone-nav"><PhoneNavBar /></div>
         {renderProfileComponent()}
-        {windowWidth >= 768 ? null : <PhoneLogo />}
+        {/* {windowWidth >= 768 ? null : <Suspense fallback={<Loader />}><PhoneLogo /></Suspense>} */}
         <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
           anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
         >
@@ -1002,35 +1146,39 @@ function App() {
             {alertMessage}
           </Alert>
         </Snackbar>
+        <ScrollToTop />
         <Routes>
           <Route path="/" exact element={<Home />} />
-          <Route path="/products/:id" element={<Listing />} />
+          <Route path="/products/:id" element={<Suspense fallback={<Loader />}><Listing /></Suspense>} />
           <Route
             path="/product/:name"
-            element={<ProductDisplay />}
+            element={<Suspense fallback={<Loader />}><ProductDisplay /></Suspense>}
           />
           <Route
             path="/offer/:id"
-            element={<OfferDisplay />}
+            element={<Suspense fallback={<Loader />}><OfferDisplay /></Suspense>}
           />
           <Route path="/cart" element={windowWidth >= 768 ? <Cart /> : <PhoneCart />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/category/:name" element={<Listing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/brand/:name" element={<Listing />} />
-          <Route path="/subtypes/:name" element={<Listing />} />
-          <Route path="/grade/:name" element={<ListingGrades />} />
-          <Route path="/offers" element={<Listingoffers />} />
-          <Route path="/edit-profile" element={<EditProfile />} />
-          <Route path="/Search" element={<SearchPageForPhone />} />
-          <Route path="/wish-list" element={windowWidth >= 768 ? <WishList /> : <PhoneWishList />} />
-          <Route path="/order-list" element={<OrderList />} />
-          <Route path="*" element={<NotFound />} />
+          <Route path="/category/:name" element={<Suspense fallback={<Loader />}><Listing /></Suspense>} />
+          <Route path="/login" element={<Suspense fallback={<Loader />}><Login /></Suspense>} />
+          <Route path="/register" element={<Suspense fallback={<Loader />}><Register /></Suspense>} />
+          <Route path="/brand/:name" element={<Suspense fallback={<Loader />}><Listing /></Suspense>} />
+          <Route path="/subtypes/:name" element={<Suspense fallback={<Loader />}><Listing /></Suspense>} />
+          <Route path="/grade/:name" element={<Suspense fallback={<Loader />}><ListingGrades /></Suspense>} />
+          <Route path="/offers" element={<Suspense fallback={<Loader />}><Listingoffers /></Suspense>} />
+          <Route path="/listingsearch" element={<Suspense fallback={<Loader />}><ListingSearch /></Suspense>} />
+          <Route path="/edit-profile" element={<Suspense fallback={<Loader />}><EditProfile /></Suspense>} />
+          <Route path="/Search" element={<Suspense fallback={<Loader />}><SearchPageForPhone /></Suspense>} />
+          <Route path="/wish-list" element={windowWidth >= 768 ? <Suspense fallback={<Loader />}><WishList /></Suspense> : <Suspense fallback={<Loader />}><PhoneWishList /></Suspense>} />
+          <Route path="/order-list" element={<Suspense fallback={<Loader />}><OrderList /></Suspense>} />
+          <Route path="/blogs" element={<Suspense fallback={<Loader />}><Blogs /></Suspense>} />
+          <Route path="/blog/:name" element={<Suspense fallback={<Loader />}><Blog /></Suspense>} />
+          <Route path="*" element={<Suspense fallback={<Loader />}><NotFound /></Suspense>} />
         </Routes>
-        {windowWidth >= 768 ? <Footer /> : null}
+        {windowWidth >= 768 ? <Suspense fallback={<Loader />}><Footer /></Suspense> : null}
       </MyContext.Provider>
-    </BrowserRouter>
+    </>
   );
 }
 

@@ -38,7 +38,7 @@ function OrderList() {
                 setLoading(false);
             })
             .catch(error => {
-                console.error("Error fetching orders:", error);
+                // console.error("Error fetching orders:", error);
                 setError("Failed to load orders.");
                 setLoading(false);
             });
@@ -48,12 +48,12 @@ function OrderList() {
     if (error) return <ErrorMessage message={error} />;
 
     return (
-        <div className="container mt-4">
+        <div className="container mb-md-0 mb-5 mt-4">
             <Typography variant="h5" className="fw-bold mb-3">
                 {language === "ar" ? "قائمة طلباتك" : "Your Orders"}
             </Typography>
             {orders.length > 0 ? (
-                <TableContainer component={Paper} elevation={3} className="p-3">
+                <TableContainer component={Paper} elevation={3} className="p-3 mb-md-0 mb-5">
                     <Table>
                         <TableHead>
                             <TableRow>

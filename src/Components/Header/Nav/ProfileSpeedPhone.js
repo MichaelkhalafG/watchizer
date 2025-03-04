@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { MyContext } from "../../../App";
 import { Link, useNavigate } from 'react-router-dom';
 import SpeedDial from '@mui/material/SpeedDial';
@@ -47,21 +47,30 @@ export default function ProfileSpeedPhone() {
                 window.location.reload();
 
             } else {
-                console.error("Failed to log out:", response.statusText);
+                // console.error("Failed to log out:", response.statusText);
             }
         } catch (error) {
-            console.error("Logout error:", error);
+            // console.error("Logout error:", error);
+            if (error === "Token has expired") {
+                sessionStorage.clear();
+                localStorage.clear();
+                navigate("/");
+                window.location.reload();
+            }
         }
     };
 
     return (
-        <div className="col-12 p-3 d-flex sticky-top" sx={{ position: 'relative', zIndex: 1000 }}>
-            <img src={logo} alt="logo" className="logo" style={{ height: "50px", maxWidth: "150px" }} />
+        <>
+            <div className="col-12 p-3 d-flex" sx={{ position: 'relative', zIndex: 1000 }}>
+                <img src={logo} alt="logo" className={`logo`} style={{ height: "50px", maxWidth: "150px" }} />
+            </div>
             <SpeedDial
                 ariaLabel="Profile actions"
                 sx={{
-                    position: 'absolute',
+                    position: 'fixed',
                     right: 16,
+                    top: 16,
                     zIndex: 1000,
                     '& .MuiFab-primary': {
                         backgroundColor: '#262626FF',
@@ -77,6 +86,10 @@ export default function ProfileSpeedPhone() {
                     '& .MuiSpeedDialAction-staticTooltipLabel': {
                         backgroundColor: '#444',
                         color: '#fff',
+                        whiteSpace: 'nowrap',
+                        minWidth: '120px',
+                        textAlign: 'center',
+                        padding: '5px 10px',
                     },
                 }}
                 direction="down"
@@ -97,6 +110,7 @@ export default function ProfileSpeedPhone() {
                             )
                         }
                         tooltipTitle={action.name}
+                        tooltipOpen={true}
                     />
                 ))}
                 <SpeedDialAction
@@ -104,8 +118,9 @@ export default function ProfileSpeedPhone() {
                     icon={<IoIosLogOut />}
                     tooltipTitle="Log Out"
                     onClick={handleLogout}
+                    tooltipOpen={true}
                 />
             </SpeedDial>
-        </div>
+        </>
     );
 }

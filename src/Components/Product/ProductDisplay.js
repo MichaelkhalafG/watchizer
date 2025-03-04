@@ -13,10 +13,12 @@ import axios from "axios";
 function ProductDisplay() {
     const [alertMessage, setAlertMessage] = useState("");
     const [alertType, setAlertType] = useState("info");
+    const [isfashion, setisfashion] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
+    const [type_stock, settype_stock] = useState("");
     const { name } = useParams();
     const { language, users, products, user_id, windowWidth, handleAddTowishlist, fetchCart } = useContext(MyContext);
-    const product = products.find((p) => p.product_title === name);
+    const product = products.find((p) => p.name === name);
     const [realetedProducts, setRelatedProducts] = useState();
     const DialColor = product?.dial_color[0]?.color_value;
     const BandColor = product?.band_color[0]?.color_value;
@@ -50,7 +52,11 @@ function ProductDisplay() {
         setAlertType(type);
         setOpenAlert(true);
     };
-
+    useEffect(() => {
+        if (product) {
+            product.category_type_name !== "Watches" ? setisfashion(true) : setisfashion(false)
+        }
+    }, [product])
     const handleAddToCart = () => {
         if (!user_id) {
             setAlertMessage(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
@@ -74,6 +80,7 @@ function ProductDisplay() {
                 piece_price: piecePrice,
                 color_band: selectedBandColor,
                 color_dial: selectedDialColor,
+                type_stock: type_stock,
                 total_price: totalPrice,
             };
 
@@ -89,7 +96,7 @@ function ProductDisplay() {
                     fetchCart()
                 })
                 .catch((error) => {
-                    console.error("Error adding to cart:", error);
+                    // console.error("Error adding to cart:", error);
                     setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                     setAlertType("error");
                     setOpenAlert(true);
@@ -102,7 +109,7 @@ function ProductDisplay() {
     const renderColorDetail = (labelEn, labelAr, colors, fs, col, setColor) => (
         <div className={`${col} mb-2`}>
             <div className={`fw-bold text-secondary ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: fs }}>
-                <span className={`${language === "ar" ? "ms-2" : "me-2"}`}>
+                <span className={`${language === "ar" ? "ms-2" : "me-2"} pb-2`}>
                     {language === "ar" ? `${labelAr} :` : `${labelEn} :`}
                 </span>
                 <div className={`d-flex gap-2 ${language === 'ar' ? "justify-content-end" : ""}`}>
@@ -142,20 +149,31 @@ function ProductDisplay() {
             const productRatings = response.data.filter((r) => r.product_id === product?.id);
             setRatings(productRatings);
         } catch (error) {
-            console.error("Error fetching ratings:", error);
+            // console.error("Error fetching ratings:", error);
         }
     }, [product]);
 
     useEffect(() => {
+        if (product?.image) {
+            setSelectedImage(product.image);
+        } else if (product?.images?.length) {
+            setSelectedImage(product.images[0]);
+        }
         if (product) {
-            setSelectedImage(product.image || product.images?.[0] || "");
             fetchRatings();
-
             const related = products.filter(
                 (p) => p.grade_id === product.grade_id && p.id !== product.id
             );
             setRelatedProducts(related);
-            setstock(parseInt(product.stock));
+            if (product?.stock && product.stock > 0) {
+                setstock(parseInt(product.stock));
+                settype_stock("Express");
+            } else if (product?.market_stock && product.market_stock > 0) {
+                setstock(parseInt(product.market_stock));
+                settype_stock("Market");
+            } else {
+                setstock(0);
+            }
         }
     }, [product, products, fetchRatings]);
 
@@ -198,7 +216,7 @@ function ProductDisplay() {
                 setNewRating({ value: 0, comment: "" });
                 showAlert(language === "ar" ? "تم إرسال التقييم بنجاح!" : "Rating submitted successfully!", "success");
             } catch (error) {
-                console.error("Error submitting rating:", error);
+                // console.error("Error submitting rating:", error);
                 showAlert(
                     language === "ar"
                         ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."
@@ -305,17 +323,25 @@ function ProductDisplay() {
                 </div>
 
                 <div className="col-md-8 product-info">
-                    <h5 className={`mb-3 ${language === 'ar' ? "text-end" : "text-start"}`}>{language === "ar" ? "التفاصيل" : "Details"}</h5>
-                    <p className={`text-secondary fw-bold mb-3 ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: "large" }}>
+                    <h5 className={`my-3 ${language === 'ar' ? "text-end" : "text-start"}`}>{language === "ar" ? "التفاصيل" : "Details"}</h5>
+                    <p className={`text-secondary fw-bold  ${language === 'ar' ? "text-end" : "text-start"}`} style={{ fontSize: "large" }}>
                         {product?.long_description || (language === "ar" ? "لا يوجد وصف" : "No description available")}
                     </p>
+                    <div className="d-flex col-12 my-3 align-items-center">
+                        <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'large' }}>
+                            {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                        </span>
+                        <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'large' }}>
+                            {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                        </span>
+                    </div>
                     <div className="row">
                         {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-md-4 col-6")}
                         {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-md-4 col-6")}
                         {product?.band_closure && renderDetail("Band Closure", "إغلاق السوار", product.band_closure, "small", "col-md-4 col-6")}
                         {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-md-4 col-6")}
                         {product?.case_shape && renderDetail("Case Shape", "شكل العلبة", product.case_shape, "small", "col-md-4 col-6")}
-                        {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-md-4 col-6")}
+                        {product?.band_material && isfashion ? renderDetail("Material", "مادة الصنع", product.band_material, "small", "col-md-4 col-6") : renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-md-4 col-6")}
                         {product?.watch_movement && renderDetail("Watch Movement", "حركة الساعة", product.watch_movement, "small", "col-md-4 col-6")}
                         {product?.water_resistance && renderDetail("Water Resistance", "مقاومة الماء", `${product.water_resistance} ${product.water_resistance_size_type}`, "small", "col-md-4 col-6")}
                         {product?.case_thickness && renderDetail("Case Size", "حجم العلبة", `${product.case_thickness} ${product.case_size_type}`, "small", "col-md-4 col-6")}
@@ -335,7 +361,7 @@ function ProductDisplay() {
                             {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
                         </div>
                         {product?.dial_color.length > 0 && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-md-4 col-6", setSelectedDialColor)}
-                        {product?.band_color.length > 0 && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor)}
+                        {product?.band_color.length > 0 && isfashion ? renderColorDetail("Color", "الون", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor) : renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-md-4 col-6", setSelectedBandColor)}
                         <div className={`quantity-control col-6 d-flex align-items-center ${language === 'ar' ? "justify-content-end" : ""}`}>
                             <Button
                                 variant="outlined"
@@ -368,15 +394,12 @@ function ProductDisplay() {
                             </Button>
                         </div>
                         <div className={`col-6 d-flex align-items-center ${language === 'ar' ? "justify-content-end" : ""}`}>
-                            {stock && parseInt(stock) > 0 ? (
-                                <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>
-                                    {language === 'ar' ? 'متوفر' : 'In Stock'}
+                            {stock &&
+                                <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-black' : parseInt(product.market_stock) > 0 ? "bg-success" : 'bg-danger'} col-md-8 col-12 p-2`}>
+                                    {language === 'ar' ? (parseInt(product.stock) > 0 ? 'اكسبريس' : parseInt(product.market_stock) > 0 ? "ماركت" : 'غير متوفر')
+                                        : (parseInt(product.stock) > 0 ? 'Express' : parseInt(product.market_stock) > 0 ? "Market Place" : 'Out of Stock')}
                                 </span>
-                            ) : (
-                                <span className="badge bg-danger" style={{ fontSize: '0.9rem' }}>
-                                    {language === 'ar' ? 'غير متوفر' : 'Out of Stock'}
-                                </span>
-                            )}
+                            }
                         </div>
                     </div>
 
@@ -465,6 +488,7 @@ ProductDisplay.propTypes = {
     products: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
+            name: PropTypes.string.isRequired,
             product_title: PropTypes.string.isRequired,
             model_name: PropTypes.string,
             long_description: PropTypes.string.isRequired,
@@ -473,6 +497,7 @@ ProductDisplay.propTypes = {
             sale_price_after_discount: PropTypes.string.isRequired,
             percentage_discount: PropTypes.string.isRequired,
             stock: PropTypes.number.isRequired,
+            category_type_name: PropTypes.string.isRequired,
             rate: PropTypes.number,
             image: PropTypes.string,
             images: PropTypes.arrayOf(PropTypes.string),
@@ -480,6 +505,7 @@ ProductDisplay.propTypes = {
             brand: PropTypes.string.isRequired,
             grade: PropTypes.string,
             sub_type: PropTypes.string.isRequired,
+            market_stock: PropTypes.number,
             dial_color: PropTypes.arrayOf(
                 PropTypes.shape({
                     color_id: PropTypes.number,

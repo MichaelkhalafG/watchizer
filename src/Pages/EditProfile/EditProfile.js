@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback, useContext } from "react";
 import PropTypes from "prop-types";
 import {
-    Tabs, Tab, TextField, Button, CircularProgress, MenuItem,
-    Select,
-    FormControl,
-    InputLabel, Alert, Snackbar
+    Tabs, Tab, TextField, Button, CircularProgress, MenuItem, InputAdornment,
+    Select, InputLabel, FormControl, IconButton, Alert, Snackbar, Avatar
 } from "@mui/material";
+import { CloudUpload } from "@mui/icons-material";
 import DOMPurify from "dompurify";
 import { MyContext } from "../../App";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 
 function CustomTabPanel(props) {
@@ -32,7 +32,6 @@ CustomTabPanel.propTypes = {
 };
 
 function EditProfile() {
-    const userData = JSON.parse(localStorage.getItem("userData") || "{}");
     const { language, user_id, windowWidth, shippingid, shippingPrices, setShipping, setShippingName, setShippingid } = useContext(MyContext);
 
     const [value, setValue] = useState(0);
@@ -46,7 +45,20 @@ function EditProfile() {
     const [buildingNumber, setBuildingNumber] = useState("");
     const [floorNumber, setFloorNumber] = useState("");
     const [apartmentNumber, setApartmentNumber] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
+    const [firstName, setFirstName] = useState(sessionStorage.getItem("first_name"));
+    const [lastName, setLastName] = useState(sessionStorage.getItem("last_name"));
+    const [phoneNumber, setPhoneNumber] = useState(sessionStorage.getItem("phone_number") !== "null" ? sessionStorage.getItem("phone_number") : "");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState({
+        current: false,
+        new: false,
+        confirm: false,
+    });
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState("");
+    const [image, setImage] = useState(sessionStorage.getItem("image") !== "null" ? sessionStorage.getItem("image") : "");
     const showAlert = (message, type) => {
         setAlertMessage(message);
         setAlertType(type);
@@ -80,6 +92,18 @@ function EditProfile() {
     useEffect(() => {
         fetchAddresses();
     }, [fetchAddresses]);
+
+    useEffect(() => {
+        if (!image || typeof image === "string") {
+            setPreviewUrl(image || "");
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(image);
+        setPreviewUrl(objectUrl);
+
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [image]);
 
     const handleChange = (event, newValue) => setValue(newValue);
 
@@ -124,7 +148,7 @@ function EditProfile() {
                     showAlert(language === "ar" ? "فشل إضافة العنوان." : "Failed to add address.", "error");
                 }
             })
-            .catch(error => console.error("Error adding address:", error));
+        // .catch(error => console.error("Error adding address:", error));
     };
     const handleChangeShipping = (event) => {
         const selectedId = event.target.value;
@@ -136,54 +160,200 @@ function EditProfile() {
             setShippingName(language === 'ar' ? selectedShipping.GovernorateAr : selectedShipping.GovernorateEn);
         }
     };
+    const handleUpdateProfile = () => {
+        setLoading(true);
+        const formData = new FormData();
+        formData.append("id", user_id);
+        formData.append("first_name", DOMPurify.sanitize(firstName));
+        formData.append("last_name", DOMPurify.sanitize(lastName));
+        formData.append("phone_number", DOMPurify.sanitize(phoneNumber));
+        if (image) formData.append("image", image);
+
+        axios.post("https://dash.watchizereg.com/api/updateProfile", formData, {
+            headers: { "Api-Code": apiCode },
+        })
+            .then(async () => {
+                showAlert("Profile updated successfully!", "success");
+                sessionStorage.setItem("first_name", firstName);
+                sessionStorage.setItem("last_name", lastName);
+                sessionStorage.setItem("phone_number", phoneNumber);
+                if (image) {
+                    try {
+                        const response = await axios.get("https://dash.watchizereg.com/api/all_user", {
+                            headers: {
+                                "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
+                            }
+                        });
+                        let user_image = response.data.find(user => user.id === user_id)?.image;
+                        // console.log("User Image:", user_image);
+                        sessionStorage.setItem("image",
+                            user_image ? `https://dash.watchizereg.com/Uploads_Images/User/${user_image}` : null
+                        );
+                        window.location.reload();
+                    } catch (error) {
+                        // console.error("Error fetching users data", error);
+                    }
+                }
+            })
+            .catch(() => showAlert("Failed to update profile.", "error"))
+            .finally(() => setLoading(false));
+    };
+
+    const togglePasswordVisibility = (field) => {
+        setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
+    };
+
+    const sanitizeInput = (input) => DOMPurify.sanitize(input);
+
+    const handleChangePassword = () => {
+        if (!newPassword || newPassword.length < 6) {
+            showAlert("New password must be at least 6 characters long.", "error");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showAlert("Passwords do not match.", "error");
+            return;
+        }
+
+        setLoading(true);
+        axios.post(
+            `https://dash.watchizereg.com/api/updatePassword`,
+            null,
+            {
+                params: {
+                    id: user_id,
+                    current_password: sanitizeInput(currentPassword),
+                    new_password: sanitizeInput(newPassword),
+                    new_password_confirmation: sanitizeInput(confirmPassword),
+                },
+                headers: { "Api-Code": apiCode },
+            }
+        )
+            .then(() => showAlert("Password changed successfully!", "success"))
+            .catch(() => showAlert("Failed to change password.", "error"))
+            .finally(() => setLoading(false));
+    };
+
 
     return (
-        <div className={`container mt-4 ${language === "ar" ? "text-right" : "text-left"}`} dir={language === "ar" ? "rtl" : "ltr"}>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
-                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
-            >
-                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
+        <div className={`container mt-md-4 mb-md-0 mb-5 mt-0 ${language === "ar" ? "text-right" : "text-left"}`} dir={language === "ar" ? "rtl" : "ltr"}>
             <Tabs value={value} onChange={handleChange} className="d-flex justify-content-center">
                 <Tab className="col-4" label={language === "ar" ? "تعديل الملف الشخصي" : "Edit Profile"} />
                 <Tab className="col-4" label={language === "ar" ? "تغيير كلمة المرور" : "Change Password"} />
                 <Tab className="col-4" label={language === "ar" ? "تعديل العناوين" : "Edit Address"} />
             </Tabs>
             <CustomTabPanel value={value} index={0}>
-                <button type="button" className="w-100 p-2 btn btn-dark">
-                    {language === "ar" ? "حفظ" : "Save"}
-                </button>
+                <div className="row mb-md-0 mb-5">
+                    <div className="col-md-5 col-12 text-center position-relative">
+                        <IconButton onClick={() => setImage(null)}>
+                            <Avatar
+                                src={previewUrl}
+                                sx={{ width: 200, height: 200, margin: "auto", cursor: "pointer" }}
+                            />
+                        </IconButton>
+                        <Button
+                            variant="contained"
+                            component="label"
+                            sx={{
+                                position: "absolute",
+                                bottom: "10px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                backgroundColor: "rgba(0, 0, 0, 0.7)",
+                                color: "white"
+                            }}
+                        >
+                            <CloudUpload /> Upload Image
+                            <input type="file" hidden onChange={(e) => {
+                                if (e.target.files.length > 0) {
+                                    setImage(e.target.files[0]);
+                                }
+                            }} />
+                        </Button>
+                    </div>
+                    <div className="col-md-7 mb-md-0 mb-5 col-12">
+                        <TextField fullWidth label="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} className="my-3" />
+                        <TextField fullWidth label="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} className="mb-3" />
+                        <TextField fullWidth label="Phone Number" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="mb-3" />
+                        <Button variant="contained" color="primary" fullWidth onClick={handleUpdateProfile} disabled={loading}>
+                            {loading ? <CircularProgress size={24} /> : "Save"}
+                        </Button>
+                    </div>
+                    {previewOpen && image && (
+                        <div onClick={() => setPreviewOpen(false)} style={{
+                            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+                            background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center",
+                            cursor: "pointer",
+                            zIndex: 1000
+                        }}>
+                            <img src={URL.createObjectURL(image)} alt="Preview" style={{ maxWidth: "90%", maxHeight: "90%" }} />
+                        </div>
+                    )}
+                </div>
             </CustomTabPanel>
 
             <CustomTabPanel value={value} index={1}>
-                <button type="button" className="w-100 p-2 btn btn-dark">
-                    {language === "ar" ? "تغيير كلمة المرور" : "Change Password"}
-                </button>
+                <form className="mb-md-0 mb-5">
+                    <TextField
+                        fullWidth
+                        label="Current Password"
+                        type={showPassword.current ? "text" : "password"}
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className="mb-3"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => togglePasswordVisibility("current")}>
+                                        {showPassword.current ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="New Password"
+                        type={showPassword.new ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="mb-3"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => togglePasswordVisibility("new")}>
+                                        {showPassword.new ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <TextField
+                        fullWidth
+                        label="Confirm Password"
+                        type={showPassword.confirm ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="mb-3"
+                        InputProps={{
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <IconButton onClick={() => togglePasswordVisibility("confirm")}>
+                                        {showPassword.confirm ? <VisibilityOff /> : <Visibility />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ),
+                        }}
+                    />
+                    <Button variant="contained" color="primary" fullWidth onClick={handleChangePassword} disabled={loading}>
+                        {loading ? <CircularProgress size={24} /> : "Change Password"}
+                    </Button>
+                </form>
             </CustomTabPanel>
 
             <CustomTabPanel value={value} index={2}>
-                {loading ? (
-                    <CircularProgress />
-                ) : error ? (
-                    <p className="text-danger">{error}</p>
-                ) : addresses.length === 0 ? (
-                    <p>{language === "ar" ? "لا توجد عناوين محفوظة." : "No saved addresses."}</p>
-                ) : (
-                    <div className="row">
-                        {addresses.map((address, index) => (
-                            <div key={index} className="col-md-6 col-12 mb-3">
-                                <div className="card p-3 shadow-sm">
-                                    <p className="mb-0"><strong>{language === "ar" ? "العنوان:" : "Address:"}</strong> {address.address_line}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                <h5 className="mt-4">{language === "ar" ? "إضافة عنوان جديد" : "Add New Address"}</h5>
-                <div className="row">
+                <h5 className="my-2">{language === "ar" ? "إضافة عنوان جديد" : "Add New Address"}</h5>
+                <div className="row border-bottom border-2 mb-md-0 mb-5 py-3">
                     <div className="col-md-6 col-12">
                         <TextField
                             fullWidth
@@ -241,12 +411,40 @@ function EditProfile() {
                             </Select>
                         </FormControl>
                     </div>
+                    <Button variant="contained" className="my-2" color="primary" fullWidth onClick={handleAddAddress}>
+                        {language === "ar" ? "حفظ العنوان" : "Save Address"}
+                    </Button>
                 </div>
 
-                <Button variant="contained" color="primary" fullWidth onClick={handleAddAddress}>
-                    {language === "ar" ? "حفظ العنوان" : "Save Address"}
-                </Button>
+                {loading ? (
+                    <CircularProgress />
+                ) : error ? (
+                    <p className="text-danger">{error}</p>
+                ) : addresses.length === 0 ? (
+                    <p>{language === "ar" ? "لا توجد عناوين محفوظة." : "No saved addresses."}</p>
+                ) : (
+                    <>
+                        <h5 className="mt-4">{language === "ar" ? "عناوينك" : "Your Addresses"}</h5>
+                        <div className="row py-3 pb-5">
+                            {addresses.map((address, index) => (
+                                <div key={index} className="col-md-6 col-12 mb-3">
+                                    <div className="card p-3 shadow-sm">
+                                        <p className="mb-0"><strong>{language === "ar" ? "العنوان:" : "Address:"}</strong> {address.address_line}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                )}
+
             </CustomTabPanel>
+            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+            >
+                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 }

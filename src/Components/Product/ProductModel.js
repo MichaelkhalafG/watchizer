@@ -12,7 +12,9 @@ import { Link } from 'react-router-dom';
 function ProductModel({ open, onClose, product, language }) {
     const { user_id, fetchCart, handleAddTowishlist, windowWidth } = useContext(MyContext)
     const [selectedImage, setSelectedImage] = useState('');
+    const [type_stock, settype_stock] = useState("");
     const [quantity, setQuantity] = useState(1);
+    const [isfashion, setisfashion] = useState(false);
     const DialColor = product?.dial_color[0]?.color_value;
     const BandColor = product?.band_color[0]?.color_value;
     const [selectedDialColor, setSelectedDialColor] = useState(DialColor || null);
@@ -23,20 +25,34 @@ function ProductModel({ open, onClose, product, language }) {
     const [openAlert, setOpenAlert] = useState(false);
 
     const showAlert = (message, type) => {
+        setOpenAlert(true);
         setAlertMessage(message);
         setAlertType(type);
-        setOpenAlert(true);
     };
     useEffect(() => {
         if (product) {
-            setSelectedImage(product.image || product.images?.[0] || "");
-            setstock(parseInt(product.stock));
+            product.category_type_name !== "Watches" ? setisfashion(true) : setisfashion(false)
         }
-
+    }, [product])
+    useEffect(() => {
+        if (product?.image) {
+            setSelectedImage(product.image);
+        } else if (product?.images?.length) {
+            setSelectedImage(product.images[0]);
+        }
+        if (product?.stock && product.stock > 0) {
+            setstock(parseInt(product.stock));
+            settype_stock("Express");
+        } else if (product?.market_stock && product.market_stock > 0) {
+            setstock(parseInt(product.market_stock));
+            settype_stock("Market");
+        } else {
+            setstock(0);
+        }
     }, [product]);
 
     const handleQuantityChange = (change) => {
-        setQuantity((prev) => Math.max(1, Math.min(prev + change, stock)));
+        setQuantity((prev) => Math.max(1, Math.min(prev + change, stock || 1)));
     };
 
     const renderDetail = (labelEn, labelAr, value, fs, col) => (
@@ -69,9 +85,10 @@ function ProductModel({ open, onClose, product, language }) {
                 piece_price: piecePrice,
                 color_band: selectedBandColor,
                 color_dial: selectedDialColor,
+                type_stock: type_stock,
                 total_price: totalPrice,
             };
-
+            // console.log(payload);
             axios.post("https://dash.watchizereg.com/api/add_to_cart", payload, {
                 headers: {
                     "Api-Code": "NbmFylY0vcwnhxUrm1udMgcX1MtPYb4QWXy1EKqVenm6uskufcXKeHh5W4TM5Iv0"
@@ -82,7 +99,7 @@ function ProductModel({ open, onClose, product, language }) {
                     fetchCart()
                 })
                 .catch((error) => {
-                    console.error("Error adding to cart:", error);
+                    // console.error("Error adding to cart:", error);
                     showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.", "error");
                 });
         }
@@ -122,7 +139,7 @@ function ProductModel({ open, onClose, product, language }) {
     if (!product) return null;
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
                 anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
             >
@@ -130,205 +147,216 @@ function ProductModel({ open, onClose, product, language }) {
                     {alertMessage}
                 </Alert>
             </Snackbar>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: language === 'ar' ? 'unset' : '50%',
-                    right: language === 'ar' ? '50%' : 'unset',
-                    transform: language === 'ar' ? 'translate(50%, -50%)' : 'translate(-50%, -50%)',
-                    width: '80%',
-                    maxWidth: '900px',
-                    bgcolor: 'background.paper',
-                    boxShadow: 24,
-                    p: 4,
-                    borderRadius: '10px',
-                    overflow: "hidden"
-                }}
-                className={`p-5 ${language === 'ar' ? 'rtl' : 'ltr'}`}
-                style={{
-                    position: 'relative',
-                    direction: language === 'ar' ? 'rtl' : 'ltr',
-
-                }}
-            >
-                <div className="row border-bottom border-2 product-header mb-3">
-                    <div className="col-12">
-                        <h4 className="fw-bold">{product.product_title}</h4>
-                    </div>
-                    <div className="col-4">
-                        {renderDetail('Brand', 'البراند', product.brand)}
-                    </div>
-                    <div className="col-4">
-                        {renderDetail('Type', 'النوع', product.category_type)}
-                    </div>
-                    <div className="col-4">
-                        <Rating name="read-only" value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
-                    </div>
-                </div>
-                <div className="row product-details">
-                    <div className="col-md-5 product-images">
-                        <div className="selected-image mb-3 d-flex justify-content-center">
-                            {selectedImage && (
-                                <InnerImageZoom
-                                    src={selectedImage}
-                                    zoomSrc={selectedImage || defimg}
-                                    alt="Selected Product"
-                                    style={{
-                                        width: "100%",
-                                        borderRadius: "8px",
-                                        objectFit: "cover",
-                                        maxHeight: "300px",
-
-                                    }}
-                                    zoomType="hover"
-                                    zoomPreload={true}
-                                    zoomScale={2}
-                                />
-                            )}
+            <Modal open={open} onClose={onClose}>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: language === 'ar' ? 'unset' : '50%',
+                        right: language === 'ar' ? '50%' : 'unset',
+                        transform: language === 'ar' ? 'translate(50%, -50%)' : 'translate(-50%, -50%)',
+                        width: '80%',
+                        maxWidth: '900px',
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        p: 4,
+                        borderRadius: '10px',
+                        overflow: "hidden"
+                    }}
+                    className={`p-5 ${language === 'ar' ? 'rtl' : 'ltr'}`}
+                    style={{
+                        position: 'relative',
+                        direction: language === 'ar' ? 'rtl' : 'ltr',
+                    }}
+                >
+                    <div className="row border-bottom border-2 product-header mb-3">
+                        <div className="col-12">
+                            <h4 className="fw-bold">{product.product_title}</h4>
                         </div>
-                        <div className="d-flex mt-3 gap-2 justify-content-center flex-wrap">
-                            {product?.image && (
-                                <img
-                                    src={product.image}
-                                    alt="Main Thumbnail"
-                                    onClick={() => setSelectedImage(product.image)}
-                                    style={{
-                                        width: "60px",
-                                        height: "60px",
-                                        objectFit: "cover",
-                                        borderRadius: "4px",
-                                        border: product.image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
-                                        cursor: "pointer",
-                                        boxShadow: product.image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                                    }}
-                                    className="thumbnail"
-                                />
-                            )}
-                            {product?.images?.map((image, index) => (
-                                <img
-                                    key={index}
-                                    src={image}
-                                    alt={`Thumbnail ${index + 1}`}
-                                    onClick={() => setSelectedImage(image)}
-                                    style={{
-                                        width: "60px",
-                                        height: "60px",
-                                        objectFit: "cover",
-                                        borderRadius: "4px",
-                                        border: image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
-                                        cursor: "pointer",
-                                        boxShadow: image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                                    }}
-                                    className="thumbnail"
-                                />
-                            ))}
+                        <div className="col-4">
+                            {renderDetail('Brand', 'البراند', product.brand)}
+                        </div>
+                        <div className="col-4">
+                            {renderDetail('Type', 'النوع', product.category_type)}
+                        </div>
+                        <div className="col-4">
+                            <Rating name="read-only" value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
                         </div>
                     </div>
-                    <div className="col-7 product-info">
-                        <h5 className="mb-3">{language === 'ar' ? 'التفاصيل' : 'Details'}</h5>
-                        <p className="text-secondary mb-4" style={{ fontSize: 'small' }}>
-                            {product.long_description}
-                        </p>
-                        <div className="row">
-                            {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-6")}
-                            {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-6")}
-                            {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-6")}
-                            {product?.band_material && renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-6")}
-                            {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-6")}
-                            {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-6")}
-                            {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-6")}
-                            {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-6")}
-                            <div className="fw-bold text-secondary mb-2 col-12" style={{ fontSize: 'medium' }}>
-                                {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
-                            </div>
-                            {product?.dial_color.length > 0 && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6", setSelectedDialColor)}
-                            {product?.band_color.length > 0 && renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6", setSelectedBandColor)}
-                            <div className="quantity-control col-6 d-flex align-items-center">
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => handleQuantityChange(-1)}
-                                    disabled={quantity <= 1}
-                                    sx={{ minWidth: '30px', padding: '5px' }}
-                                >
-                                    -
-                                </Button>
-                                <input
-                                    type="text"
-                                    value={quantity}
-                                    readOnly
-                                    style={{
-                                        width: '40px',
-                                        textAlign: 'center',
-                                        margin: '0 10px',
-                                        border: '1px solid #ddd',
-                                        borderRadius: '4px',
-                                    }}
-                                />
-                                <Button
-                                    variant="outlined"
-                                    size="small"
-                                    onClick={() => handleQuantityChange(1)}
-                                    sx={{ minWidth: '30px', padding: '5px' }}
-                                >
-                                    +
-                                </Button>
-                            </div>
-                            <div className="col-6 d-flex align-items-center">
-                                {stock && parseInt(stock) > 0 ? (
-                                    <span className="badge bg-success" style={{ fontSize: '0.9rem' }}>
-                                        {language === 'ar' ? 'متوفر' : 'In Stock'}
-                                    </span>
-                                ) : (
-                                    <span className="badge bg-danger" style={{ fontSize: '0.9rem' }}>
-                                        {language === 'ar' ? 'غير متوفر' : 'Out of Stock'}
-                                    </span>
+                    <div className="row product-details">
+                        <div className="col-md-5 product-images">
+                            <div className="selected-image mb-3 d-flex justify-content-center">
+                                {selectedImage && (
+                                    <InnerImageZoom
+                                        src={selectedImage}
+                                        zoomSrc={selectedImage || defimg}
+                                        alt="Selected Product"
+                                        style={{
+                                            width: "100%",
+                                            borderRadius: "8px",
+                                            objectFit: "cover",
+                                            maxHeight: "300px",
+                                        }}
+                                        zoomType="hover"
+                                        zoomPreload={true}
+                                        zoomScale={2}
+                                    />
                                 )}
                             </div>
+                            <div className="d-flex mt-3 gap-2 justify-content-center flex-wrap">
+                                {product?.image && (
+                                    <img
+                                        src={product.image}
+                                        alt="Main Thumbnail"
+                                        onClick={() => setSelectedImage(product.image)}
+                                        style={{
+                                            width: "50px",
+                                            height: "50px",
+                                            objectFit: "cover",
+                                            borderRadius: "4px",
+                                            border: product.image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
+                                            cursor: "pointer",
+                                            boxShadow: product.image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
+                                        }}
+                                        className="thumbnail"
+                                    />
+                                )}
+                                {product?.images?.slice(0, 9).map((image, index) => (
+                                    <img
+                                        key={index}
+                                        src={image}
+                                        alt={`Thumbnail ${index + 1}`}
+                                        onClick={() => setSelectedImage(image)}
+                                        style={{
+                                            width: "50px",
+                                            height: "50px",
+                                            objectFit: "cover",
+                                            borderRadius: "4px",
+                                            border: image === selectedImage ? "2px solid #262626" : "1px solid #ddd",
+                                            cursor: "pointer",
+                                            boxShadow: image === selectedImage ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
+                                        }}
+                                        className="thumbnail"
+                                    />
+                                ))}
+                            </div>
                         </div>
+                        <div className="col-7 product-info">
+                            <h5 className="mb-3">{language === 'ar' ? 'التفاصيل' : 'Details'}</h5>
+                            <p className="text-secondary" style={{ fontSize: 'small' }}>
+                                {product.long_description}
+                            </p>
+                            <div className="d-flex col-12 my-3 align-items-center">
+                                <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'large' }}>
+                                    {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                </span>
+                                <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'large' }}>
+                                    {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                </span>
+                            </div>
+                            <div className="row">
+                                {product?.grade && renderDetail("Grade", "التصنيف", product.grade, "small", "col-6")}
+                                {product?.sub_type && renderDetail("Sub Type", "النوع الفرعي", product.sub_type, "small", "col-6")}
+                                {product?.dial_display_type && renderDetail("Dial Display", "نوع عرض وجة الساعة", product.dial_display_type, "small", "col-6")}
+                                {product?.band_material && isfashion ? renderDetail("Material", "مادة الصنع", product.band_material, "small", "col-6") : renderDetail("Band Material", "مادة السوار", product.band_material, "small", "col-6")}
+                                {product?.dial_glass_material && renderDetail("Dial Glass Material", "مادة زجاج الوجة", product.dial_glass_material, "small", "col-6")}
+                                {product?.dial_case_material && renderDetail("Dial Case Material", "مادة اطار الوجة", product.dial_case_material, "small", "col-6")}
+                                {product?.features?.length > 0 && renderDetail("Features", "الميزات", product.features.join(", "), "small", "col-6")}
+                                {product?.gender?.length > 0 && renderDetail("Gender", "الجنس", product.gender.join(", "), "small", "col-6")}
+                                <div className="fw-bold text-secondary mb-2 col-12" style={{ fontSize: 'medium' }}>
+                                    {language === 'ar' ? 'اختر اللون' : 'Chosse colors'}
+                                </div>
+                                {product?.dial_color.length > 0 && renderColorDetail("Dial Color", "لون وجة الساعة", product.dial_color, "small", "col-6", setSelectedDialColor)}
+                                {product?.band_color.length > 0 && isfashion ? renderColorDetail("Color", "اللون", product.band_color, "small", "col-6", setSelectedBandColor) : renderColorDetail("Band Color", "لون السوار", product.band_color, "small", "col-6", setSelectedBandColor)}
+                                <div className="quantity-control col-6 d-flex align-items-center">
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        title='-1'
+                                        onClick={() => handleQuantityChange(-1)}
+                                        disabled={quantity <= 1}
+                                        sx={{ minWidth: '30px', padding: '5px' }}
+                                    >
+                                        -
+                                    </Button>
+                                    <input
+                                        type="text"
+                                        value={quantity}
+                                        readOnly
+                                        style={{
+                                            width: '40px',
+                                            textAlign: 'center',
+                                            margin: '0 10px',
+                                            border: '1px solid #ddd',
+                                            borderRadius: '4px',
+                                        }}
+                                    />
+                                    <Button
+                                        variant="outlined"
+                                        size="small"
+                                        title='+1'
+                                        onClick={() => handleQuantityChange(1)}
+                                        sx={{ minWidth: '30px', padding: '5px' }}
+                                    >
+                                        +
+                                    </Button>
+                                </div>
+                                <div className="col-6 d-flex align-items-center">
+                                    {stock &&
+                                        <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-black' : parseInt(product.market_stock) > 0 ? "bg-success" : 'bg-danger'} col-md-8 col-12 p-2`}>
+                                            {language === 'ar' ? (parseInt(product.stock) > 0 ? 'اكسبريس' : parseInt(product.market_stock) > 0 ? "ماركت" : 'غير متوفر')
+                                                : (parseInt(product.stock) > 0 ? 'Express' : parseInt(product.market_stock) > 0 ? "Market Place" : 'Out of Stock')}
+                                        </span>
+                                    }
+                                </div>
+                            </div>
 
-                        <div className="mt-3 action-buttons">
-                            <button
-                                className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
-                                onClick={handleAddToCart}
-                                disabled={stock <= 0}
-                            >
-                                {language === "ar" ? "أضف إلى السلة" : "Add to Cart"}
-                            </button>
-                            <Link
-                                to={`/product/${product.product_title}`}
-                            >
+                            <div className="mt-3 action-buttons">
                                 <button
                                     className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
+                                    onClick={handleAddToCart}
+                                    title='Add to Cart'
+                                    disabled={stock <= 0}
                                 >
-                                    {language === 'ar' ? 'تفاصيل اكثر' : 'More '}
+                                    {language === "ar" ? "أضف إلى السلة" : "Add to Cart"}
                                 </button>
-                            </Link>
-                            <button
-                                className="btn btn-outline-danger"
-                                onClick={() => handleAddTowishlist(product.id, "p")}
-                            >
-                                {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
-                            </button>
+                                <Link
+                                    to={`/product/${product.product_title}`}
+                                >
+                                    <button
+                                        className={`${language === "ar" ? "ms-2" : "me-2"} btn btn-dark`}
+                                        title='More Details'
+                                    >
+                                        {language === 'ar' ? 'تفاصيل اكثر' : 'More '}
+                                    </button>
+                                </Link>
+                                <button
+                                    className="btn btn-outline-danger"
+                                    onClick={() => handleAddTowishlist(product.id, "p")}
+                                    title='Add to Wishlist'
+                                >
+                                    {language === "ar" ? "أضف إلى قائمة الرغبات" : "Add to Wish List"}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <Button
-                    className="close"
-                    style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: language === 'ar' ? 'unset' : '10px',
-                        left: language === 'ar' ? '10px' : 'unset',
-                        color: '#555',
-                    }}
-                    onClick={onClose}
-                >
-                    <MdClose />
-                </Button>
-            </Box>
-        </Modal>
+                    <Button
+                        className="close"
+                        title='close'
+                        style={{
+                            position: 'absolute',
+                            top: '10px',
+                            right: language === 'ar' ? 'unset' : '10px',
+                            left: language === 'ar' ? '10px' : 'unset',
+                            color: '#555',
+                        }}
+                        onClick={onClose}
+                    >
+                        <MdClose />
+                    </Button>
+                </Box>
+            </Modal>
+        </>
     );
 }
 
@@ -352,6 +380,7 @@ ProductModel.propTypes = {
         brand: PropTypes.string.isRequired,
         grade: PropTypes.string,
         sub_type: PropTypes.string.isRequired,
+        market_stock: PropTypes.number,
         dial_color: PropTypes.arrayOf(
             PropTypes.shape({
                 color_id: PropTypes.number,

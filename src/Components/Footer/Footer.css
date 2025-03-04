@@ -31,6 +31,16 @@
 .footer-categories a:hover {
     color: #262626;
 }
+.footer-categories button {
+    color: #262626bd !important;
+    text-decoration: none !important;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.footer-categories button:hover {
+    color: #262626!important;
+}
 
 .footer-bottom p {
     font-size: 0.9rem;

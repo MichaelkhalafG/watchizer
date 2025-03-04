@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -7,13 +8,16 @@ import 'aos/dist/aos.css';
 import 'aos/dist/aos';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+// import FacebookPixel from './Components/FacebookPixel';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+      {/* <FacebookPixel /> */}
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );
 

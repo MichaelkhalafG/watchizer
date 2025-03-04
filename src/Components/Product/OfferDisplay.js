@@ -45,7 +45,7 @@ function OfferDisplay() {
             const totalPrice = piecePrice * quantity;
 
             if (isNaN(totalPrice) || totalPrice <= 0) {
-                console.error("Invalid total price calculation.");
+                // console.error("Invalid total price calculation.");
                 alert(language === "ar" ? "حدث خطأ في حساب السعر الإجمالي." : "There was an error calculating the total price.");
                 return;
             }
@@ -68,7 +68,7 @@ function OfferDisplay() {
                     fetchCart()
                 })
                 .catch((error) => {
-                    console.error("Error adding to cart:", error);
+                    // console.error("Error adding to cart:", error);
                     alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                 });
         }
@@ -88,7 +88,7 @@ function OfferDisplay() {
             const productRatings = response.data.filter((r) => r.offer_id === offer?.id);
             setRatings(productRatings);
         } catch (error) {
-            console.error("Error fetching ratings:", error);
+            // console.error("Error fetching ratings:", error);
         }
     }, [offer]);
 
@@ -128,7 +128,7 @@ function OfferDisplay() {
                     await fetchRatings();
                     setNewRating({ value: 0, comment: "" });
                 } catch (error) {
-                    console.error("Error submitting rating:", error);
+                    // console.error("Error submitting rating:", error);
                     alert(
                         language === "ar"
                             ? "حدث خطأ أثناء إرسال التقييم. يرجى المحاولة مرة أخرى."

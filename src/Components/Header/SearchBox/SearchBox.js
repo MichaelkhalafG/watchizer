@@ -2,35 +2,46 @@ import { IoIosSearch } from "react-icons/io";
 import { Button } from "@mui/material";
 import { useContext, useState, useEffect } from "react";
 import { MyContext } from "../../../App";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function SearchBox() {
     const { language, products, setFilteredProducts } = useContext(MyContext);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredResults, setFilteredResults] = useState([]);
+    const navigate = useNavigate();
+
+    const handleSearch = () => {
+        if (searchTerm.trim() !== "") {
+            const filtered = products.filter((product) =>
+                product.product_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.short_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProducts(filtered);
+            navigate(`/listingsearch?query=${encodeURIComponent(searchTerm)}`);
+        }
+    };
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => {
             if (searchTerm.trim() === "") {
                 setFilteredProducts(products);
-                setFilteredResults([]);
             } else {
                 const filtered = products.filter((product) =>
                     product.product_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     product.short_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+                    product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    product.search_keywords?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
                 setFilteredProducts(filtered);
-                setFilteredResults(filtered);
             }
         }, 300);
 
         return () => clearTimeout(delayDebounce);
     }, [searchTerm, products, setFilteredProducts]);
-    const handleProductClick = (productTitle) => {
-        setSearchTerm("");
-        setFilteredResults([]);
-    };
+    // const handleProductClick = (productTitle) => {
+    //     setSearchTerm("");
+    //     setFilteredResults([]);
+    // };
 
     return (
         <div className="search-container rounded-3 ms-3 me-3 p-2 px-4" style={{ position: "relative", width: "60%" }}>
@@ -40,6 +51,7 @@ function SearchBox() {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     placeholder={language === "ar" ? "البحث عن المنتجات" : "Search for products..."}
                     className="rounded-3 border border-0"
                     style={{
@@ -54,6 +66,9 @@ function SearchBox() {
                 <Button
                     className="p-0 border searchbtn border-0 text-black"
                     type="submit"
+                    onClick={handleSearch}
+                    title='search'
+                    aria-hidden="true"
                     style={{
                         background: "transparent",
                         position: "absolute",
@@ -68,7 +83,7 @@ function SearchBox() {
                 </Button>
             </div>
 
-            {filteredResults.length > 0 && (
+            {/* {filteredResults.length > 0 && (
                 <ul className="search-results bg-white shadow rounded-3 p-2"
                     style={{
                         position: "absolute",
@@ -97,7 +112,7 @@ function SearchBox() {
                         </li>
                     ))}
                 </ul>
-            )}
+            )} */}
         </div>
     );
 }

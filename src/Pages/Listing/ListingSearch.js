@@ -1,76 +1,36 @@
-import SideBar from "../../Components/SideBar/SideBar";
 import "./Listing.css";
-import { LazyLoadImage } from "react-lazy-load-image-component";
-import "react-lazy-load-image-component/src/effects/blur.css";
 import { MyContext } from "../../App";
-import { FormControl, Drawer, InputLabel, MenuItem, Select, Button, Snackbar, Alert } from "@mui/material";
-import { useContext, useState, useEffect, Suspense } from "react";
+import { FormControl, InputLabel, MenuItem, Select, Snackbar, Alert } from "@mui/material";
+import { useContext, useState, useEffect } from "react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
 import { IoGrid } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { SlSizeFullscreen } from "react-icons/sl";
 import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 import axios from "axios";
+import "react-lazy-load-image-component/src/effects/blur.css";
 // import { Rating } from "@mui/material";
 import ProductModel from "../../Components/Product/ProductModel";
 import Pagination from "@mui/material/Pagination";
 
-function Listing() {
-    const { language, currentPage, setCurrentPage, fetchCart, user_id, Loader, products, windowWidth, filters, setFilters, handleAddTowishlist } = useContext(MyContext);
+function ListingSearch() {
+    const { language, products, fetchCart, user_id, currentPage, setCurrentPage, windowWidth, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const searchTerm = searchParams.get("query") || "";
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [colselected, setColselected] = useState("col-md-3 col-6");
-    const [open, setOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertType, setAlertType] = useState("info");
     const [openAlert, setOpenAlert] = useState(false);
 
-    const toggleDrawer = (newOpen) => {
-        return () => {
-            setOpen(newOpen);
-        };
-    };
-
     const isRTL = language === "ar";
-    useEffect(() => {
-        if (!products) return;
 
-        const filtered = products.filter((product) => {
-            return (
-                (filters.categories.length === 0 || filters.categories.includes(product.category_type_id)) &&
-                (filters.brands.length === 0 || filters.brands.includes(product.brand_id)) &&
-                (filters.subTypes.length === 0 || filters.subTypes.includes(product.sub_type_id)) &&
-                (filters.price[0] <= product.sale_price_after_discount && product.sale_price_after_discount <= filters.price[1])
-            );
-        });
-
-        setFilteredProducts(filtered);
-    }, [filters, products]);
-
-
-    const handleChange = (event) => {
-        setShownum(event.target.value);
-        setCurrentPage(1);
-    };
-    const handleProductClick = (product) => {
-        setSelectedProduct(product);
-        setIsModalOpen(true);
-    };
-    const handleModalClose = () => {
-        setIsModalOpen(false);
-        setSelectedProduct(null);
-    };
-    const handlePageChange = (event, value) => {
-        setCurrentPage(value);
-        window.scrollTo(0, 0);
-    };
-    const totalPages = Math.ceil(filteredProducts.length / shownum);
-    const displayedProducts = filteredProducts.slice(
-        (currentPage - 1) * shownum,
-        currentPage * shownum
-    );
     const handleAddToCart = (product, type_stock) => {
         if (!user_id) {
             setAlertMessage(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
@@ -116,6 +76,39 @@ function Listing() {
                 });
         }
     };
+    useEffect(() => {
+        if (searchTerm.trim()) {
+            const filtered = products.filter((product) =>
+                product.product_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.short_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                product.brand.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredProducts(filtered);
+        } else {
+            setFilteredProducts(products);
+        }
+    }, [searchTerm, products]);
+    const handleChange = (event) => {
+        setShownum(event.target.value);
+        setCurrentPage(1);
+    };
+    const handleProductClick = (product) => {
+        setSelectedProduct(product);
+        setIsModalOpen(true);
+    };
+    const handleModalClose = () => {
+        setIsModalOpen(false);
+        setSelectedProduct(null);
+    };
+    const handlePageChange = (event, value) => {
+        setCurrentPage(value);
+        window.scrollTo(0, 0);
+    };
+    const totalPages = Math.ceil(filteredProducts.length / shownum);
+    const displayedProducts = filteredProducts.slice(
+        (currentPage - 1) * shownum,
+        currentPage * shownum
+    );
     return (
         <div className={`container product-listing ${isRTL ? "rtl" : "ltr"}`}>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
@@ -125,22 +118,8 @@ function Listing() {
                     {alertMessage}
                 </Alert>
             </Snackbar>
-            <div className="row">
-                {windowWidth <= 768 ?
-                    <Drawer open={open} onClose={toggleDrawer(false)}>
-                        <button
-                            className="btn btn-dark rounded-0"
-                            onClick={toggleDrawer(false)}
-                        >
-                            {language === "ar" ? "اغلاق الفلاتر" : "Close Filters"}
-                        </button>
-                        <SideBar setFilters={setFilters} />
-                    </Drawer>
-                    :
-                    <div className="col-md-3">
-                        <SideBar setFilters={setFilters} />
-                    </div>
-                }
+            <h2 className="text-center my-4">{searchTerm ? `نتائج البحث عن: ${searchTerm}` : "جميع المنتجات"}</h2>
+            <div className="row justify-content-center">
                 <div className="col-md-9 pb-md-1 pb-5 col-12">
                     {
                         filteredProducts.length === 0 ? (
@@ -149,13 +128,6 @@ function Listing() {
                                     <h2 className="text-danger fw-bold col-12">
                                         {isRTL ? "لا توجد منتجات" : "No Products Found"}
                                     </h2>
-                                    <Button
-                                        variant="contained"
-                                        className="rounded-pill bg-most-used text-light col-12 col-md-4 py-3 fw-bold"
-                                        onClick={() => setFilters({ categories: [], brands: [], subTypes: [], price: [0, 6000] })}
-                                    >
-                                        {isRTL ? "إعادة تعيين الفلاتر" : "Reset Filters"}
-                                    </Button>
                                 </div>
                             </div>
                         ) : (
@@ -200,12 +172,6 @@ function Listing() {
                                     </div>
                                 </div>
                                 <div className="col-12 py-2">
-                                    {windowWidth <= 768 ? <div className="row justify-content-center" >
-                                        <button className="btn btn-dark col-10" onClick={() => {
-                                            toggleDrawer(true)();
-                                        }}
-                                        >{language === "ar" ? "تخصيص فلاتر" : "Set Filters"}</button>
-                                    </div> : null}
                                     <div className="row">
                                         {displayedProducts.map((product) => (
                                             <div
@@ -244,17 +210,15 @@ function Listing() {
                                                             className="img-fluid rounded-top"
                                                             loading="lazy"
                                                         /> */}
-                                                        <Suspense fallback={<Loader />}>
-                                                            <LazyLoadImage
-                                                                src={product.image || "/placeholder.png"}
-                                                                alt={product.wa_code || "Product"}
-                                                                srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
-                                                                effect="blur"
-                                                                width="100%"
-                                                                height="auto"
-                                                                className="img-fluid rounded-top"
-                                                            />
-                                                        </Suspense>
+                                                        <LazyLoadImage
+                                                            src={product.image || "/placeholder.png"}
+                                                            alt={product.wa_code || "Product"}
+                                                            srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
+                                                            effect="blur"
+                                                            width="100%"
+                                                            height="auto"
+                                                            className="img-fluid rounded-top"
+                                                        />
                                                     </Link>
                                                     <div className="card-body d-flex flex-column justify-content-between p-3">
                                                         <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>
@@ -296,14 +260,14 @@ function Listing() {
                                                             </span>
                                                         </div>
 
-                                                        <div className="row justify-content-between align-items-center">
+                                                        <div className="d-md-flex  justify-content-between align-items-center">
                                                             <div className='col-12 p-1'>
                                                                 <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-black' : parseInt(product.market_stock) > 0 ? "bg-success" : 'bg-danger'} col-12`}>
                                                                     {language === 'ar' ? (parseInt(product.stock) > 0 ? 'اكسبريس' : parseInt(product.market_stock) > 0 ? "ماركت" : 'غير متوفر')
                                                                         : (parseInt(product.stock) > 0 ? 'Express' : parseInt(product.market_stock) > 0 ? "Market Place" : 'Out of Stock')}
                                                                 </span>
                                                             </div>
-                                                            {/* <div className="col-12 p-1 justify-content-center col-12 align-items-center">
+                                                            {/* <div className="d-flex col-md-7 p-1 justify-content-center col-12 align-items-center">
                                                                 <Rating name="read-only" className={`${windowWidth <= 768 ? "col-12" : ""}`} value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
                                                                 <span className={` mx-1 ${windowWidth <= 768 ? "d-none" : ""}`}>({Math.round(product.rating === null ? 5 : product.rating)})</span>
                                                             </div> */}
@@ -354,4 +318,4 @@ function Listing() {
     );
 }
 
-export default Listing;
+export default ListingSearch;

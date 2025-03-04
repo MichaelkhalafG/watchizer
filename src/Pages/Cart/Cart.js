@@ -83,11 +83,11 @@ function Cart() {
                 setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
                 showAlert(language === "ar" ? "تم ازالة المنتج من السلة" : "The product has been removed from the cart", "success");
             } else {
-                console.error("Failed to remove item from cart:", response.data);
+                // console.error("Failed to remove item from cart:", response.data);
 
             }
         } catch (error) {
-            console.error("Error removing item from cart:", error);
+            // console.error("Error removing item from cart:", error);
         }
     };
     const goToCheckout = async () => {
@@ -103,6 +103,7 @@ function Cart() {
                     quantity: item.quantity,
                     piece_price: item.piece_price,
                     color_band: item.color_band,
+                    type_stock: item.type_stock,
                     color_dial: item.color_dial,
                     total_price: item.piece_price * item.quantity
                 }, {
@@ -114,14 +115,13 @@ function Cart() {
                 if (response.status === 200) {
                     showAlert(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`, "success");
                 } else {
-                    console.error("Failed to update cart item:", response.data);
+                    // console.error("Failed to update cart item:", response.data);
                 }
             }
             fetchCart();
             window.location.href = "/checkout";
-
         } catch (error) {
-            console.error("Error updating cart:", error);
+            // console.error("Error updating cart:", error);
         }
 
     };
@@ -144,14 +144,14 @@ function Cart() {
                         <div className="row">
                             <div className="col-9 p-3 pt-0">
                                 <div className="row align-items-center p-3 rounded-4 bg-most-used-40">
-                                    {["Product", "Quantity", "Band Color", "Dial Color", "Price", "Subtotal", "Actions"].map((label, idx) => (
+                                    {["Product", "Quantity", "Band Color", "Dial Color", "Price", "Subtotal", "Type", "Actions"].map((label, idx) => (
                                         <h6
                                             key={idx}
                                             className={`color-most-used p-0 m-0 col-${idx === 0 ? 4 : idx === 1 ? 2 : 1} fw-bold ${idx === 6 ? "text-center" : ""
                                                 }`}
                                         >
                                             {language === "ar"
-                                                ? ["المنتج", "الكمية", "لون السوار", "لون الوجه", "السعر", "المجموع الكلي", "الأفعال"][idx]
+                                                ? ["المنتج", "الكمية", "لون السوار", "لون الوجه", "السعر", "المجموع الكلي", "النوع", "الأفعال"][idx]
                                                 : label}
                                         </h6>
                                     ))}
@@ -250,7 +250,14 @@ function Cart() {
 
                                             <h6 className="color-most-used col-1">{piecePrice}</h6>
                                             <h6 className="color-most-used col-1">{totalPrice}</h6>
-                                            <div className="col-2 text-center">
+                                            <div className="col-1 text-center">
+                                                {item.type_stock &&
+                                                    <span className={`badge ${item.type_stock === "Express" ? 'bg-black' : item.type_stock === "Market" ? "bg-success" : 'bg-danger'} col-12 p-2`}>
+                                                        {item.type_stock}
+                                                    </span>
+                                                }
+                                            </div>
+                                            <div className="col-1 text-center">
                                                 <Button
                                                     className="rounded-circle color-most-used mx-2"
                                                     sx={{

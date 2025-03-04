@@ -76,7 +76,7 @@ function Register() {
                 sessionStorage.setItem("phone_number", data.phone_number);
                 sessionStorage.setItem(
                     "image",
-                    data.image ? `https://dash.watchizereg.com/Uploads_Images/Category/${data.image}` : null
+                    data.image ? `https://dash.watchizereg.com/Uploads_Images/User/${data.image}` : null
                 );
                 sessionStorage.setItem("token", data.token);
                 setTimeout(() => {
@@ -86,7 +86,7 @@ function Register() {
                 setError(data.error || "Registration failed. Please try again.");
             }
         } catch (err) {
-            console.error("Error:", err);
+            // console.error("Error:", err);
             setError("An error occurred. Please check your connection and try again.");
         } finally {
             setLoading(false);

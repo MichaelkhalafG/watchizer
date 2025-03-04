@@ -58,11 +58,11 @@ function PhoneCart() {
                 setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
                 showAlert(language === "ar" ? "تم ازالة المنتج من السلة" : "The product has been removed from the cart", "success");
             } else {
-                console.error("Failed to remove item from cart:", response.data);
+                // console.error("Failed to remove item from cart:", response.data);
 
             }
         } catch (error) {
-            console.error("Error removing item from cart:", error);
+            // console.error("Error removing item from cart:", error);
         }
     };
     const goToCheckout = async () => {
@@ -79,6 +79,7 @@ function PhoneCart() {
                     piece_price: item.piece_price,
                     color_band: item.color_band,
                     color_dial: item.color_dial,
+                    type_stock: item.type_stock,
                     total_price: item.piece_price * item.quantity
                 }, {
                     headers: {
@@ -89,14 +90,14 @@ function PhoneCart() {
                 if (response.status === 200) {
                     showAlert(`Item ${item.product_id || item.offer_id} added to the cart with updated quantity.`, "success");
                 } else {
-                    console.error("Failed to update cart item:", response.data);
+                    // console.error("Failed to update cart item:", response.data);
                 }
             }
             fetchCart();
             window.location.href = "/checkout";
 
         } catch (error) {
-            console.error("Error updating cart:", error);
+            // console.error("Error updating cart:", error);
         }
 
     };
@@ -155,6 +156,11 @@ function PhoneCart() {
                                 <div className={`d-flex align-items-center col-4`}>
                                     <h6 className="color-most-used text-center col-12 fw-bold m-0">
                                         {language === "ar" ? "المجموع الكلي" : "Subtotal"}
+                                    </h6>
+                                </div>
+                                <div className={`d-flex align-items-center col-4`}>
+                                    <h6 className="color-most-used text-center col-12 fw-bold m-0">
+                                        {language === "ar" ? "النوع" : "Type"}
                                     </h6>
                                 </div>
                                 <div className={`d-flex align-items-center col-4`}>
@@ -244,8 +250,15 @@ function PhoneCart() {
                                             <h6 key={i} className="color-most-used text-center col-4">{price}</h6>
                                         ))}
                                         <div className="col-4 text-center">
+                                            {item.type_stock &&
+                                                <span className={`badge ${item.type_stock === "Express" ? 'bg-black' : item.type_stock === "Market" ? "bg-success" : 'bg-danger'} col-12 p-2`}>
+                                                    {item.type_stock}
+                                                </span>
+                                            }
+                                        </div>
+                                        <div className="col-4 text-center">
                                             <Link
-                                                to={isProduct ? `/product/${item.product_id}` : `/offer/${item.offer_id}`}
+                                                to={isProduct ? `/product/${item.product_title}` : `/offer/${item.offer_id}`}
                                                 style={{ textDecoration: 'none' }}
                                             >
                                                 <Button

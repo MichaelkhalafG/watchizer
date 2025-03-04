@@ -67,7 +67,7 @@ function Login() {
                 sessionStorage.setItem("phone_number", data.phone_number);
                 sessionStorage.setItem(
                     "image",
-                    data.image ? `https://dash.watchizereg.com/Uploads_Images/Category/${data.image}` : null
+                    data.image ? `https://dash.watchizereg.com/Uploads_Images/User/${data.image}` : null
                 );
                 sessionStorage.setItem("token", data.token);
 
@@ -138,7 +138,7 @@ function Login() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="mb-3 form-check">
+                                {/* <div className="mb-3 form-check">
                                     <input
                                         type="checkbox"
                                         className="form-check-input"
@@ -147,7 +147,7 @@ function Login() {
                                         onChange={(e) => setRememberMe(e.target.checked)}
                                     />
                                     <label className="form-check-label" htmlFor="remember">Remember me</label>
-                                </div>
+                                </div> */}
                                 <button type="submit" className="btn btn-primary w-100">Submit</button>
                                 <div className="mt-3 text-center">
                                     <span>Don't have an account? </span>

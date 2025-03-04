@@ -1,17 +1,13 @@
-import React, { memo, useContext, useState, useEffect } from "react";
+import React, { memo, useContext } from "react";
 import Slider from "react-slick";
 import { MyContext } from "../../App";
 import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from "react-icons/io";
 
 function HomeSlider({ banners }) {
     const { language, windowWidth } = useContext(MyContext);
-    const [sliderheight, setsliderheight] = useState()
-    useEffect(() => {
-        const height = windowWidth >= 768 ? "375px" : "20vh"
-        setsliderheight(height)
-    }, [windowWidth]);
-    function NextArrow(props) {
-        const { onClick } = props;
+    const sliderHeight = windowWidth >= 768 ? "375px" : "20vh"; // Direct calculation (no useState)
+
+    function NextArrow({ onClick }) {
         return (
             <IoIosArrowDroprightCircle
                 style={{
@@ -21,7 +17,6 @@ function HomeSlider({ banners }) {
                     top: "50%",
                     transform: "translateY(-50%)",
                     right: "10px",
-                    left: "auto",
                     zIndex: 10,
                     cursor: "pointer",
                 }}
@@ -30,8 +25,7 @@ function HomeSlider({ banners }) {
         );
     }
 
-    function PrevArrow(props) {
-        const { onClick } = props;
+    function PrevArrow({ onClick }) {
         return (
             <IoIosArrowDropleftCircle
                 style={{
@@ -41,7 +35,6 @@ function HomeSlider({ banners }) {
                     top: "50%",
                     transform: "translateY(-50%)",
                     left: "10px",
-                    right: "auto",
                     zIndex: 10,
                     cursor: "pointer",
                 }}
@@ -53,7 +46,7 @@ function HomeSlider({ banners }) {
     const settings = {
         dots: false,
         infinite: true,
-        speed: 600,
+        speed: 500, // Slightly faster transition
         autoplay: true,
         autoplaySpeed: 3000,
         slidesToShow: 1,
@@ -65,18 +58,21 @@ function HomeSlider({ banners }) {
     };
 
     return (
-        <div className={`${windowWidth <= 768 ? 'pt-0' : ""}`} style={{ position: "relative" }}>
+        <div style={{ position: "relative" }}>
             <Slider {...settings}>
                 {banners.map((item, index) => (
                     <div key={index} className="col-12">
                         <img
                             src={`https://dash.watchizereg.com/Uploads_Images/Banner_home/${item.image}`}
                             alt={`banner${index + 1}`}
-                            loading="lazy"
+                            loading={index === 0 ? "eager" : "lazy"}
+                            fetchpriority={index === 0 ? "high" : "auto"}
+                            width="100%"
+                            height={sliderHeight}
                             style={{
-                                width: "100%",
-                                height: sliderheight,
                                 objectFit: "cover",
+                                width: "100%",
+                                height: sliderHeight,
                             }}
                         />
                     </div>

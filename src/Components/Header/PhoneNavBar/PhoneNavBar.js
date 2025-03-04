@@ -8,7 +8,7 @@ import './PhoneNavBar.css';
 import { MyContext } from '../../../App';
 
 function PhoneNavBar() {
-    const { tables, setFilters, language, productsCount } = useContext(MyContext);
+    const { tables, setFilters, setCurrentPage, language, productsCount } = useContext(MyContext);
 
     const handleSetFilters = (categoryName) => {
         const category = tables.categoryTypes.find(cat => cat.category_type_name === categoryName);
@@ -47,7 +47,7 @@ function PhoneNavBar() {
                 <Link
                     to="/category/Watches"
                     className="col-3 text-decoration-none border-end text-center color-most-used px-3"
-                    onClick={() => handleSetFilters("Watches")}
+                    onClick={() => { handleSetFilters("Watches"); setCurrentPage(1); }}
                 >
                     <MdOutlineWatch style={{ fontSize: "20px" }} />
                 </Link>
@@ -57,7 +57,7 @@ function PhoneNavBar() {
                 >
                     <IoSearch style={{ fontSize: "20px" }} />
                 </Link>
-                <Link to="/offers" className="col-3 text-decoration-none border-end text-center color-most-used px-3">
+                <Link to="/offers" className="col-3 text-decoration-none border-end text-center color-most-used px-3" onClick={() => setCurrentPage(1)}>
                     <MdOutlineLocalOffer style={{ fontSize: "20px" }} />
                 </Link>
             </div>

@@ -2,6 +2,8 @@ import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.webp';
 import LanguageDropdown from '../LanguageDropdown/LanguageDropdowen';
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import { IoBagOutline } from 'react-icons/io5';
 import './Header.css';
 import SearchBox from './SearchBox/SearchBox';
@@ -27,7 +29,15 @@ function Header() {
                         <div className="row">
                             <div className="logo d-flex justify-content-center col-sm-2">
                                 <Link to={'/'} className='d-flex justify-content-center'>
-                                    <img src={logo} loading='lazy' alt="Watchizer-logo" className='col-md-6 col-12' />
+                                    <LazyLoadImage
+                                        src={logo}
+                                        alt="Watchizer-logo"
+                                        effect="blur"
+                                        width="70%"
+                                        height="auto"
+                                    // className='col-md-6 col-12'
+                                    />
+                                    {/* <img src={logo} loading='lazy' alt="Watchizer-logo" className='col-md-6 col-12' /> */}
                                 </Link>
                             </div>
                             <div className="col-sm-10 d-flex align-items-center">
@@ -42,10 +52,17 @@ function Header() {
                                             <span className='m-3 price color-most-used' style={{ fontSize: "18px", fontWeight: "700", }}>
                                                 {users.find(u => u.id === user_id)?.first_name}
                                             </span>
-                                            <img
-                                                src={users.find(u => u.id === user_id)?.image || userimg}
+                                            <LazyLoadImage
+                                                src={sessionStorage.getItem('image') !== null ? sessionStorage.getItem('image') : userimg}
                                                 alt='user'
-                                                className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} />
+                                                className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center'
+                                                style={{ width: "45px", height: "45px", minWidth: "45px" }}
+                                                effect="blur"
+                                            />
+                                            {/* <img
+                                                src={sessionStorage.getItem('image') !== null ? sessionStorage.getItem('image') : userimg}
+                                                alt='user'
+                                                className='rounded-circle d-flex justify-content-center border border-1 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }} /> */}
                                         </>
                                         : <>
                                             <Link to={'/login'} className='m-3 price btn btn-outline-dark' style={{ fontSize: "18px", fontWeight: "700", }}>
@@ -61,7 +78,7 @@ function Header() {
                                             {productsCount === 0 ? "0.00" : total_cart_price}{language === 'ar' ? ' ج.م ' : ' EG '}
                                         </span>
                                         <Link className='position-relative ' to={'/cart'}>
-                                            <Button className='rounded-circle border border-0 align-items-center justify-content-center' style={{ width: "45px", height: "45px", minWidth: "45px" }}>
+                                            <Button className='rounded-circle border border-0 align-items-center justify-content-center' title='cart' style={{ width: "45px", height: "45px", minWidth: "45px" }}>
                                                 <IoBagOutline style={{ fontSize: "22px" }} className='color-most-used' />
                                             </Button>
                                             <span className='position-absolute start-100 translate-middle badge rounded-pill' style={{ background: "#ea2b0f", top: "5px" }}>

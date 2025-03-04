@@ -1,5 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import HomeSlider from "./HomeSlider";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 import './home.css';
 import ProductSlider from '../../Components/Product/ProductSlider';
 import OfferSlider from '../../Components/Product/OfferSlider';
@@ -28,51 +30,68 @@ function Home() {
 
 
     useEffect(() => {
-        if (products && grades.length) {
-            const productsByGrade = {};
+        if (!products || !grades?.length) return;
 
-            grades.forEach(grade => {
-                const filtered = products.filter(product => product.grade_id === grade.id);
-                if (filtered.length > 0) {
-                    productsByGrade[grade.id] = filtered;
+        const productsByGrade = grades.reduce((acc, grade) => {
+            const filtered = products.filter(product => product.grade_id === grade.id);
+            if (filtered.length > 0) acc[grade.id] = filtered;
+            return acc;
+        }, {});
+
+        setFilteredProducts(productsByGrade);
+
+        const gradeTextObj = Object.fromEntries(
+            grades.map(grade => [
+                grade.id,
+                {
+                    title: grade.translations?.find(t => t.locale === language)?.grade_name ?? grade.grade_name,
+                    description: grade.translations?.find(t => t.locale === language)?.description ?? grade.description
                 }
-            });
+            ])
+        );
 
-            setFilteredProducts(productsByGrade);
-
-            const gradeTextObj = {};
-            grades.forEach(grade => {
-                gradeTextObj[grade.id] = {
-                    title: grade.translations?.find(t => t.locale === language)?.grade_name || grade.grade_name,
-                    description: grade.translations?.find(t => t.locale === language)?.description || grade.description
-                };
-            });
-            setGradeText(gradeTextObj);
-        }
+        setGradeText(gradeTextObj);
     }, [products, grades, language]);
 
     return (
-        <div className="home px-md-5 pb-md-0 pb-5 container-fluid">
+        <div className="home px-md-5 pb-md-0 pb-5 container-fluid" >
             <div className={`home-slider ${windowWidth > 768 ? 'py-5' : "pb-5"} `}>
                 <HomeSlider banners={homeBanners} />
             </div>
             <div className="row position-relative">
                 <div className="col-md-3 d-md-block d-none side-banners-container" style={{ overflow: "hidden" }}>
                     {sideBanners.map((banner, index) => (
-                        <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-3" />
+                        // <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`} alt={`sidebanner${index + 1}`} className="col-12 mb-2 rounded-3" />
+                        <LazyLoadImage
+                            src={`https://dash.watchizereg.com/Uploads_Images/Banner_Side/${banner.image}`}
+                            key={index}
+                            alt={`sidebanner${index + 1}`}
+                            // srcSet={`${banner.image}?w=400 400w, ${banner.image}?w=800 800w`}
+                            effect="blur"
+                            width="100%"
+                            height="auto"
+                            className="col-12 mb-2 rounded-3"
+                        />
                     ))}
                 </div>
                 <div className="col-md-9 col-12 lato-regular home-proud">
-                    {grades.map(grade => {
-                        const gradeProducts = filteredProducts[grade.id] ? filteredProducts[grade.id].slice(0, 12) : [];
-                        const gradeLocalization = gradeText[grade.id];
-                        if (gradeProducts && gradeProducts.length > 0) {
+                    {grades?.map((grade) => {
+                        const gradeProducts = filteredProducts?.[grade.id]?.slice(0, 12) ?? [];
+                        const gradeLocalization = gradeText?.[grade.id];
+
+                        if (gradeProducts.length > 0) {
                             return (
                                 <ProductSlider
                                     key={grade.id}
                                     text={{
-                                        title: { en: gradeLocalization?.title || grade.grade_name, ar: gradeLocalization?.title || grade.grade_name },
-                                        description: { en: gradeLocalization?.description || '', ar: gradeLocalization?.description || '' }
+                                        title: {
+                                            en: gradeLocalization?.title ?? grade.grade_name,
+                                            ar: gradeLocalization?.title ?? grade.grade_name,
+                                        },
+                                        description: {
+                                            en: gradeLocalization?.description ?? '',
+                                            ar: gradeLocalization?.description ?? '',
+                                        },
                                     }}
                                     products={gradeProducts}
                                     to={`/grade/${grade.grade_name}`}
@@ -95,8 +114,16 @@ function Home() {
                     }
                 </div>
             </div>
-            <div className="row pb-md-0 pb-5 bottom-banners-container">
+            <div className="row flex-wrap pb-md-0 pb-5 bottom-banners-container">
                 {bottomBanners.map((banner, index) => (
+                    // <LazyLoadImage
+                    //     key={index}
+                    //     src={`https://dash.watchizereg.com/Uploads_Images/Banner_Bottom/${banner.image}`}
+                    //     alt={`bottombanner${index + 1}`}
+                    //     className="col-md-6 col-6 mb-2 rounded-3 img-fluid"
+                    //     style={{ maxHeight: "300px" }}
+                    //     effect="blur"
+                    // />
                     <img key={index} loading="lazy" src={`https://dash.watchizereg.com/Uploads_Images/Banner_Bottom/${banner.image}`} alt={`bottombanner${index + 1}`} className="col-6 mb-2 rounded-3 img-fluid" style={{ maxHeight: "300px" }} />
                 ))}
             </div>
