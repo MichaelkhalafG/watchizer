@@ -5,7 +5,7 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import './home.css';
 import ProductSlider from '../../Components/Product/ProductSlider';
 import OfferSlider from '../../Components/Product/OfferSlider';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 
 function Home() {
     const { products, tables, language, windowWidth, offers, sideBanners, bottomBanners, homeBanners } = useContext(MyContext);
@@ -93,7 +93,7 @@ function Home() {
                                             ar: gradeLocalization?.description ?? '',
                                         },
                                     }}
-                                    products={gradeProducts}
+                                    gradeproducts={gradeProducts}
                                     to={`/grade/${grade.grade_name}`}
                                     moreid={grade.id}
                                 />

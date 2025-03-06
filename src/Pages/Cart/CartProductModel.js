@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import InnerImageZoom from 'react-inner-image-zoom';
 import defimg from '../../assets/images/1.webp'
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 
 function CartProductModel({ open, onClose, product, language, quantity, setQuantity, index }) {
     const [selectedImage, setSelectedImage] = useState('');

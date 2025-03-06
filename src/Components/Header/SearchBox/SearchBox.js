@@ -1,7 +1,7 @@
 import { IoIosSearch } from "react-icons/io";
 import { Button } from "@mui/material";
 import { useContext, useState, useEffect } from "react";
-import { MyContext } from "../../../App";
+import { MyContext } from "../../../Context/Context";
 import { useNavigate } from "react-router-dom";
 
 function SearchBox() {

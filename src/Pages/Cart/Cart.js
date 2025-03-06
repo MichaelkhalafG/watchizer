@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Button, Rating, MenuItem, Select, FormControl, Alert, Snackbar } from "@mui/material";
 import CartProductModel from "./CartProductModel";
 import CartOfferModel from "./CartOfferModel";
@@ -118,7 +118,7 @@ function Cart() {
                     // console.error("Failed to update cart item:", response.data);
                 }
             }
-            fetchCart();
+            fetchCart(user_id, products, offers, language, setCart);
             window.location.href = "/checkout";
         } catch (error) {
             // console.error("Error updating cart:", error);
@@ -159,19 +159,35 @@ function Cart() {
                                 {cart.map((item, index) => {
                                     const isProduct = item.product_id && item.product_image;
                                     const isOffer = item.offer_id && item.offer_image;
-                                    const title = item.product_id
-                                        ? item.product_title
-                                        : item.offer_title;
+                                    const title = item.product_id ? item.product_title : item.offer_title;
 
-                                    const piecePrice = parseFloat(item.piece_price).toFixed(2);
-                                    const totalPrice = (parseFloat(item.piece_price) * (item.quantity || 1)).toFixed(2);
+                                    const piecePrice = item.piece_price ? parseFloat(item.piece_price).toFixed(2) : "0.00";
+                                    const totalPrice = (parseFloat(item.piece_price || 0) * (item.quantity || 1)).toFixed(2);
+
                                     return (
-                                        <div key={index} className="row align-items-center border-bottom border-1 rounded-4 bg-most-used-10 py-2">
+                                        <div key={index} className="row align-items-center border-bottom border-1 rounded-4 bg-most-used-10 py-3">
+                                            {/* Image & Title */}
                                             <div className="col-4 d-flex align-items-center">
-                                                {isProduct && <img src={item.product_image} alt={item.product_id} loading="lazy" className="col-3" />}
-                                                {isOffer && <img src={item.offer_image} alt={item.offer_id} loading="lazy" className="col-3" />}
-                                                <div className="col-9">
-                                                    <h6 className="color-most-used fw-bold">{title}</h6>
+                                                {isProduct && (
+                                                    <img
+                                                        src={item.product_image}
+                                                        alt={item.product_title}
+                                                        loading="lazy"
+                                                        className="me-3 rounded"
+                                                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                                                    />
+                                                )}
+                                                {isOffer && (
+                                                    <img
+                                                        src={item.offer_image}
+                                                        alt={item.offer_title}
+                                                        loading="lazy"
+                                                        className="me-3 rounded"
+                                                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                                                    />
+                                                )}
+                                                <div>
+                                                    <h6 className="color-most-used fw-bold mb-1">{title}</h6>
                                                     <Rating
                                                         name="read-only"
                                                         value={parseInt(item.product_rating) || parseInt(item.offer_rating) || 5}
@@ -180,7 +196,9 @@ function Cart() {
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="col-2">
+
+                                            {/* Quantity Controls */}
+                                            <div className="col-2 d-flex align-items-center">
                                                 <Button
                                                     variant="outlined"
                                                     size="small"
@@ -194,12 +212,11 @@ function Cart() {
                                                     type="text"
                                                     value={item.quantity || 1}
                                                     readOnly
+                                                    className="mx-2 text-center"
                                                     style={{
-                                                        width: '40px',
-                                                        textAlign: 'center',
-                                                        margin: '0 10px',
-                                                        border: '1px solid #ddd',
-                                                        borderRadius: '4px',
+                                                        width: "40px",
+                                                        border: "1px solid #ddd",
+                                                        borderRadius: "4px",
                                                     }}
                                                 />
                                                 <Button
@@ -211,6 +228,7 @@ function Cart() {
                                                     +
                                                 </Button>
                                             </div>
+
                                             <div className="col-1 px-3">
                                                 <div
                                                     style={{
@@ -248,24 +266,24 @@ function Cart() {
                                                 </div>
                                             </div>
 
-                                            <h6 className="color-most-used col-1">{piecePrice}</h6>
-                                            <h6 className="color-most-used col-1">{totalPrice}</h6>
+                                            {/* Prices */}
+                                            <h6 className="color-most-used col-1 text-center">{piecePrice}</h6>
+                                            <h6 className="color-most-used col-1 text-center">{totalPrice}</h6>
+
+                                            {/* Stock Type */}
                                             <div className="col-1 text-center">
-                                                {item.type_stock &&
+                                                {item.type_stock && (
                                                     <span className={`badge ${item.type_stock === "Express" ? 'bg-black' : item.type_stock === "Market" ? "bg-success" : 'bg-danger'} col-12 p-2`}>
                                                         {item.type_stock}
                                                     </span>
-                                                }
+                                                )}
                                             </div>
+
+                                            {/* Actions */}
                                             <div className="col-1 text-center">
                                                 <Button
                                                     className="rounded-circle color-most-used mx-2"
-                                                    sx={{
-                                                        width: '40px',
-                                                        height: '40px',
-                                                        minWidth: '0',
-                                                        padding: 0,
-                                                    }}
+                                                    sx={{ width: '40px', height: '40px', minWidth: '0', padding: 0 }}
                                                     onClick={() => handleProductClick(item)}
                                                 >
                                                     <FaEye size={24} />
@@ -273,12 +291,7 @@ function Cart() {
                                                 <Button
                                                     variant="contained"
                                                     className="rounded-circle bg-danger text-light p-2"
-                                                    sx={{
-                                                        width: '40px',
-                                                        height: '40px',
-                                                        minWidth: '0',
-                                                        padding: 0,
-                                                    }}
+                                                    sx={{ width: '40px', height: '40px', minWidth: '0', padding: 0 }}
                                                     onClick={() => handleRemoveItem(item.id)}
                                                 >
                                                     <CiCircleRemove size={24} />
@@ -287,6 +300,7 @@ function Cart() {
                                         </div>
                                     );
                                 })}
+
                             </div>
                             <div className="col-3 p-3 pt-0">
                                 <div className="row align-items-center px-3 border border-1 rounded-3">

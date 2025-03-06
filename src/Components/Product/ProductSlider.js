@@ -13,7 +13,7 @@ import {
 } from 'react-icons/io';
 import { FaRegHeart } from 'react-icons/fa';
 import { SlSizeFullscreen } from 'react-icons/sl';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 import './Product.css';
 // import { use } from 'react';
 const ProductModel = lazy(() => import('./ProductModel'));
@@ -53,8 +53,8 @@ const PrevArrow = React.memo(({ onClick }) => (
     />
 ));
 
-function ProductSlider({ text, products, to, moreid }) {
-    const { language, Loader, user_id, fetchCart, setCurrentPage, setgradesfilters, windowWidth, handleAddTowishlist } = useContext(MyContext);
+function ProductSlider({ text, gradeproducts, to, moreid }) {
+    const { language, Loader, user_id, fetchCart, products, setCurrentPage, setgradesfilters, windowWidth, offers, setCart, handleAddTowishlist } = useContext(MyContext);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filteredProducts, setFilteredProducts] = useState([]);
@@ -67,9 +67,9 @@ function ProductSlider({ text, products, to, moreid }) {
         setResetKey(prevKey => prevKey + 1);
     }, []);
     useEffect(() => {
-        if (!Array.isArray(products)) return;
-        setFilteredProducts(products.filter((product) => product?.active === 1));
-    }, [products]);
+        if (!Array.isArray(gradeproducts)) return;
+        setFilteredProducts(gradeproducts.filter((product) => product?.active === 1));
+    }, [gradeproducts]);
     const handleProductClick = (product) => {
         setSelectedProduct(product);
 
@@ -132,7 +132,7 @@ function ProductSlider({ text, products, to, moreid }) {
                     setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     setAlertType("success");
                     setOpenAlert(true);
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);
@@ -340,7 +340,7 @@ ProductSlider.propTypes = {
             ar: PropTypes.string.isRequired,
         }).isRequired,
     }).isRequired,
-    products: PropTypes.arrayOf(
+    gradeproducts: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
             product_title: PropTypes.string.isRequired,

@@ -5,7 +5,7 @@ import { AiOutlineHome } from "react-icons/ai";
 import { MdOutlineLocalOffer, MdOutlineWatch } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import './PhoneNavBar.css';
-import { MyContext } from '../../../App';
+import { MyContext } from '../../../Context/Context';
 
 function PhoneNavBar() {
     const { tables, setFilters, setCurrentPage, language, productsCount } = useContext(MyContext);

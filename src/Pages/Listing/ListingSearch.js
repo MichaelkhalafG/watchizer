@@ -1,5 +1,5 @@
 import "./Listing.css";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { FormControl, InputLabel, MenuItem, Select, Snackbar, Alert } from "@mui/material";
 import { useContext, useState, useEffect } from "react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
@@ -16,7 +16,7 @@ import ProductModel from "../../Components/Product/ProductModel";
 import Pagination from "@mui/material/Pagination";
 
 function ListingSearch() {
-    const { language, products, fetchCart, user_id, currentPage, setCurrentPage, windowWidth, handleAddTowishlist } = useContext(MyContext);
+    const { language, products, fetchCart, user_id, offers, setCart, currentPage, setCurrentPage, windowWidth, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -66,7 +66,7 @@ function ListingSearch() {
                     setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     setAlertType("success");
                     setOpenAlert(true);
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);

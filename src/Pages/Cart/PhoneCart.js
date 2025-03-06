@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Button, Rating, MenuItem, Select, FormControl, Snackbar, Alert } from "@mui/material";
 import { FaEye } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";
@@ -20,6 +20,8 @@ function PhoneCart() {
         shipping,
         setShipping,
         fetchCart,
+        products,
+        offers,
         user_id,
         shippingid,
         setShippingid,
@@ -93,7 +95,7 @@ function PhoneCart() {
                     // console.error("Failed to update cart item:", response.data);
                 }
             }
-            fetchCart();
+            fetchCart(user_id, products, offers, language, setCart);
             window.location.href = "/checkout";
 
         } catch (error) {

@@ -1,7 +1,7 @@
 import './Footer.css';
 import { FaShippingFast, FaPhoneVolume, FaUndoAlt, FaTag, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { useContext } from 'react';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaRegHeart } from "react-icons/fa";
 import { RiBillLine } from "react-icons/ri";

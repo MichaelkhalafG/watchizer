@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import Button from '@mui/material/Button';
 import { FaAngleDown } from 'react-icons/fa';
 import LanguageDialog from './LanguageDialog';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 
 export default function LanguageDropdown() {
     const [open, setOpen] = useState(false);

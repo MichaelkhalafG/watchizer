@@ -1,6 +1,6 @@
 import OffersSideBar from "../../Components/SideBar/OffersSideBar";
 import "./Listing.css";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Link } from "react-router-dom";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";

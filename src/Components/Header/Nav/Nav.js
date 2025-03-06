@@ -7,7 +7,7 @@ import { TbDeviceWatchQuestion } from "react-icons/tb";
 import { MdOutlineLocalOffer, MdOutlineWatch, MdOutlineKeyboardArrowDown } from "react-icons/md";
 import { IoShirtOutline } from "react-icons/io5";
 import { useContext, useState } from 'react';
-import { MyContext } from '../../../App';
+import { MyContext } from '../../../Context/Context';
 
 function Nav() {
     const { language, setCurrentPage, products, tables, setFilters } = useContext(MyContext);

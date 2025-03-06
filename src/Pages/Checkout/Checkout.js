@@ -12,7 +12,7 @@ import {
     DialogActions,
     Alert, Snackbar
 } from "@mui/material";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import axios from "axios";
 
 function Checkout() {

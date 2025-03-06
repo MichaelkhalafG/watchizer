@@ -2,7 +2,7 @@ import SideBar from "../../Components/SideBar/SideBar";
 import "./Listing.css";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { FormControl, Drawer, InputLabel, MenuItem, Select, Button, Snackbar, Alert } from "@mui/material";
 import { useContext, useState, useEffect, Suspense } from "react";
 import { BsFillGrid3X3GapFill } from "react-icons/bs";
@@ -16,7 +16,7 @@ import ProductModel from "../../Components/Product/ProductModel";
 import Pagination from "@mui/material/Pagination";
 
 function Listing() {
-    const { language, currentPage, setCurrentPage, fetchCart, user_id, Loader, products, windowWidth, filters, setFilters, handleAddTowishlist } = useContext(MyContext);
+    const { language, currentPage, setCurrentPage, fetchCart, offers, setCart, user_id, Loader, products, windowWidth, filters, setFilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -106,7 +106,7 @@ function Listing() {
                     setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     setAlertType("success");
                     setOpenAlert(true);
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);

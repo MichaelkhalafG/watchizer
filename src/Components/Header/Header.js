@@ -10,7 +10,7 @@ import SearchBox from './SearchBox/SearchBox';
 import { Button } from '@mui/material';
 import Nav from './Nav/Nav';
 import userimg from '../../assets/images/user.webp'
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 
 function Header() {
     const { language, productsCount, users, user_id, total_cart_price } = useContext(MyContext);

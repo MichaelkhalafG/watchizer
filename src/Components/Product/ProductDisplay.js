@@ -7,7 +7,7 @@ import "./Product.css";
 import PropTypes from "prop-types";
 import ProductSlider from "./ProductSlider";
 import DOMPurify from "dompurify";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import axios from "axios";
 
 function ProductDisplay() {
@@ -17,7 +17,7 @@ function ProductDisplay() {
     const [openAlert, setOpenAlert] = useState(false);
     const [type_stock, settype_stock] = useState("");
     const { name } = useParams();
-    const { language, users, products, user_id, windowWidth, handleAddTowishlist, fetchCart } = useContext(MyContext);
+    const { language, users, products, user_id, windowWidth, handleAddTowishlist, offers, setCart, fetchCart } = useContext(MyContext);
     const product = products.find((p) => p.name === name);
     const [realetedProducts, setRelatedProducts] = useState();
     const DialColor = product?.dial_color[0]?.color_value;
@@ -93,7 +93,7 @@ function ProductDisplay() {
                     setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     setAlertType("success");
                     setOpenAlert(true);
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);

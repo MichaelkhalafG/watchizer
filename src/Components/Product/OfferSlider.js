@@ -11,7 +11,7 @@ import {
 } from 'react-icons/io';
 import { FaRegHeart } from 'react-icons/fa';
 import { SlSizeFullscreen } from 'react-icons/sl';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 import './Product.css';
 import OfferModel from './OfferModel';
 

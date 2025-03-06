@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { CloudUpload } from "@mui/icons-material";
 import DOMPurify from "dompurify";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 

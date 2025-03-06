@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button, CircularProgress, Typography, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import axios from "axios";
 import emptyWishList from "../../assets/images/emptywishlist.svg";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 
 function OrderList() {
     const { language, user_id } = useContext(MyContext);

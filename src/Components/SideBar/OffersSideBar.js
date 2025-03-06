@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect, Fragment } from "react";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import {
     Accordion,
     AccordionSummary,

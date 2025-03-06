@@ -6,13 +6,13 @@ import "react-inner-image-zoom/lib/InnerImageZoom/styles.css";
 import "./Product.css";
 import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import axios from "axios";
 import defimg from "../../assets/images/offer.avif"
 
 function OfferDisplay() {
     const { id } = useParams();
-    const { language, users, offers, products, windowWidth, handleAddTowishlist, user_id, tables, fetchCart } = useContext(MyContext);
+    const { language, users, offers, products, windowWidth, handleAddTowishlist, user_id, tables, fetchCart, setCart } = useContext(MyContext);
     const offer = offers.find((o) => o.id === parseInt(id));
     const [selectedImage, setSelectedImage] = useState("");
     const [ratings, setRatings] = useState([]);
@@ -65,7 +65,7 @@ function OfferDisplay() {
             })
                 .then(() => {
                     alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);

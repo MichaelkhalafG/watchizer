@@ -4,7 +4,7 @@ import { Button, IconButton, Snackbar, Alert, Pagination } from "@mui/material";
 import { useContext, useState, useEffect, useRef, Suspense } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaRegHeart } from "react-icons/fa";
@@ -12,7 +12,7 @@ import { SlSizeFullscreen } from "react-icons/sl";
 import './Search.css';
 
 function SearchPageForPhone() {
-    const { language, products, handleAddTowishlist, currentPage, setCurrentPage, fetchCart, user_id, Loader } = useContext(MyContext);
+    const { language, products, handleAddTowishlist, currentPage, setCurrentPage, fetchCart, offers, setCart, user_id, Loader } = useContext(MyContext);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredResults, setFilteredResults] = useState([]);
     const [alertMessage, setAlertMessage] = useState("");
@@ -82,7 +82,7 @@ function SearchPageForPhone() {
                 setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                 setAlertType("success");
                 setOpenAlert(true);
-                fetchCart();
+                fetchCart(user_id, products, offers, language, setCart);
             })
             .catch(() => {
                 setAlertMessage(language === "ar" ? "خطأ أثناء الإضافة." : "Error adding to cart.");

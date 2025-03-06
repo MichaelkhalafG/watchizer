@@ -9,7 +9,7 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import { FaTimes } from 'react-icons/fa';
 import { useContext } from 'react';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 
 function LanguageDialog({ onClose, selectedValue, open }) {
     const { language } = useContext(MyContext);

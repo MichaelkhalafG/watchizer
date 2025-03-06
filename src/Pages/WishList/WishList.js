@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Button, Rating } from "@mui/material";
 import { FaEye } from "react-icons/fa";
 import { CiCircleRemove } from "react-icons/ci";

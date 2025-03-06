@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { Container, Typography, Box, Grid } from "@mui/material";
 
 function Blog() {

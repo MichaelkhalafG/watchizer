@@ -1,6 +1,6 @@
 import GradeSideBar from "../../Components/SideBar/GradeSideBar";
 import "./Listing.css";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { FormControl, Drawer, InputLabel, MenuItem, Select, Button, Snackbar, Alert } from "@mui/material";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -16,7 +16,7 @@ import Pagination from "@mui/material/Pagination";
 import axios from "axios";
 
 function ListingGrades() {
-    const { language, products, currentPage, fetchCart, user_id, setCurrentPage, gradesfilters, windowWidth, setgradesfilters, handleAddTowishlist } = useContext(MyContext);
+    const { language, products, currentPage, fetchCart, offers, setCart, user_id, setCurrentPage, gradesfilters, windowWidth, setgradesfilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -102,7 +102,7 @@ function ListingGrades() {
                     setAlertMessage(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     setAlertType("success");
                     setOpenAlert(true);
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);

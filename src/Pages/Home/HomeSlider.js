@@ -1,6 +1,6 @@
 import React, { memo, useContext } from "react";
 import Slider from "react-slick";
-import { MyContext } from "../../App";
+import { MyContext } from "../../Context/Context";
 import { IoIosArrowDroprightCircle, IoIosArrowDropleftCircle } from "react-icons/io";
 
 function HomeSlider({ banners }) {

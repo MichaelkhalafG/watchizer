@@ -5,12 +5,12 @@ import { MdClose } from 'react-icons/md';
 import InnerImageZoom from 'react-inner-image-zoom';
 import defimg from '../../assets/images/1.webp'
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
-import { MyContext } from '../../App';
+import { MyContext } from '../../Context/Context';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 function OfferModel({ open, onClose, product, language }) {
-    const { user_id, fetchCart, tables, handleAddTowishlist, products } = useContext(MyContext)
+    const { user_id, fetchCart, tables, handleAddTowishlist, products, offers, setCart } = useContext(MyContext)
     const [selectedImage, setSelectedImage] = useState('');
     const [quantity, setQuantity] = useState(1);
     const [stock, setstock] = useState();
@@ -76,7 +76,7 @@ function OfferModel({ open, onClose, product, language }) {
             })
                 .then(() => {
                     alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
-                    fetchCart()
+                    fetchCart(user_id, products, offers, language, setCart);
                 })
                 .catch((error) => {
                     // console.error("Error adding to cart:", error);
