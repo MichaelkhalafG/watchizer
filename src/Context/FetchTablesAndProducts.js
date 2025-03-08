@@ -7,7 +7,7 @@ const getTranslatedName = (translations, locale, fallback) => {
 };
 
 const getProductRating = (product, ratings) => {
-    const productRatings = ratings.filter((r) => r.product_id === product.id);
+    const productRatings = (ratings || []).filter((r) => r.product_id === product.id);
     return productRatings.length > 0
         ? productRatings.reduce((acc, r) => acc + r.rating, 0) / productRatings.length
         : null;
@@ -54,7 +54,7 @@ const transformProductData = (products, tables, ratings, images, locale) => {
                 band_material: getCategoryData("materials", product.band_material_id, "material_name"),
                 watch_length_size_type: getCategoryData("sizeTypes", product.watch_length_size_type_id, "size_type_name"),
                 rating: getProductRating(product, ratings),
-                images: images.filter((img) => img.product_id === product.id).map((img) => `https://dash.watchizereg.com/Uploads_Images/Product_image/${img.image}`),
+                images: (images || []).filter((img) => img.product_id === product.id).map((img) => `https://dash.watchizereg.com/Uploads_Images/Product_image/${img.image}`),
                 features: product.feature.map((f) =>
                     getTranslatedName(f.translations || [], locale, 'feature_name')
                 ),
@@ -210,7 +210,7 @@ const useFetchTablesAndProducts = (setTables, setRatings, setProductsEn, setProd
             // console.log("Clearing cache and reloading...");
             Object.values(CACHE_KEYS).forEach((key) => localStorage.removeItem(key));
             window.location.reload();
-        }, CACHE_DURATION); // Every 10 minutes
+        }, CACHE_DURATION);
 
         return () => clearInterval(interval);
     }, [setTables, setRatings, setProductsEn, setProductsAr]);

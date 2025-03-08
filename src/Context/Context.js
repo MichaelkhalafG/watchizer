@@ -1,4 +1,4 @@
-import React, { createContext, startTransition, useCallback, useEffect, useState, useMemo } from 'react';
+import { createContext, startTransition, useCallback, useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { BiLoaderCircle } from "react-icons/bi";
@@ -9,6 +9,8 @@ export const MyContext = createContext();
 
 export const MyProvider = ({ children }) => {
     const [language, setLanguage] = useState('en');
+    const [watches, setWatches] = useState([]);
+    const [fashion, setFashion] = useState([]);
     const [windowWidth, setwindowWidth] = useState()
     const [productsEn, setProductsEn] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -54,6 +56,12 @@ export const MyProvider = ({ children }) => {
         ratings: [],
     });
 
+    const helperforsetingcategories = (setCategory, products, categoryTypeName) => {
+        const filteredProducts = products.filter((product) => product.category_type === categoryTypeName);
+        setCategory(filteredProducts || []);
+    };
+
+
     useEffect(() => {
         (async () => {
             fetchUsers(setusers);
@@ -91,6 +99,12 @@ export const MyProvider = ({ children }) => {
         return language === 'en' ? productsEn : productsAr;
     }, [language, productsEn, productsAr]);
 
+    useEffect(() => {
+        if (products.length > 0) {
+            helperforsetingcategories(setWatches, products, "Watches");
+            helperforsetingcategories(setFashion, products, "Fashion");
+        }
+    }, [products]);
     useEffect(() => {
         setuser_id(sessionStorage.getItem('user_id') ? parseInt(sessionStorage.getItem('user_id')) : null);
     }, []);
@@ -152,7 +166,7 @@ export const MyProvider = ({ children }) => {
                     showAlert(language === "ar" ? "تمت الإضافة إلى المفضل!" : "Added to the Wish List!", "success");
                     fetchWishList(user_id, products, offers, language, setwishList);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى المفضل." : "An error occurred while adding to the Wish List.", "error");
                 });
@@ -193,7 +207,6 @@ export const MyProvider = ({ children }) => {
             window.removeEventListener("resize", handleResize);
         };
     }, []);
-    useFetchTablesAndProducts(setTables, setRatings, setProductsEn, setProductsAr);
     const values = useMemo(() => ({
         cart, setCart,
         user_id, setuser_id,
@@ -209,6 +222,8 @@ export const MyProvider = ({ children }) => {
         gradesfilters, setgradesfilters,
         offersfilters, setOffersFilters,
         filters, setFilters,
+        fashion, setFashion,
+        watches, setWatches,
         users, handleAddTowishlist, fetchWishList, ratings, fetchCart, shippingPrices, products, tables,
         sideBanners, bottomBanners, homeBanners, handleQuantityChange, shippingname, setShippingName, offers,
         Loader, alertMessage, alertType, openAlert, setOpenAlert
@@ -227,6 +242,8 @@ export const MyProvider = ({ children }) => {
         gradesfilters, setgradesfilters,
         offersfilters, setOffersFilters,
         filters, setFilters,
+        fashion, setFashion,
+        watches, setWatches,
         users, handleAddTowishlist, ratings, shippingPrices, products, tables,
         sideBanners, bottomBanners, homeBanners, handleQuantityChange, shippingname, setShippingName, offers,
         Loader, alertMessage, alertType, openAlert, setOpenAlert

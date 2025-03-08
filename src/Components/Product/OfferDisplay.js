@@ -8,7 +8,7 @@ import PropTypes from "prop-types";
 import DOMPurify from "dompurify";
 import { MyContext } from "../../Context/Context";
 import axios from "axios";
-import defimg from "../../assets/images/offer.avif"
+import defimg from "../../assets/images/offer.webp"
 
 function OfferDisplay() {
     const { id } = useParams();
@@ -67,7 +67,7 @@ function OfferDisplay() {
                     alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                 });
@@ -144,9 +144,9 @@ function OfferDisplay() {
             }
         }
     };
-    const render_product_ids = (labelEn, ids, labelAr, fs = 'small', col = 'col-md-3 col-4') => (
-        ids.map((id, key) => (
-            <div className={`${col} p-1`} key={key}>
+    const render_product_ids = (labelEn, ids, labelAr, col = 'col-md-3 col-4') => (
+        ids.map((id) => (
+            <div className={`${col} p-1`} key={id}>
                 <Link to={`/product/${id}`}>
                     <img className='col-12 border border-1 rounded-3' src={products.find(p => p.id === id)?.image} loading='lazy' alt={`product ${id}`} />
                 </Link>
@@ -215,7 +215,7 @@ function OfferDisplay() {
                         )}
                         {offer?.images?.map((image, index) => (
                             <img
-                                key={index}
+                                key={image}
                                 src={image}
                                 alt={`Thumbnail ${index + 1}`}
                                 onClick={() => setSelectedImage(image)}

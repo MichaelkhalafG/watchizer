@@ -187,7 +187,7 @@ function Checkout() {
             .then(response => {
                 if (response.data.success) {
                     showAlert(language === "ar" ? "تم إرسال الطلب بنجاح!" : "Order submitted successfully!", "success");
-                    const redirectUrl = response.data.redirect_url || 'https://watchizereg.com/';
+                    const redirectUrl = response.data.redirect_url || 'https://watchizereg.com/order-list';
                     window.location.href = redirectUrl;
                     localStorage.clear();
                 } else {

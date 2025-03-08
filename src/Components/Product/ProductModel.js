@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating, Alert, Snackbar } from '@mui/material';
 import { MdClose } from 'react-icons/md';
@@ -14,6 +14,7 @@ function ProductModel({ open, onClose, product, language }) {
     const [selectedImage, setSelectedImage] = useState('');
     const [type_stock, settype_stock] = useState("");
     const [quantity, setQuantity] = useState(1);
+    const [price, setPrice] = useState(0);
     const [isfashion, setisfashion] = useState(false);
     const DialColor = product?.dial_color[0]?.color_value;
     const BandColor = product?.band_color[0]?.color_value;
@@ -31,7 +32,8 @@ function ProductModel({ open, onClose, product, language }) {
     };
     useEffect(() => {
         if (product) {
-            product.category_type_name !== "Watches" ? setisfashion(true) : setisfashion(false)
+            product.category_type_name !== "Watches" ? setisfashion(true) : setisfashion(false);
+            setPrice(parseInt(product.sale_price_after_discount, 10));
         }
     }, [product])
     useEffect(() => {
@@ -70,7 +72,7 @@ function ProductModel({ open, onClose, product, language }) {
         if (!user_id) {
             showAlert(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!", "warning");
         } else {
-            const piecePrice = parseInt(product.sale_price_after_discount, 10);
+            const piecePrice = parseInt(price, 10);
             const totalPrice = piecePrice * quantity;
 
             if (isNaN(totalPrice) || totalPrice <= 0) {
@@ -98,7 +100,7 @@ function ProductModel({ open, onClose, product, language }) {
                     showAlert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!", "success");
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     showAlert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.", "error");
                 });
@@ -129,7 +131,7 @@ function ProductModel({ open, onClose, product, language }) {
                                 cursor: 'pointer',
                             }}
                             title={language === 'ar' ? color.color_name_ar : color.color_name_en}
-                        ></div>
+                        />
                     ))}
                 </div>
             </div>
@@ -248,7 +250,7 @@ function ProductModel({ open, onClose, product, language }) {
                             </p>
                             <div className="d-flex col-12 my-3 align-items-center">
                                 <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'large' }}>
-                                    {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                    {Math.round(price)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                 </span>
                                 <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'large' }}>
                                     {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}

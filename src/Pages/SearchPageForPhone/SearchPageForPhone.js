@@ -29,7 +29,7 @@ function SearchPageForPhone() {
     );
     const handlePageChange = (e, value) => {
         if (containerRef.current) {
-            containerRef.current.scrollTo({ top: 0, behavior: "smooth" }); // Scroll inside container
+            containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
         }
         setCurrentPage(value);
     };
@@ -92,7 +92,7 @@ function SearchPageForPhone() {
     };
 
     return (
-        <div ref={containerRef} className="search-overlay position-fixed w-100 bg-white d-flex flex-column p-3" style={{ zIndex: 1050 }}>
+        <div ref={containerRef} className="search-overlay position-fixed bg-white d-flex flex-column p-3" style={{ zIndex: 1050, width: "100vw" }}>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}>
                 <Alert severity={alertType} onClose={() => setOpenAlert(false)}>{alertMessage}</Alert>
             </Snackbar>

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { IoBagOutline } from 'react-icons/io5';
 import { AiOutlineHome } from "react-icons/ai";
@@ -10,8 +10,11 @@ import { MyContext } from '../../../Context/Context';
 function PhoneNavBar() {
     const { tables, setFilters, setCurrentPage, language, productsCount } = useContext(MyContext);
 
-    const handleSetFilters = (categoryName) => {
-        const category = tables.categoryTypes.find(cat => cat.category_type_name === categoryName);
+    const handleCategoryClick = (categoryName) => {
+        const category = tables.categoryTypes.find(
+            (category) => category.category_type_name === categoryName
+        );
+
         if (category) {
             setFilters({
                 categories: [category.id],
@@ -19,6 +22,7 @@ function PhoneNavBar() {
                 subTypes: [],
                 price: [0, 6000],
             });
+            setCurrentPage(1);
         }
     };
 
@@ -47,7 +51,7 @@ function PhoneNavBar() {
                 <Link
                     to="/category/Watches"
                     className="col-3 text-decoration-none border-end text-center color-most-used px-3"
-                    onClick={() => { handleSetFilters("Watches"); setCurrentPage(1); }}
+                    onClick={() => handleCategoryClick("Watches")}
                 >
                     <MdOutlineWatch style={{ fontSize: "20px" }} />
                 </Link>
@@ -70,7 +74,7 @@ function PhoneNavBar() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
 

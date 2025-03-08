@@ -4,7 +4,11 @@ Disallow: /checkout
 Disallow: /edit-profile
 Disallow: /order-list
 Disallow: /wish-list
+Disallow: /search
+Disallow: /listingsearch
+Disallow: /blog/
+Disallow: /*?*
 
 Allow: /
 
-Sitemap: https://www.watchizereg.com/sitemap.xml
+sitemap: https://www.watchizereg.com/sitemap.xml

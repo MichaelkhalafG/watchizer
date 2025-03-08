@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '../../assets/images/logo.webp';
 import LanguageDropdown from '../LanguageDropdown/LanguageDropdowen';

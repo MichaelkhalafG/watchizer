@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating } from '@mui/material';
 import { MdClose } from 'react-icons/md';
@@ -8,7 +8,7 @@ import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import { MyContext } from '../../Context/Context';
 import { Link } from 'react-router-dom';
 
-function CartOfferModel({ open, onClose, product, language, quantity, setQuantity, index }) {
+function CartOfferModel({ open, onClose, product, language, quantity }) {
     const { tables, products, handleAddTowishlist } = useContext(MyContext)
     const [selectedImage, setSelectedImage] = useState('');
     const [stock, setstock] = useState();
@@ -43,7 +43,7 @@ function CartOfferModel({ open, onClose, product, language, quantity, setQuantit
         </div>
     );
 
-    const render_product_ids = (labelEn, ids, labelAr, fs = 'small', col = 'col-3') => (
+    const render_product_ids = (labelEn, ids, labelAr, col = 'col-3') => (
         ids.map((id, key) => (
             <div className={`${col} p-1`} key={key}>
                 <Link to={`/product/${id}`}>

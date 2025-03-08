@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating } from '@mui/material';
 import { MdClose } from 'react-icons/md';
 import InnerImageZoom from 'react-inner-image-zoom';
-import defimg from '../../assets/images/1.webp'
+import defimg from '../../assets/images/offer.webp'
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import { MyContext } from '../../Context/Context';
 import axios from 'axios';
@@ -38,9 +38,9 @@ function OfferModel({ open, onClose, product, language }) {
         </div>
     );
 
-    const render_product_ids = (labelEn, ids, labelAr, fs = 'small', col = 'col-3') => (
-        ids.map((id, key) => (
-            <div className={`${col} p-1`} key={key}>
+    const render_product_ids = (labelEn, ids, labelAr, col = 'col-3') => (
+        ids.map((id) => (
+            <div className={`${col} p-1`} key={id}>
                 <Link to={`/product/${id}`}>
                     <img className='col-12 border border-1 rounded-3' src={products.find(p => p.id === id)?.image} loading='lazy' alt={`product ${id}`} />
                 </Link>
@@ -78,7 +78,7 @@ function OfferModel({ open, onClose, product, language }) {
                     alert(language === "ar" ? "تمت الإضافة إلى السلة!" : "Added to the cart!");
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     alert(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                 });
@@ -158,7 +158,7 @@ function OfferModel({ open, onClose, product, language }) {
                             )}
                             {product?.images?.map((image, index) => (
                                 <img
-                                    key={index}
+                                    key={image}
                                     src={image}
                                     alt={`Thumbnail ${index + 1}`}
                                     onClick={() => setSelectedImage(image)}

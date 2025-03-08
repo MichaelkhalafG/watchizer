@@ -7,12 +7,12 @@ function NotFound() {
                 <div className="main_wrapper row">
                     <div className="main">
                         <div className="antenna">
-                            <div className="antenna_shadow"></div>
-                            <div className="a1"></div>
-                            <div className="a1d"></div>
-                            <div className="a2"></div>
-                            <div className="a2d"></div>
-                            <div className="a_base"></div>
+                            <div className="antenna_shadow" />
+                            <div className="a1" />
+                            <div className="a1d" />
+                            <div className="a2" />
+                            <div className="a2d" />
+                            <div className="a_base" />
                         </div>
                         <div className="tv">
                             <div className="cruve">
@@ -41,28 +41,28 @@ function NotFound() {
                                 </div>
                             </div>
                             <div className="lines">
-                                <div className="line1"></div>
-                                <div className="line2"></div>
-                                <div className="line3"></div>
+                                <div className="line1" />
+                                <div className="line2" />
+                                <div className="line3" />
                             </div>
                             <div className="buttons_div">
-                                <div className="b1"><div></div></div>
-                                <div className="b2"></div>
+                                <div className="b1"><div /></div>
+                                <div className="b2" />
                                 <div className="speakers">
                                     <div className="g1">
-                                        <div className="g11"></div>
-                                        <div className="g12"></div>
-                                        <div className="g13"></div>
+                                        <div className="g11" />
+                                        <div className="g12" />
+                                        <div className="g13" />
                                     </div>
-                                    <div className="g"></div>
-                                    <div className="g"></div>
+                                    <div className="g" />
+                                    <div className="g" />
                                 </div>
                             </div>
                         </div>
                         <div className="bottom">
-                            <div className="base1"></div>
-                            <div className="base2"></div>
-                            <div className="base3"></div>
+                            <div className="base1" />
+                            <div className="base2" />
+                            <div className="base3" />
                         </div>
                     </div>
                     <div className="text_404">

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, lazy, useContext } from 'react';
+import { Suspense, useEffect, lazy, useContext } from 'react';
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import Home from './Pages/Home/Home';
@@ -12,6 +12,7 @@ import PhoneNavBar from './Components/Header/PhoneNavBar/PhoneNavBar';
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import { MyContext, MyProvider } from './Context/Context';
 import { Alert, Snackbar } from '@mui/material';
+import useFacebookPixel from './scripts/useFacebookPixel';
 const NotFound = lazy(() => import('./Pages/Not Found/NotFound'));
 const ProductDisplay = lazy(() => import('./Components/Product/ProductDisplay'));
 const Listing = lazy(() => import('./Pages/Listing/Listing'));
@@ -33,6 +34,7 @@ const Blog = lazy(() => import('./Pages/Blog/Blog'));
 const Blogs = lazy(() => import('./Pages/Blog/Blogs'));
 
 function App() {
+  useFacebookPixel("1611910119460872");
   return (
     <MyProvider>
       <MainApp />
@@ -76,7 +78,7 @@ function MainApp() {
           <meta property="og:title" content="Watchizer - أفخم الساعات والإكسسوارات الفاخرة" />
           <meta property="og:description"
             content="اكتشف مجموعة رائعة من الساعات الفاخرة والإكسسوارات العصرية في Watchizer. جودة استثنائية، تصاميم راقية، وعروض لا تُقاوم." />
-          <meta property="og:image" content="https://www.watchizereg.com/logo.png" />
+          <meta property="og:image" content="https://www.watchizereg.com/logo.svg" />
           <meta property="og:image:alt" content="مجموعة من الساعات الفاخرة من Watchizer" />
           <meta property="og:url" content="https://www.watchizereg.com/" />
           <meta property="og:site_name" content="Watchizer" />
@@ -87,7 +89,7 @@ function MainApp() {
           <meta name="twitter:title" content="Watchizer - أفخم الساعات والإكسسوارات الفاخرة" />
           <meta name="twitter:description"
             content="تسوق أحدث موديلات الساعات الفاخرة والإكسسوارات الراقية بأفضل الأسعار فقط على Watchizer." />
-          <meta name="twitter:image" content="https://www.watchizereg.com/logo.png" />
+          <meta name="twitter:image" content="https://www.watchizereg.com/logo.svg" />
           <meta name="twitter:site" content="@Watchizer" />
           <meta name="twitter:creator" content="@Watchizer" />
           <meta name="google-site-verification" content="ySFGJkGj9eU9lzj8qAvuoqI9xt4Wcaswa_Q0Ke4Uoqg" />
@@ -100,14 +102,13 @@ function MainApp() {
           {/* Theme & Appearance */}
           <meta name="theme-color" content="#000000" />
           <link rel="icon" href="/favicon.ico" />
-          <link rel="apple-touch-icon" href="/logo.png" />
+          <link rel="apple-touch-icon" href="/logo.svg" />
 
           {/* Preload Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Lato:wght@100;300;400;700;900&display=swap"
-            rel="stylesheet" />
+          <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Lato:wght@100;300;400;700;900&display=swap" />
+          <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Lato:wght@100;300;400;700;900&display=swap" media="print" onload="this.media='all'" />
 
           {/* Web Manifest for PWA */}
           <link rel="manifest" href="/manifest.json" />
@@ -119,8 +120,8 @@ function MainApp() {
               "@type": "Store",
               "name": "Watchizer - Luxury Watches & Accessories",
               "url": "https://www.watchizereg.com/",
-              "logo": "https://www.watchizereg.com/logo.png",
-              "image": "https://www.watchizereg.com/logo.png",
+              "logo": "https://www.watchizereg.com/logo.svg",
+              "image": "https://www.watchizereg.com/logo.svg",
               "description": "Discover a premium collection of luxury watches and fashion accessories at Watchizer. Shop exclusive timepieces with elegant designs and unbeatable prices in Egypt.",
               "address": {
                 "@type": "PostalAddress",

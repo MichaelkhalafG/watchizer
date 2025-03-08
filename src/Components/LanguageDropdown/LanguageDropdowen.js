@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import Button from '@mui/material/Button';
 import { FaAngleDown } from 'react-icons/fa';
 import LanguageDialog from './LanguageDialog';

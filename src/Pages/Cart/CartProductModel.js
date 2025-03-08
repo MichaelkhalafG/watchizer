@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Modal, Box, Button, Rating } from '@mui/material';
 import { MdClose } from 'react-icons/md';
@@ -8,7 +8,7 @@ import defimg from '../../assets/images/1.webp'
 import 'react-inner-image-zoom/lib/InnerImageZoom/styles.css';
 import { MyContext } from '../../Context/Context';
 
-function CartProductModel({ open, onClose, product, language, quantity, setQuantity, index }) {
+function CartProductModel({ open, onClose, product, language, quantity }) {
     const [selectedImage, setSelectedImage] = useState('');
     const { handleAddTowishlist } = useContext(MyContext);
 
@@ -36,7 +36,7 @@ function CartProductModel({ open, onClose, product, language, quantity, setQuant
                                 cursor: 'pointer',
                             }}
                             title={language === 'ar' ? color.color_name_ar : color.color_name_en}
-                        ></div>
+                        />
                     ))}
                 </div>
             </div>

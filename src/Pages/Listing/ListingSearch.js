@@ -21,6 +21,7 @@ function ListingSearch() {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const searchTerm = searchParams.get("query") || "";
+    const [displayedProducts, setDisplayedProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -68,7 +69,7 @@ function ListingSearch() {
                     setOpenAlert(true);
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                     setAlertType("error");
@@ -105,10 +106,13 @@ function ListingSearch() {
         window.scrollTo(0, 0);
     };
     const totalPages = Math.ceil(filteredProducts.length / shownum);
-    const displayedProducts = filteredProducts.slice(
-        (currentPage - 1) * shownum,
-        currentPage * shownum
-    );
+    useEffect(() => {
+        if (!filteredProducts) return;
+        setDisplayedProducts(filteredProducts.slice(
+            (currentPage - 1) * shownum,
+            currentPage * shownum
+        ));
+    }, [currentPage, filteredProducts, shownum]);
     return (
         <div className={`container product-listing ${isRTL ? "rtl" : "ltr"}`}>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}

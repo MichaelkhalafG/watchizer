@@ -16,13 +16,14 @@ import Pagination from "@mui/material/Pagination";
 import axios from "axios";
 
 function ListingGrades() {
-    const { language, products, currentPage, fetchCart, offers, setCart, user_id, setCurrentPage, gradesfilters, windowWidth, setgradesfilters, handleAddTowishlist } = useContext(MyContext);
+    const { language, products, currentPage, fetchCart, tables, offers, setCart, watches, fashion, user_id, setCurrentPage, gradesfilters, windowWidth, setgradesfilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [colselected, setColselected] = useState(windowWidth >= 768 ? "col-3" : "col-6");
     const [open, setOpen] = useState(false);
+    const [displayedProducts, setDisplayedProducts] = useState([]);
     const [alertMessage, setAlertMessage] = useState("");
     const [alertType, setAlertType] = useState("info");
     const [openAlert, setOpenAlert] = useState(false);
@@ -36,36 +37,55 @@ function ListingGrades() {
     const isRTL = language === "ar";
 
     useEffect(() => {
-        let filtered = products || [];
+        if (!products?.length && !watches?.length && !fashion?.length) return;
+
+        let thelisttofilter = products;
+
         if (gradesfilters.categories.length > 0) {
-            filtered = filtered.filter((product) =>
-                gradesfilters.categories.includes(product.category_type_id)
-            );
+            let filterscat = gradesfilters.categories.map((cat) => {
+                let category = tables.categoryTypes?.find((item) => item.id === cat);
+                return category?.translations?.find((t) => t.locale === language)?.category_type_name;
+            }).filter(Boolean);
+
+            if (filterscat.length === 1) {
+                if (filterscat[0] === "Watches") {
+                    thelisttofilter = watches;
+                } else if (filterscat[0] === "Fashion") {
+                    thelisttofilter = fashion;
+                }
+            }
+            else {
+                thelisttofilter = products;
+            }
         }
-        if (gradesfilters.brands.length > 0) {
-            filtered = filtered.filter((product) =>
-                gradesfilters.brands.includes(product.brand_id)
-            );
+        let filtered = Array.isArray(thelisttofilter) ? [...thelisttofilter] : [];
+
+        const { categories, brands, subTypes, grades, price } = gradesfilters;
+
+        if (categories?.length) {
+            filtered = filtered.filter((product) => categories.includes(product.category_type_id));
         }
-        if (gradesfilters.subTypes.length > 0) {
-            filtered = filtered.filter((product) =>
-                gradesfilters.subTypes.includes(product.sub_type_id)
-            );
+        if (brands?.length) {
+            filtered = filtered.filter((product) => brands.includes(product.brand_id));
         }
-        if (gradesfilters.grades.length > 0) {
-            filtered = filtered.filter((product) =>
-                gradesfilters.grades.includes(product.grade_id)
-            );
+        if (subTypes?.length) {
+            filtered = filtered.filter((product) => subTypes.includes(product.sub_type_id));
         }
-        if (gradesfilters.price[0] !== 0 || gradesfilters.price[1] !== 6000) {
-            filtered = filtered.filter(
-                (product) =>
-                    product.sale_price_after_discount >= gradesfilters.price[0] &&
-                    product.sale_price_after_discount <= gradesfilters.price[1]
-            );
+        if (grades?.length) {
+            filtered = filtered.filter((product) => grades.includes(product.grade_id));
+        }
+        if (Array.isArray(price) && price.length === 2) {
+            const [minPrice, maxPrice] = price;
+            if (minPrice !== 0 || maxPrice !== 6000) {
+                filtered = filtered.filter((product) =>
+                    product.sale_price_after_discount >= minPrice &&
+                    product.sale_price_after_discount <= maxPrice
+                );
+            }
         }
         setFilteredProducts(filtered);
-    }, [gradesfilters, products]);
+
+    }, [gradesfilters, products, fashion, language, watches, tables]);
 
     const handleAddToCart = (product, type_stock) => {
         if (!user_id) {
@@ -104,7 +124,7 @@ function ListingGrades() {
                     setOpenAlert(true);
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                     setAlertType("error");
@@ -130,10 +150,14 @@ function ListingGrades() {
         window.scrollTo(0, 0);
     };
     const totalPages = Math.ceil(filteredProducts.length / shownum);
-    const displayedProducts = filteredProducts.slice(
-        (currentPage - 1) * shownum,
-        currentPage * shownum
-    );
+    useEffect(() => {
+        if (!filteredProducts) return;
+
+        setDisplayedProducts(filteredProducts.slice(
+            (currentPage - 1) * shownum,
+            currentPage * shownum
+        ));
+    }, [currentPage, filteredProducts, gradesfilters, shownum]);
     return (
         <div className={`container product-listing ${isRTL ? "rtl" : "ltr"}`}>
             <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}

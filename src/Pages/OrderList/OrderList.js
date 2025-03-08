@@ -37,7 +37,7 @@ function OrderList() {
                 setOrders(filteredOrders);
                 setLoading(false);
             })
-            .catch(error => {
+            .catch(() => {
                 // console.error("Error fetching orders:", error);
                 setError("Failed to load orders.");
                 setLoading(false);

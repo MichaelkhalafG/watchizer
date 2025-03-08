@@ -119,7 +119,7 @@ function OffersSideBar({ setFilters }) {
                 <p className={`col-5 p-1 color-most-used ${isRTL ? "text-end" : "text-start"}`}>
                     {isRTL ? "من:" : "from:"} <span className="fw-bold">{value[0]}</span>
                 </p>
-                <p className="col-2 p-1"></p>
+                <p className="col-2 p-1" />
                 <p className={`col-5 p-1 ${isRTL ? "text-start" : "text-end"} color-most-used`}>
                     {isRTL ? "الى:" : "to:"} <span className="fw-bold">{value[1]}</span>
                 </p>
@@ -140,7 +140,7 @@ function OffersSideBar({ setFilters }) {
                                 checked={selectedRating === String(rating)}
                                 aria-label={`${rating} Stars`}
                             />
-                            <label htmlFor={`star${rating}`}></label>
+                            <label htmlFor={`star${rating}`} />
                         </Fragment>
                     ))}
                 </div>

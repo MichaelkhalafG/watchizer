@@ -62,6 +62,7 @@ function ProductSlider({ text, gradeproducts, to, moreid }) {
     const [alertMessage, setAlertMessage] = useState("");
     const [alertType, setAlertType] = useState("info");
     const [openAlert, setOpenAlert] = useState(false);
+    const visibleItems = 15;
 
     useEffect(() => {
         setResetKey(prevKey => prevKey + 1);
@@ -134,7 +135,7 @@ function ProductSlider({ text, gradeproducts, to, moreid }) {
                     setOpenAlert(true);
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                     setAlertType("error");
@@ -143,190 +144,194 @@ function ProductSlider({ text, gradeproducts, to, moreid }) {
         }
     };
 
-    return (
-        <>
-            <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
-                anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
-            >
-                <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
-                    {alertMessage}
-                </Alert>
-            </Snackbar>
-            <div className="col-12 d-flex px-3 info">
-                <div className="col-md-10 col-8">
-                    <h4 className="color-most-used fw-bold">
-                        {language === 'ar' ? text.title.ar : text.title.en}
-                    </h4>
-                    <p className="text-secondary fs-large" style={{ fontSize: "small" }}>
-                        {language === 'ar' ? text.description.ar : text.description.en}
-                    </p>
+    if (!gradeproducts) {
+        return <Loader />;
+    } else {
+        return (
+            <>
+                <Snackbar open={openAlert} autoHideDuration={3000} onClose={() => setOpenAlert(false)}
+                    anchorOrigin={{ vertical: windowWidth >= 768 ? "bottom" : "top", horizontal: windowWidth >= 768 ? "right" : "left" }}
+                >
+                    <Alert severity={alertType} onClose={() => setOpenAlert(false)}>
+                        {alertMessage}
+                    </Alert>
+                </Snackbar>
+                <div className="col-12 d-flex px-3 info">
+                    <div className="col-md-10 col-8">
+                        <h4 className="color-most-used fw-bold">
+                            {language === 'ar' ? text.title.ar : text.title.en}
+                        </h4>
+                        <p className="text-secondary fs-large" style={{ fontSize: "small" }}>
+                            {language === 'ar' ? text.description.ar : text.description.en}
+                        </p>
+                    </div>
+                    <div className="col-md-2 col-4">
+                        {to && (
+                            <Link to={to}>
+                                <Button className="color-most-used rounded-4 px-3 border border-1"
+                                    title="View More"
+                                    onClick={() => {
+                                        setgradesfilters({
+                                            categories: [],
+                                            brands: [],
+                                            subTypes: [],
+                                            grades: [moreid],
+                                            price: [0, 6000],
+                                        });
+                                        setCurrentPage(1);
+                                    }
+                                    }>
+                                    {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
+                                    {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
+                                </Button>
+                            </Link>)}
+                    </div>
                 </div>
-                <div className="col-md-2 col-4">
-                    <Link to={to}>
-                        <Button className="color-most-used rounded-4 px-3 border border-1"
-                            title="View More"
-                            onClick={() => {
-                                setgradesfilters({
-                                    categories: [],
-                                    brands: [],
-                                    subTypes: [],
-                                    grades: [moreid],
-                                    price: [0, 6000],
-                                });
-                                setCurrentPage(1);
-                            }
-                            }>
-                            {language === 'ar' ? 'مشاهدة المزيد' : 'View More'}
-                            {language === 'ar' ? <IoIosArrowBack className="me-2" /> : <IoIosArrowForward className="ms-2" />}
-                        </Button>
-                    </Link>
-                </div>
-            </div>
 
-            <div className="row product-slider pb-5">
-                <Suspense fallback={<Loader />}>
-                    <Slider key={resetKey} {...sliderSettings}>
-                        {filteredProducts.map((product) => (
-                            <div key={product.product_title} className="p-2" style={{ height: '100%' }}>
-                                <div className="card product-card border-0 rounded-3 shadow-sm d-flex flex-column position-relative">
-                                    <div className="action-menu position-absolute" style={{ zIndex: 1000 }}>
-                                        {windowWidth >= 768 ?
+                <div className="row product-slider pb-5">
+                    <Suspense fallback={<Loader />}>
+                        <Slider key={resetKey} {...sliderSettings}>
+                            {filteredProducts.slice(0, visibleItems).map((product) => (
+                                <div key={product.product_title} className="p-2" style={{ height: '100%' }}>
+                                    <div className="card product-card border-0 rounded-3 shadow-sm d-flex flex-column position-relative">
+                                        <div className="action-menu position-absolute" style={{ zIndex: 1000 }}>
+                                            {windowWidth >= 768 ?
+                                                <button
+                                                    className="btn btn-dark rounded-circle"
+                                                    onClick={() => handleProductClick(product)}
+                                                    title="display product"
+                                                >
+                                                    <SlSizeFullscreen />
+                                                </button>
+                                                :
+                                                <Link
+                                                    to={`/product/${product.product_title}`}
+                                                    className="btn btn-dark rounded-circle"
+                                                    title="display product"
+                                                >
+                                                    <SlSizeFullscreen />
+                                                </Link>
+                                            }
+
                                             <button
-                                                className="btn btn-dark rounded-circle"
-                                                onClick={() => handleProductClick(product)}
-                                                title="display product"
-
+                                                className="btn mt-2 btn-danger rounded-circle"
+                                                onClick={() => handleAddTowishlist(product.id, "p")}
+                                                title="add to wishlist"
                                             >
-                                                <SlSizeFullscreen />
+                                                <FaRegHeart />
                                             </button>
-                                            :
-                                            <Link
-                                                to={`/product/${product.product_title}`}
-                                                className="btn btn-dark rounded-circle"
-                                                title="display product"
-                                            >
-                                                <SlSizeFullscreen />
-                                            </Link>
-                                        }
+                                        </div>
 
-                                        <button
-                                            className="btn mt-2 btn-danger rounded-circle"
-                                            onClick={() => handleAddTowishlist(product.id, "p")}
-                                            title="add to wishlist"
-                                        >
-                                            <FaRegHeart />
-                                        </button>
-                                    </div>
-
-                                    <Link to={`/product/${product.product_title}`} className="product-img-container">
-                                        <LazyLoadImage
-                                            src={product.image}
-                                            alt={product.wa_code}
-                                            srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
-                                            effect="blur"
-                                            width="100%"
-                                            height="auto"
-                                            className="img-fluid rounded-top"
-                                        />
-                                        {/* <img
+                                        <Link to={`/product/${product.product_title}`} className="product-img-container">
+                                            <LazyLoadImage
+                                                src={product.image}
+                                                alt={product.wa_code}
+                                                srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
+                                                effect="blur"
+                                                width="100%"
+                                                height="auto"
+                                                className="img-fluid rounded-top"
+                                            />
+                                            {/* <img
                                             src={product.image}
                                             alt={product.wa_code}
                                             srcSet={`${product.image}?w=400 400w, ${product.image}?w=800 800w`}
                                             className="img-fluid rounded-top"
                                             loading="lazy"
                                         /> */}
-                                    </Link>
+                                        </Link>
 
-                                    <div className="card-body d-flex flex-column justify-content-between p-3">
-                                        <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>
-                                            {product.product_title.length > 40 ? (
-                                                <>
-                                                    {product.product_title.slice(0, 50)}...
-                                                </>
-                                            ) : product.product_title.length <= 30 ? (
-                                                <>
-                                                    {product.product_title}
-                                                    <br />
-                                                    <br />
-                                                </>
-                                            ) : (
-                                                product.product_title
-                                            )}
-                                        </h6>
-                                        <p className={`card-text ${language === 'ar' ? 'text-end' : ''}  text-secondary mb-3`} style={{ fontSize: '0.9rem' }}>
-                                            {product.short_description.length > 100 ? (
-                                                <>
-                                                    {product.short_description.slice(0, 100)}...
-                                                </>
-                                            ) : product.short_description.length <= 50 ? (
-                                                <>
-                                                    {product.short_description}
-                                                    <br />
-                                                    <br />
-                                                </>
-                                            ) : (
-                                                product.short_description
-                                            )}
-                                        </p>
+                                        <div className="card-body d-flex flex-column justify-content-between p-3">
+                                            <h6 className={`card-title ${language === 'ar' ? 'text-end' : ''} fs-large fw-bold mb-2`} style={{ fontSize: 'small' }}>
+                                                {product.product_title.length > 40 ? (
+                                                    <>
+                                                        {product.product_title.slice(0, 50)}...
+                                                    </>
+                                                ) : product.product_title.length <= 30 ? (
+                                                    <>
+                                                        {product.product_title}
+                                                        <br />
+                                                        <br />
+                                                    </>
+                                                ) : (
+                                                    product.product_title
+                                                )}
+                                            </h6>
+                                            <p className={`card-text ${language === 'ar' ? 'text-end' : ''}  text-secondary mb-3`} style={{ fontSize: '0.9rem' }}>
+                                                {product.short_description.length > 100 ? (
+                                                    <>
+                                                        {product.short_description.slice(0, 100)}...
+                                                    </>
+                                                ) : product.short_description.length <= 50 ? (
+                                                    <>
+                                                        {product.short_description}
+                                                        <br />
+                                                        <br />
+                                                    </>
+                                                ) : (
+                                                    product.short_description
+                                                )}
+                                            </p>
 
-                                        <div className="d-flex justify-content-center align-items-center mb-2">
-                                            <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'small' }}>
-                                                {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
-                                            </span>
-                                            <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'small' }}>
-                                                {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
-                                            </span>
-                                        </div>
-
-                                        <div className="d-md-flex  justify-content-between align-items-center">
-                                            <div className='col-12 p-1'>
-                                                <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-black' : parseInt(product.market_stock) > 0 ? "bg-success" : 'bg-danger'} col-12`}>
-                                                    {language === 'ar' ? (parseInt(product.stock) > 0 ? 'اكسبريس' : parseInt(product.market_stock) > 0 ? "ماركت" : 'غير متوفر')
-                                                        : (parseInt(product.stock) > 0 ? 'Express' : parseInt(product.market_stock) > 0 ? "Market Place" : 'Out of Stock')}
+                                            <div className="d-flex justify-content-center align-items-center mb-2">
+                                                <span className="color-most-used fw-bold me-2 fs-large" style={{ fontSize: 'small' }}>
+                                                    {Math.round(product.sale_price_after_discount)} {language === 'ar' ? 'ج.م' : 'EGP'}
+                                                </span>
+                                                <span className="text-muted text-decoration-line-through fs-large" style={{ fontSize: 'small' }}>
+                                                    {Math.round(product.selling_price)} {language === 'ar' ? 'ج.م' : 'EGP'}
                                                 </span>
                                             </div>
-                                            {/* <div className="d-flex col-md-6 p-1 justify-content-center col-12 align-items-center">
+
+                                            <div className="d-md-flex  justify-content-between align-items-center">
+                                                <div className='col-12 p-1'>
+                                                    <span className={`badge ${parseInt(product.stock) > 0 ? 'bg-black' : parseInt(product.market_stock) > 0 ? "bg-success" : 'bg-danger'} col-12`}>
+                                                        {language === 'ar' ? (parseInt(product.stock) > 0 ? 'اكسبريس' : parseInt(product.market_stock) > 0 ? "ماركت" : 'غير متوفر')
+                                                            : (parseInt(product.stock) > 0 ? 'Express' : parseInt(product.market_stock) > 0 ? "Market Place" : 'Out of Stock')}
+                                                    </span>
+                                                </div>
+                                                {/* <div className="d-flex col-md-6 p-1 justify-content-center col-12 align-items-center">
                                                 <Rating name="read-only" className={`${windowWidth <= 768 ? "col-12" : ""}`} value={Math.round(product.rating === null ? 5 : product.rating)} size="small" readOnly />
                                                 <span className={` ms-2 ${windowWidth <= 768 ? "d-none" : ""}`}>
                                                     ({Math.round(product.rating === null ? 5 : product.rating)})</span>
                                             </div> */}
+                                            </div>
+                                            {user_id && user_id !== null ?
+                                                <Link onClick={() => handleAddToCart(product, (parseInt(product.stock) > 0 ? 'Express' : "Market"))}
+                                                    className="btn btn-outline-dark rounded-4 mt-2"
+                                                    disabled={parseInt(product.stock) <= 0}
+                                                >
+                                                    {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
+                                                </Link>
+                                                :
+                                                <Link to={`/login`}
+                                                    className="btn btn-outline-dark rounded-4 mt-2"
+                                                    disabled={(parseInt(product.stock) <= 0 || parseInt(product.market_stock) <= 0)}
+                                                >
+                                                    {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
+                                                </Link>
+                                            }
                                         </div>
-                                        {user_id && user_id !== null ?
-                                            <Link onClick={() => handleAddToCart(product, (parseInt(product.stock) > 0 ? 'Express' : "Market"))}
-                                                className="btn btn-outline-dark rounded-4 mt-2"
-                                                disabled={parseInt(product.stock) <= 0}
-                                            >
-                                                {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
-                                            </Link>
-                                            :
-                                            <Link to={`/login`}
-                                                className="btn btn-outline-dark rounded-4 mt-2"
-                                                disabled={(parseInt(product.stock) <= 0 || parseInt(product.market_stock) <= 0)}
-                                            >
-                                                {language === 'ar' ? 'أضف إلى السلة' : 'Add to Cart'}
-                                            </Link>
-                                        }
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </Slider>
-                </Suspense>
-            </div >
+                            ))}
+                        </Slider>
+                    </Suspense>
+                </div >
 
-            {selectedProduct && (
-                <Suspense fallback={<Loader />}>
-                    <ProductModel
-                        open={isModalOpen}
-                        onClose={handleModalClose}
-                        product={selectedProduct}
-                        language={language}
-                    />
-                </Suspense>
-            )
-            }
-        </>
-    );
+                {selectedProduct && (
+                    <Suspense fallback={<Loader />}>
+                        <ProductModel
+                            open={isModalOpen}
+                            onClose={handleModalClose}
+                            product={selectedProduct}
+                            language={language}
+                        />
+                    </Suspense>
+                )
+                }
+            </>
+        );
+    }
 }
 
 ProductSlider.propTypes = {

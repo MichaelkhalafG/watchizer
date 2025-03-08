@@ -53,8 +53,8 @@ function Footer() {
                     <div className='col-6 col-lg-3 mb-4'>
                         <h6 className='category-title'>{language === 'ar' ? 'الفئات الفرعية' : 'SubTypes'}</h6>
                         <ul className='list-unstyled'>
-                            {tables.subTypes && tables.subTypes.map((subtype, i) => (
-                                <li key={i}>
+                            {tables.subTypes && tables.subTypes.map((subtype) => (
+                                <li key={subtype.id}>
                                     <Link to={`/subtypes/${subtype.sub_type_name}`} onClick={() => setFilters({ categories: [], brands: [], subTypes: [subtype.id], price: [0, 6000] })}>
                                         {subtype.translations.find(t => t.locale === language)?.sub_type_name}
                                     </Link>
@@ -65,8 +65,8 @@ function Footer() {
                     <div className='col-6 col-lg-3 mb-4'>
                         <h6 className='category-title'>{language === "ar" ? "العلامات التجارية" : "Brands"}</h6>
                         <ul className='list-unstyled'>
-                            {firstHalfBrands.map((brand, i) => (
-                                <li key={i}>
+                            {firstHalfBrands.map((brand) => (
+                                <li key={brand.id}>
                                     <Link to={`/brand/${brand.brand_name}`} onClick={() => setFilters({ categories: [], brands: [brand.id], subTypes: [], price: [0, 6000] })}>
                                         {brand.translations.find(t => t.locale === language)?.brand_name}
                                     </Link>
@@ -77,8 +77,8 @@ function Footer() {
                     <div className='col-6 col-lg-3 mb-4'>
                         <h6 className='category-title'>{language === "ar" ? "العلامات التجارية" : "Brands"}</h6>
                         <ul className='list-unstyled'>
-                            {secondHalfBrands.map((brand, i) => (
-                                <li key={i}>
+                            {secondHalfBrands.map((brand) => (
+                                <li key={brand.id}>
                                     <Link to={`/brand/${brand.brand_name}`} onClick={() => setFilters({ categories: [], brands: [brand.id], subTypes: [], price: [0, 6000] })}>
                                         {brand.translations.find(t => t.locale === language)?.brand_name}
                                     </Link>
@@ -89,8 +89,8 @@ function Footer() {
                     <div className='col-6 col-lg-3 mb-4'>
                         <h6 className='category-title'>{language === "ar" ? "افعال سريعة" : "Fast Actions"}</h6>
                         <ul className='list-unstyled'>
-                            {profileActions.map((action, i) => (
-                                <li key={i}>
+                            {profileActions.map((action) => (
+                                <li key={action.to}>
                                     <Link to={action.to}>{action.name}</Link>
                                 </li>
                             ))}

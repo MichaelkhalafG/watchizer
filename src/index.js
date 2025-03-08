@@ -8,6 +8,7 @@ import 'aos/dist/aos.css';
 import 'aos/dist/aos';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import 'react-app-polyfill/stable'
 // import FacebookPixel from './Components/FacebookPixel';
 
 

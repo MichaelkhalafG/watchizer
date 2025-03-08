@@ -57,10 +57,10 @@ function Nav() {
                                     {tables.subTypes &&
                                         tables.subTypes
                                             .filter((subtype) => products.some((product) => product.sub_type_id === subtype.id)) // 🔹 Only subtypes with products
-                                            .map((subtype, i) => (
+                                            .map((subtype) => (
                                                 <Link
                                                     to={`/subtypes/${subtype.sub_type_name}`}
-                                                    key={i}
+                                                    key={subtype.id}
                                                     className="text-decoration-none col-12 d-flex text-start px-2 py-1 color-most-used"
                                                     onClick={() => {
                                                         setFilters({
@@ -123,9 +123,9 @@ function Nav() {
                                     <MdOutlineKeyboardArrowDown className='mx-2' style={{ fontSize: "20px" }} />
                                 </div>
                                 <div className={`sub-menu  ${language === 'ar' ? 'sub-menu-ar' : ''}`}>
-                                    {tables.brands && tables.brands.filter((brand) => products.some((product) => product.brand_id === brand.id)).map((brand, i) => (
+                                    {tables.brands && tables.brands.filter((brand) => products.some((product) => product.brand_id === brand.id)).map((brand) => (
                                         <Link
-                                            key={i}
+                                            key={brand.id}
                                             to={`/brand/${brand.brand_name}`}
                                             className='text-decoration-none text-start p-2 color-most-used'
                                             onClick={() => {

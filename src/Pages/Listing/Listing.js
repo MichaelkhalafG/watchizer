@@ -16,8 +16,9 @@ import ProductModel from "../../Components/Product/ProductModel";
 import Pagination from "@mui/material/Pagination";
 
 function Listing() {
-    const { language, currentPage, setCurrentPage, fetchCart, offers, setCart, user_id, Loader, products, windowWidth, filters, setFilters, handleAddTowishlist } = useContext(MyContext);
+    const { language, currentPage, setCurrentPage, fetchCart, tables, watches, fashion, offers, setCart, user_id, Loader, products, windowWidth, filters, setFilters, handleAddTowishlist } = useContext(MyContext);
     const [filteredProducts, setFilteredProducts] = useState([]);
+    const [displayedProducts, setDisplayedProducts] = useState([]);
     const [shownum, setShownum] = useState(10);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,11 +36,29 @@ function Listing() {
 
     const isRTL = language === "ar";
     useEffect(() => {
-        if (!products) return;
+        if (!products?.length && !watches?.length && !fashion?.length) return;
 
-        const filtered = products.filter((product) => {
+        let thelisttofilter = products;
+
+        if (filters.categories.length > 0) {
+            let filterscat = filters.categories.map((cat) => {
+                let category = tables.categoryTypes?.find((item) => item.id === cat);
+                return category?.translations?.find((t) => t.locale === language)?.category_type_name;
+            }).filter(Boolean);
+
+            if (filterscat.length === 1) {
+                if (filterscat[0] === "Watches") {
+                    thelisttofilter = watches;
+                } else if (filterscat[0] === "Fashion") {
+                    thelisttofilter = fashion;
+                }
+            }
+            else {
+                thelisttofilter = products;
+            }
+        }
+        const filtered = thelisttofilter.filter((product) => {
             return (
-                (filters.categories.length === 0 || filters.categories.includes(product.category_type_id)) &&
                 (filters.brands.length === 0 || filters.brands.includes(product.brand_id)) &&
                 (filters.subTypes.length === 0 || filters.subTypes.includes(product.sub_type_id)) &&
                 (filters.price[0] <= product.sale_price_after_discount && product.sale_price_after_discount <= filters.price[1])
@@ -47,7 +66,8 @@ function Listing() {
         });
 
         setFilteredProducts(filtered);
-    }, [filters, products]);
+    }, [filters, products, watches, fashion, tables, language]);
+
 
 
     const handleChange = (event) => {
@@ -67,10 +87,15 @@ function Listing() {
         window.scrollTo(0, 0);
     };
     const totalPages = Math.ceil(filteredProducts.length / shownum);
-    const displayedProducts = filteredProducts.slice(
-        (currentPage - 1) * shownum,
-        currentPage * shownum
-    );
+    useEffect(() => {
+        if (!filteredProducts) return;
+
+        setDisplayedProducts(filteredProducts.slice(
+            (currentPage - 1) * shownum,
+            currentPage * shownum
+        ));
+    }, [currentPage, filters, filteredProducts, shownum]);
+
     const handleAddToCart = (product, type_stock) => {
         if (!user_id) {
             setAlertMessage(language === "ar" ? "يجب تسجيل الدخول أولاً!" : "You must login first!");
@@ -108,7 +133,7 @@ function Listing() {
                     setOpenAlert(true);
                     fetchCart(user_id, products, offers, language, setCart);
                 })
-                .catch((error) => {
+                .catch(() => {
                     // console.error("Error adding to cart:", error);
                     setAlertMessage(language === "ar" ? "حدث خطأ أثناء الإضافة إلى السلة." : "An error occurred while adding to the cart.");
                     setAlertType("error");
